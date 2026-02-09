@@ -1,0 +1,309 @@
+:root {
+  /* Font Sizes */
+  --font-size-64: 64px;
+  --font-size-48: 48px;
+  --font-size-36: 36px;
+  --font-size-30: 30px;
+  --font-size-24: 24px;
+  --font-size-20: 20px;
+  --font-size-18: 18px;
+  --font-size-16: 16px;
+  --font-size-14: 14px;
+  --font-size-12: 12px;
+  --font-size-11: 11px;
+  --font-size-10: 10px;
+
+  /* Font Weights */
+  --font-weight-bold: 700;
+  --font-weight-medium: 500;
+  --font-weight-regular: 400;
+
+  /* Line Heights */
+  --line-height-72: 72px;
+  --line-height-64: 64px;
+  --line-height-46: 46px;
+  --line-height-44: 44px;
+  --line-height-36: 36px;
+  --line-height-28: 28px;
+  --line-height-26: 26px;
+  --line-height-24: 24px;
+  --line-height-22: 22px;
+  --line-height-20: 20px;
+  --line-height-18: 18px;
+  --line-height-16: 16px;
+
+  /* Font Family */
+  /* --font-family: 'Cera Pro', sans-serif; */
+
+}
+
+.s-font-family {
+  font-family: "Cera Pro";
+}
+
+/* Headers */
+@utility s-h1 {
+  font-size: var(--font-size-64);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-72);
+  letter-spacing: -0.64px;
+}
+
+@utility s-h2 {
+  font-size: var(--font-size-48);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-64);
+}
+
+@utility s-h3 {
+  font-size: var(--font-size-36);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-44);
+  letter-spacing: -0.18px;
+}
+
+@utility s-h4 {
+  font-size: var(--font-size-30);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-44);
+}
+
+@utility s-h5 {
+  font-size: var(--font-size-24);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-36);
+}
+
+@utility s-h6 {
+  font-size: var(--font-size-20);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-36);
+}
+
+@utility s-font-size-18 {
+  font-size: var(--font-size-18);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-26);
+}
+
+@utility s-font-size-16 {
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-20);
+}
+
+@utility s-font-size-14 {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-20);
+}
+
+@utility s-font-size-12 {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-20);
+}
+
+@utility s-font-size-11 {
+  font-size: var(--font-size-11);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-18);
+}
+
+@utility s-font-size-10 {
+  font-size: var(--font-size-10);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-16);
+}
+
+@utility s-caption-1 {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-16);
+  letter-spacing: 0.22px;
+  font-style: normal;
+}
+
+@utility s-race-proven {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-16);
+  letter-spacing: 0.477px;
+  font-style: italic;
+}
+
+@utility s-caption-2 {
+  font-size: var(--font-size-11);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-14);
+  letter-spacing: 0.22px;
+  font-style: normal;
+}
+
+@utility s-banner-title {
+  font-size: var(--font-size-32);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-39);
+  letter-spacing: -0.162px;
+}
+
+/* SwissSki/Button/Small */
+@utility s-button-small {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-18);
+  letter-spacing: 0.5px;
+}
+
+/* SwissSki/Subtitle/Small */
+
+@utility s-subtitle-small {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-22);
+}
+
+/* Swiss-ski/Subtitle Medium */
+@utility s-subtitle-medium {
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-24);
+}
+
+/* SwissSki/Subtitle/Large */
+@utility s-subtitle-large {
+  font-size: var(--font-size-18);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-28);
+}
+
+/* SwissSki/Body/Body - 1 */
+@utility s-body-1 {
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-22);
+}
+
+/* SwissSki/Body/Body - 2 */
+@utility s-body-2 {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-20);
+}
+
+/* SwissSki/Body/Body - 3 */
+@utility s-body-3 {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-18);
+}
+
+
+/* Button/Medium */
+@utility s-button-medium {
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-19);
+  letter-spacing: 0.24px;
+}
+
+/* SwissSki/Nav/Link */
+@utility s-nav-link {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-18);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* SwissSki/Nav/Menu/image-text */
+@utility s-nav-image-text {
+  font-size: var(--font-size-23);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-29); 
+  letter-spacing: -0.119px;
+}
+
+/* SwissSki/Label/OVERLINE */
+@utility s-label-overline {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-16);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+@utility s-font-weight-regular {
+  font-weight: var(--font-weight-regular);
+}
+
+@utility s-font-weight-medium {
+  font-weight: var(--font-weight-medium);
+}
+
+@utility s-font-weight-bold {
+  font-weight: var(--font-weight-bold);
+}
+
+@utility a-h1 {
+  @apply text-5xl leading-snug tracking-tight font-bold;
+}
+
+@utility a-h2 {
+  @apply text-3xl leading-tight font-bold;
+}
+
+@utility a-h3 {
+  @apply text-2xl leading-relaxed font-bold;
+}
+
+@utility a-h4 {
+  @apply text-xl leading-relaxed font-bold;
+}
+
+@utility a-h5 {
+  @apply text-lg leading-7 font-bold;
+}
+
+@utility a-h6 {
+  @apply text-base leading-6 font-bold;
+}
+
+@utility subtitle-s {
+  @apply text-sm leading-5 font-medium;
+  font-family: var(--font-family);
+}
+
+@utility a-body {
+  @apply text-sm leading-5 font-normal;
+  font-family: var(--font-family);
+}
+
+@utility a-button {
+  @apply text-sm leading-6 font-bold;
+}
+
+@utility a-caption {
+  @apply text-xs leading-4 tracking-wide;
+  font-family: var(--font-family);
+}
+
+@utility a-label {
+  @apply text-[10px] leading-3 tracking-wide font-normal;
+  font-family: var(--font-family);
+}
+
+.a-font-family {
+  font-family: var(--font-family);
+}
+
+/* Hide the default number input arrows */
+.hide-number-arrows::-webkit-inner-spin-button,
+.hide-number-arrows::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.hide-number-arrows {
+  -moz-appearance: textfield;
+}
