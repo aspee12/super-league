@@ -66,30 +66,44 @@ export function MatchCard({ match, showActions = false, onEdit, onDelete, varian
         </div>
 
         {/* Score/Time */}
-        <div className="flex flex-col items-center flex-1">
-          {isUpcoming ? (
-            <>
-              <div className="text-2xl font-bold mb-1">{match.time}</div>
-              <div className="text-gray-600 text-sm mb-2">VS</div>
-              <div className="text-gray-600 text-sm">{match.date}</div>
-            </>
-          ) : (
-            <>
+        {isLive ? (
+          <>
+            {/* Score A for Live Match */}
+            <div className="text-5xl font-bold text-black">{match.scoreA}</div>
+
+            {/* Center: Date, Time, LIVE badge */}
+            <div className="flex flex-col items-center flex-1">
               <div className="text-sm text-gray-600 mb-2">{match.date}</div>
-              <div className="flex items-center gap-4 mb-2">
-                <div className="text-5xl font-bold text-black">{match.scoreA}</div>
-                <div className="text-gray-400">-</div>
-                <div className="text-5xl font-bold text-black">{match.scoreB}</div>
+              <div className="text-3xl font-bold text-black mb-2">{match.time}</div>
+              <div className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                ● LIVE
               </div>
-              <div className="text-xs mb-1 text-black">{match.time}</div>
-              {isLive && (
-                <div className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-medium">
-                  ● LIVE
+            </div>
+
+            {/* Score B for Live Match */}
+            <div className="text-5xl font-bold text-black">{match.scoreB}</div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center flex-1">
+            {isUpcoming ? (
+              <>
+                <div className="text-2xl font-bold mb-1">{match.time}</div>
+                <div className="text-gray-600 text-sm mb-2">VS</div>
+                <div className="text-gray-600 text-sm">{match.date}</div>
+              </>
+            ) : (
+              <>
+                <div className="text-sm text-gray-600 mb-2">{match.date}</div>
+                <div className="flex items-center gap-4 mb-2">
+                  <div className="text-5xl font-bold text-black">{match.scoreA}</div>
+                  <div className="text-gray-400">-</div>
+                  <div className="text-5xl font-bold text-black">{match.scoreB}</div>
                 </div>
-              )}
-            </>
-          )}
-        </div>
+                <div className="text-xs mb-1 text-black">{match.time}</div>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Team B */}
         <div className="flex flex-col items-center w-1/4">

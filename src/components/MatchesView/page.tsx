@@ -2,6 +2,8 @@ import { Pause, Pencil, Plus, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { matches } from '../../data/matchMockData';
 import { MatchCard } from '@shared-component/MatchCard';
+import AddMatchModal from '@shared-component/modals/WebModals/AddMatchModal';
+import { UpdateScoreModal } from '@shared-component/modals/WebModals/UpdateScoreModal';
 
 export function MatchesView() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -12,21 +14,21 @@ export function MatchesView() {
   const [showEditUpcomingModal, setShowEditUpcomingModal] = useState(false);
   
 
-  const liveMatch: any = {
-    id: 1,
-    homeTeam: "Single Aunty",
-    awayTeam: "Single Aunty",
-    homeScore: 1,
-    awayScore: 2,
-    date: "21-9-2026",
-    time: "20:00",
-    status: "live",
-    homePlayers: [{ name: "Karma Dorji", goals: 1 }],
-    awayPlayers: [
-      { name: "Karma Dorji", goals: 1 },
-      { name: "Sonam Wang", goals: 1 },
-    ],
-  };
+  // const liveMatch: any = {
+  //   id: 1,
+  //   homeTeam: "Single Aunty",
+  //   awayTeam: "Single Aunty",
+  //   homeScore: 1,
+  //   awayScore: 2,
+  //   date: "21-9-2026",
+  //   time: "20:00",
+  //   status: "live",
+  //   homePlayers: [{ name: "Karma Dorji", goals: 1 }],
+  //   awayPlayers: [
+  //     { name: "Karma Dorji", goals: 1 },
+  //     { name: "Sonam Wang", goals: 1 },
+  //   ],
+  // };
 
   const liveMatches = matches.filter((m) => m.status === 'live');
   const upcomingMatches = matches.filter((m) => m.status === 'upcoming');
@@ -52,11 +54,13 @@ export function MatchesView() {
           </div>
         </div>
 
-
         {liveMatches.length > 0 ? (
           <div className="space-y-4 mt-4">
             {liveMatches.map((match) => (
-              <div key={match.id} className="relative bg-[#F8F9FA] rounded-lg shadow-sm">
+              <div
+                key={match.id}
+                className="relative bg-[#F8F9FA] rounded-lg shadow-sm"
+              >
                 <div className=" flex justify-end items-center gap-2 px-6 py-3 rounded-tr-lg">
                   <button
                     onClick={() => setShowUpdateScoreModal(true)}
@@ -81,7 +85,6 @@ export function MatchesView() {
                   </button>
                 </div>
                 <MatchCard match={match} variant="live" />
-                
               </div>
             ))}
           </div>
@@ -120,13 +123,23 @@ export function MatchesView() {
               key={match.id}
               match={match}
               variant="result"
-              showActions
-              onEdit={() => setShowEditModal(true)}
-              onDelete={() => setShowDeleteModal(true)}
             />
           ))}
         </div>
       </div>
+
+      {/* Modals */}
+      <AddMatchModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onAdd={(data) => console.log("Add match:", data)}
+      />
+
+      <UpdateScoreModal
+        isOpen={showUpdateScoreModal}
+        onClose={() => setShowUpdateScoreModal(false)}
+        onUpdate={(data) => console.log("Update score:", data)}
+      />
 
       {/* Mobile View */}
       {/* <div className="md:hidden p-3">
