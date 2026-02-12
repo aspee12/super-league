@@ -4,22 +4,37 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { AddMatchModalProps } from '@app-types/shared-type';
 
-export default function AddMatchModal({isOpen, onClose, onAdd,}: AddMatchModalProps) {
+export default function AddMatchModal({isOpen, onClose, onSubmit, initialData, title, submitText}: AddMatchModalProps) { 
   const [formData, setFormData] = useState({
     teamA: "",
     teamB: "",
     date: "",
     time: "",
   });
+  const isEditMode = !!initialData;
+  
+  // ✅ Prefill form when editing
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        teamA: initialData.teamA || "",
+        teamB: initialData.teamB || "",
+        date: initialData.date || "",
+        time: initialData.time || "",
+      });
+    } else {
+      setFormData({
+        teamA: "",
+        teamB: "",
+        date: "",
+        time: "",
+      });
+    }
+  }, [initialData]);
 
   // Prevent background scroll when modal is open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
+    document.body.style.overflow = isOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
@@ -38,16 +53,8 @@ export default function AddMatchModal({isOpen, onClose, onAdd,}: AddMatchModalPr
       return;
     }
 
-    onAdd(formData);
+    onSubmit(formData);
     onClose();
-
-    // Reset form
-    setFormData({
-      teamA: "",
-      teamB: "",
-      date: "",
-      time: "",
-    });
   };
 
   return (
@@ -55,7 +62,7 @@ export default function AddMatchModal({isOpen, onClose, onAdd,}: AddMatchModalPr
       <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold">Add New Match</h2>
+          <h2 className="text-lg font-semibold">{title || (isEditMode ? 'Edit Match' : 'Add New Match')}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition"
@@ -132,7 +139,7 @@ export default function AddMatchModal({isOpen, onClose, onAdd,}: AddMatchModalPr
               type="submit"
               className="px-4 py-2 text-sm text-white bg-[#0e7490] rounded-md hover:bg-[#0c6380] transition"
             >
-              Add Match
+              {submitText || (isEditMode ? 'Update Match' : 'Add Match')}
             </button>
           </div>
         </form>

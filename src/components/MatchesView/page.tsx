@@ -1,38 +1,28 @@
 import { Pause, Pencil, Plus, RefreshCw } from "lucide-react";
 import { useState } from "react";
-import { matches } from '../../data/matchMockData';
-import { MatchCard } from '@shared-component/MatchCard';
-import AddMatchModal from '@shared-component/modals/WebModals/AddMatchModal';
-import { UpdateScoreModal } from '@shared-component/modals/WebModals/UpdateScoreModal';
+import { matches } from "../../data/matchMockData";
+import { MatchCard } from "@shared-component/MatchCard";
+import AddMatchModal from "@shared-component/modals/WebModals/AddMatchModal";
+import { UpdateScoreModal } from "@shared-component/modals/WebModals/UpdateScoreModal";
+import { ConfirmModal } from "@shared-component/modals/ConfirmationModal/ConfirmModal";
 
 export function MatchesView() {
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState<any | null>(null);
   const [showUpdateScoreModal, setShowUpdateScoreModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [showEndMatchModal, setShowEndMatchModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showEditUpcomingModal, setShowEditUpcomingModal] = useState(false);
-  
+  const [confirmState, setConfirmState] = useState<{
+    type: "end" | "delete" | null;
+    match: any | null;
+  }>({
+    type: null,
+    match: null,
+  });
 
-  // const liveMatch: any = {
-  //   id: 1,
-  //   homeTeam: "Single Aunty",
-  //   awayTeam: "Single Aunty",
-  //   homeScore: 1,
-  //   awayScore: 2,
-  //   date: "21-9-2026",
-  //   time: "20:00",
-  //   status: "live",
-  //   homePlayers: [{ name: "Karma Dorji", goals: 1 }],
-  //   awayPlayers: [
-  //     { name: "Karma Dorji", goals: 1 },
-  //     { name: "Sonam Wang", goals: 1 },
-  //   ],
-  // };
-
-  const liveMatches = matches.filter((m) => m.status === 'live');
-  const upcomingMatches = matches.filter((m) => m.status === 'upcoming');
-  const finishedMatches = matches.filter((m) => m.status === 'finished');
+  const liveMatches = matches.filter((m) => m.status === "live");
+  const upcomingMatches = matches.filter((m) => m.status === "upcoming");
+  const finishedMatches = matches.filter((m) => m.status === "finished");
 
   return (
     <div className="min-h-screen flex-1 p-6">
@@ -45,7 +35,10 @@ export function MatchesView() {
               <h2 className="text-lg font-semibold text-black">Live Now</h2>
             </div>
             <button
-              onClick={() => setShowAddModal(true)}
+              onClick={() => {
+                setSelectedMatch(null);
+                setIsMatchModalOpen(true);
+              }}
               className="flex items-center gap-2 px-4 py-2 bg-[#0e7490] text-white rounded-md hover:bg-[#0c6380] transition-colors text-sm"
             >
               <Plus size={16} />
@@ -70,14 +63,17 @@ export function MatchesView() {
                     <span>Update Score</span>
                   </button>
                   <button
-                    onClick={() => setShowEditModal(true)}
+                    onClick={() => {
+                      setSelectedMatch(match);
+                      setIsMatchModalOpen(true);
+                    }}
                     className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#0e7490] bg-[#e0f2f7] hover:bg-[#cce9f0] rounded-md transition-colors"
                   >
                     <Pencil size={14} />
                     <span>Edit</span>
                   </button>
                   <button
-                    onClick={() => setShowEndMatchModal(true)}
+                    onClick={() => setConfirmState({ type: "end", match })}
                     className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#0e7490] bg-[#e0f2f7] hover:bg-[#cce9f0] rounded-md transition-colors"
                   >
                     <Pause size={14} />
@@ -105,8 +101,11 @@ export function MatchesView() {
               match={match}
               variant="upcoming"
               showActions
-              onEdit={() => setShowEditUpcomingModal(true)}
-              onDelete={() => setShowDeleteModal(true)}
+              onEdit={() => {
+                setSelectedMatch(match);
+                setIsMatchModalOpen(true);
+              }}
+              onDelete={() => setConfirmState({ type: "delete", match })}
             />
           ))}
         </div>
@@ -119,20 +118,44 @@ export function MatchesView() {
         </div>
         <div className="space-y-4 mt-4">
           {finishedMatches.map((match) => (
-            <MatchCard
-              key={match.id}
-              match={match}
-              variant="result"
-            />
+            <MatchCard key={match.id} match={match} variant="result" />
           ))}
         </div>
       </div>
 
       {/* Modals */}
       <AddMatchModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onAdd={(data) => console.log("Add match:", data)}
+        isOpen={isMatchModalOpen}
+        onClose={() => {
+          setIsMatchModalOpen(false);
+          setSelectedMatch(null);
+        }}
+        onSubmit={(data) => {
+          if (selectedMatch) {
+            // Update match
+            console.log("Update match:", data);
+          } else {
+            // Add match
+            console.log("Add match:", data);
+          }
+          setIsMatchModalOpen(false);
+          setSelectedMatch(null);
+        }}
+        initialData={selectedMatch}
+        title={
+          selectedMatch?.status === "upcoming"
+            ? "Edit Upcoming Match"
+            : selectedMatch
+              ? "Edit Match"
+              : "Add New Match"
+        }
+        submitText={
+          selectedMatch?.status === "upcoming"
+            ? "Change"
+            : selectedMatch
+              ? "Update Match"
+              : "Add Match"
+        }
       />
 
       <UpdateScoreModal
@@ -141,61 +164,29 @@ export function MatchesView() {
         onUpdate={(data) => console.log("Update score:", data)}
       />
 
-      {/* Mobile View */}
-      {/* <div className="md:hidden p-3">
-        <div className="mb-6 bg-white rounded-lg p-3 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-2 h-2 bg-red-600 rounded-full"></div>
-            <h2 className="text-base font-semibold text-gray-800">Live Now</h2>
-            <div className="ml-auto px-3 py-1 bg-red-600 text-white rounded-full text-xs font-semibold">
-              ● LIVE
-            </div>
-          </div>
-          <div className="shadow-sm border-2 border-red-300 p-3 rounded-lg">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex-1 text-center">
-                <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gray-100 flex items-center justify-center text-xl">
-                  ⚽
-                </div>
-                <div className="text-sm font-semibold text-gray-800">
-                  {liveMatch.homeTeam}
-                </div>
-                {liveMatch.homePlayers?.map((player: any, idx: number) => (
-                  <div key={idx} className="text-xs text-gray-600 mt-1">
-                    {player.name} {player.goals}
-                  </div>
-                ))}
-              </div>
+      <ConfirmModal
+        isOpen={!!confirmState.type}
+        onClose={() => setConfirmState({ type: null, match: null })}
+        onConfirm={() => {
+          if (confirmState.type === "end") {
+            console.log("End match:", confirmState.match);
+          }
 
-              <div className="flex-1 text-center px-4">
-                <div className="text-3xl font-bold text-gray-800 mb-1">
-                  {liveMatch.homeScore}-{liveMatch.awayScore}
-                </div>
-                <div className="text-xs text-gray-600">{liveMatch.date}</div>
-                <div className="text-sm font-semibold text-gray-800">
-                  {liveMatch.time}
-                </div>
-              </div>
+          if (confirmState.type === "delete") {
+            console.log("Delete match:", confirmState.match);
+          }
 
-              <div className="flex-1 text-center">
-                <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gray-100 flex items-center justify-center text-xl">
-                  ⚽
-                </div>
-                <div className="text-sm font-semibold text-gray-800">
-                  {liveMatch.awayTeam}
-                </div>
-                {liveMatch.awayPlayers?.map((player, idx) => (
-                  <div key={idx} className="text-xs text-gray-600 mt-1">
-                    {player.goals} {player.name}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> */}
+          setConfirmState({ type: null, match: null });
+        }}
+        title={confirmState.type === "end" ? "End Match?" : "Delete Match?"}
+        message={
+          confirmState.type === "end"
+            ? "Are you sure you want to end this match?"
+            : "Are you sure you want to delete this match?"
+        }
+        confirmText={confirmState.type === "end" ? "End" : "Delete"}
+        confirmVariant={confirmState.type === "delete" ? "danger" : "primary"}
+      />
     </div>
   );
 }
-
-
