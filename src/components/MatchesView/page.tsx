@@ -28,7 +28,6 @@ export function MatchesView() {
     ],
   };
 
-  const teamLogo = "https://images.unsplash.com/photo-1760907217330-133432b74939?w=100&h=100&fit=crop";
   const liveMatches = matches.filter((m) => m.status === 'live');
   const upcomingMatches = matches.filter((m) => m.status === 'upcoming');
   const finishedMatches = matches.filter((m) => m.status === 'finished');
@@ -57,9 +56,8 @@ export function MatchesView() {
         {liveMatches.length > 0 ? (
           <div className="space-y-4 mt-4">
             {liveMatches.map((match) => (
-              <div key={match.id} className="relative">
-                <MatchCard match={match} variant="live" />
-                {/* <div className="absolute top-4 right-4 flex gap-2">
+              <div key={match.id} className="relative bg-[#F8F9FA] rounded-lg shadow-sm">
+                <div className=" flex justify-end items-center gap-2 px-6 py-3 rounded-tr-lg">
                   <button
                     onClick={() => setShowUpdateScoreModal(true)}
                     className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#0e7490] bg-[#e0f2f7] hover:bg-[#cce9f0] rounded-md transition-colors"
@@ -81,7 +79,9 @@ export function MatchesView() {
                     <Pause size={14} />
                     <span>End Match</span>
                   </button>
-                </div> */}
+                </div>
+                <MatchCard match={match} variant="live" />
+                
               </div>
             ))}
           </div>

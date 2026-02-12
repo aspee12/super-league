@@ -20,15 +20,8 @@ export function MatchCard({ match, showActions = false, onEdit, onDelete, varian
       )}
         {/* Actions */}
       { showActions && (
-        <div className="bg-[#F8F9FA] flex justify-end items-center gap-2 px-6 py-3 rounded-tr-lg">
-            {/* <button
-                    onClick={() => (console.log('update score'))}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#0e7490] bg-[#e0f2f7] hover:bg-[#cce9f0] rounded-md transition-colors"
-                  >
-                    <RefreshCw size={14} />
-                    <span>Update Score</span>
-                  </button> */}
-          { (
+        <div className="bg-[#F8F9FA] flex justify-end items-center gap-2 px-6 py-3 rounded-t-lg">
+          { onEdit && (
             <button
               onClick={onEdit}
               className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#0e7490] bg-[#e0f2f7] hover:bg-[#cce9f0] rounded-md transition-colors"
@@ -37,7 +30,7 @@ export function MatchCard({ match, showActions = false, onEdit, onDelete, varian
               <span>Edit</span>
             </button>
           )}
-          { (
+          { onDelete && (
             <button
               onClick={onDelete}
               className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
@@ -49,7 +42,7 @@ export function MatchCard({ match, showActions = false, onEdit, onDelete, varian
         </div>
       )}
 
-      <div className="p-6 pt-4 relative">
+      <div className="p-6 pt-4 relative px-[42px]">
         
       {/* Top scorers info for live/finished matches */}
       {!isUpcoming && (
@@ -68,7 +61,7 @@ export function MatchCard({ match, showActions = false, onEdit, onDelete, varian
       <div className="flex items-center justify-between">
         {/* Team A */}
         <div className="flex flex-col items-center w-1/4">
-          <div className="text-4xl mb-2">{match.teamA.logo}</div>
+          <div className="text-4xl mb-3">{match.teamA.logo}</div>
           <div className="text-sm font-medium text-center text-black">{match.teamA.name}</div>
         </div>
 
@@ -100,7 +93,7 @@ export function MatchCard({ match, showActions = false, onEdit, onDelete, varian
 
         {/* Team B */}
         <div className="flex flex-col items-center w-1/4">
-          <div className="text-4xl mb-2">{match.teamB.logo}</div>
+          <div className="text-4xl mb-3">{match.teamB.logo}</div>
           <div className="text-sm font-medium text-center text-black">{match.teamB.name}</div>
         </div>
       </div>
