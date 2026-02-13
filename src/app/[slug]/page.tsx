@@ -2,6 +2,7 @@
 
 import LeagueTable from "@components/LeagueTable/LeagueTable";
 import { MatchesView } from "@components/MatchesView/page";
+import { StatsView } from "@components/StatsView/page";
 import { MobileMatchesView } from '@components/MobileViews/MobileMatchesView';
 import { MobileTableView } from '@components/MobileViews/MobileTabelView';
 import Header from "@shared-component/Header";
@@ -32,12 +33,7 @@ export default function DynamicPage() {
       case "matches":
         return <MatchesView />;
       case "stats":
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-bold">Stats</h1>
-            <p className="text-gray-600 mt-2">Coming soon...</p>
-          </div>
-        );
+        return <StatsView />;
       case "teams":
         return (
           <div className="p-6">
@@ -57,6 +53,8 @@ export default function DynamicPage() {
         return <MobileTableView />;
       case "matches":
         return <MobileMatchesView />;
+      case "stats":
+        return <StatsView />;
       case "teams":
       // return <MobileTeamsView />;
       default:
