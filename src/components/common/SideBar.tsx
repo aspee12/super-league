@@ -53,7 +53,7 @@ export default function SideBar() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#ecf9ff] border-t border-[#a6dfe6] shadow-[0_-6px_16px_rgba(0,0,0,0.08)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#ecf9ff] border-t border-[#a6dfe6] shadow-[0_-6px_16px_rgba(0,0,0,0.08)] z-1000">
         <div className="relative">
           <div className="flex items-center justify-between px-2 pt-2 pb-6">
             {navItems.map((item) => {
