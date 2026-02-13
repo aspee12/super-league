@@ -10,8 +10,7 @@ export function MatchesView() {
   const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<any | null>(null);
   const [showUpdateScoreModal, setShowUpdateScoreModal] = useState(false);
-  const [showEndMatchModal, setShowEndMatchModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  
   const [confirmState, setConfirmState] = useState<{
     type: "end" | "delete" | null;
     match: any | null;
@@ -32,7 +31,7 @@ export function MatchesView() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-red-600 rounded-full"></div>
-              <h2 className="text-lg font-semibold text-black">Live Now</h2>
+              <h2 className="text-lg f  ont-semibold text-black">Live Now</h2>
             </div>
             <button
               onClick={() => {

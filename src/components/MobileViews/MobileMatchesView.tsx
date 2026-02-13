@@ -1,14 +1,49 @@
 import { useState } from "react";
-import { MoreVertical, RefreshCcw, Pencil, Pause, ChevronRight } from "lucide-react";
+import {
+  MoreVertical,
+  RefreshCcw,
+  Pencil,
+  Pause,
+  ChevronRight,
+} from "lucide-react";
+import { MobileUpdateScoreModal } from "@shared-component/modals/MobileModals/MobileUpdateScoreModal";
+import { ConfirmModal } from "@shared-component/modals/ConfirmationModal/ConfirmModal";
+import { MobileAddMatchModal } from '@shared-component/modals/MobileModals/MobileAddMatchModal';
 
 export function MobileMatchesView() {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showEditUpcomingModal, setShowEditUpcomingModal] = useState(false);
   const [showUpcomingMenu, setShowUpcomingMenu] = useState<string | null>(null);
+  const [selectedMatch, setSelectedMatch] = useState<any | null>(null);
 
   const teamLogo =
     "https://images.unsplash.com/photo-1760907217330-133432b74939?w=100&h=100&fit=crop";
+
+  const [confirmState, setConfirmState] = useState<{
+    type: "end" | "delete" | null;
+    match: any | null;
+  }>({
+    type: null,
+    match: null,
+  });
+
+  // TODO: Dummy data for matches
+  const dummyMatches = [
+    {
+      teamA: 'Single Aunty',
+      teamB: 'Uncles',
+      date: '',
+      time: '',
+      status: 'upcoming',
+    },
+    {
+      teamA: 'Single Aunty',
+      teamB: 'Uncles',
+      date: '',
+      time: '',
+      status: 'live',
+    },
+  ];
 
   return (
     <div className="min-h-screen from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4] pb-20">
@@ -26,7 +61,7 @@ export function MobileMatchesView() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-red-500 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-lg border border-red-500 overflow-hidden">
             <div className="p-3 sm:p-4">
               <div className="flex items-center justify-between mb-4 gap-2">
                 <div className="flex flex-col items-center flex-1 min-w-0">
@@ -49,7 +84,9 @@ export function MobileMatchesView() {
                   <div className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 whitespace-nowrap">
                     1-2
                   </div>
-                  <div className="text-xs text-gray-500 whitespace-nowrap">21-9-2026</div>
+                  <div className="text-xs text-gray-500 whitespace-nowrap">
+                    21-9-2026
+                  </div>
                   <div className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">
                     20:00
                   </div>
@@ -76,20 +113,29 @@ export function MobileMatchesView() {
               <div className="flex gap-1.5 sm:gap-2 flex-wrap">
                 <button
                   onClick={() => setShowUpdateModal(true)}
-                  className="flex-1 min-w-[80px] flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 border-2 border-[#0e7490] text-[#0e7490] rounded-md hover:bg-[#0e7490]/5 transition-colors text-xs sm:text-sm font-medium"
+                  className="flex-1 min-w-[80px] flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 border-2 rounded-md hover:bg-[#0e7490]/5 transition-colors text-xs sm:text-sm font-medium"
                 >
-                  <RefreshCcw size={14} className="sm:w-4 sm:h-4" />
+                  <RefreshCcw
+                    size={14}
+                    className="sm:w-4 sm:h-4 text-[#0e7490] "
+                  />
                   <span>Update</span>
                 </button>
                 <button
-                  onClick={() => setShowEditModal(true)}
-                  className="flex-1 min-w-[80px] flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 border-2 border-[#0e7490] text-[#0e7490] rounded-md hover:bg-[#0e7490]/5 transition-colors text-xs sm:text-sm font-medium"
+                  onClick={() => {
+                    // TODO: Neet to add matches for edit one
+                    setSelectedMatch(dummyMatches[1]); 
+                    setShowEditModal(true)}}
+                  className="flex-1 min-w-[80px] flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 border-2 rounded-md hover:bg-[#0e7490]/5 transition-colors text-xs sm:text-sm font-medium"
                 >
-                  <Pencil size={14} className="sm:w-4 sm:h-4" />
+                  <Pencil size={14} className="sm:w-4 sm:h-4 text-[#0e7490]" />
                   <span>Edit</span>
                 </button>
-                <button className="flex-1 min-w-[80px] flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors text-xs sm:text-sm font-medium">
-                  <Pause size={14} className="sm:w-4 sm:h-4" />
+                <button
+                  onClick={() => setConfirmState({ type: "end", match: null })}
+                  className="flex-1 min-w-[80px] flex items-center justify-center gap-1.5 sm:gap-2 border px-2 sm:px-4 py-2 sm:py-2.5 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors text-xs sm:text-sm font-medium"
+                >
+                  <Pause size={14} className="sm:w-4 sm:h-4 text-[#0e7490]" />
                   <span>End</span>
                 </button>
               </div>
@@ -148,7 +194,7 @@ export function MobileMatchesView() {
                 </div>
 
                 {/* Options Button */}
-                <button
+                {/* <button
                   onClick={() =>
                     setShowUpcomingMenu(
                       showUpcomingMenu === `upcoming-${item}`
@@ -170,12 +216,55 @@ export function MobileMatchesView() {
                       >
                         Edit
                       </button>
-                      <button className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100">
+                      <button 
+                          onClick={() => setConfirmState({ type: "delete", match: null })}
+                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100">
                         Delete
                       </button>
                     </div>
                   )}
-                </button>
+                </button> */}
+
+                <div className="relative self-start">
+                  <button
+                    onClick={() =>
+                      setShowUpcomingMenu(
+                        showUpcomingMenu === `upcoming-${item}`
+                          ? null
+                          : `upcoming-${item}`,
+                      )
+                    }
+                    className="bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+                  >
+                    <MoreVertical size={16} className="text-gray-600" />
+                  </button>
+
+                  {showUpcomingMenu === `upcoming-${item}` && (
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10 w-24">
+                      <button
+                        onClick={() => {
+                          // TODO: Neet to add matches for edit one
+                          setSelectedMatch(dummyMatches[0]); 
+                          setShowEditModal(true);
+                          setShowUpcomingMenu(null);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setConfirmState({ type: "delete", match: null });
+                          setShowUpcomingMenu(null);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -206,9 +295,13 @@ export function MobileMatchesView() {
                 {/* Center Score and Date */}
                 <div className="flex flex-col items-center shrink-0 px-1">
                   <div className="bg-[#0e7490] text-white px-3 py-1.5 rounded-md">
-                    <div className="text-sm font-bold whitespace-nowrap">1-2</div>
+                    <div className="text-sm font-bold whitespace-nowrap">
+                      1-2
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1 whitespace-nowrap">Friday,12,25</div>
+                  <div className="text-xs text-gray-500 mt-1 whitespace-nowrap">
+                    Friday,12,25
+                  </div>
                 </div>
 
                 {/* Right Team */}
@@ -228,7 +321,7 @@ export function MobileMatchesView() {
             </div>
           ))}
         </div>
-        
+
         {/* View all results button */}
         <button className="w-full mt-4 bg-white rounded-xl shadow-sm p-4 flex items-center justify-center gap-2 text-gray-800 hover:bg-gray-50 transition-colors">
           <span className="text-sm font-medium">View all results</span>
@@ -237,21 +330,66 @@ export function MobileMatchesView() {
       </div>
 
       {/* Modals */}
-      {/* <MobileUpdateScoreModal
+      <MobileUpdateScoreModal
         isOpen={showUpdateModal}
         onClose={() => setShowUpdateModal(false)}
-        onUpdate={(data) => console.log('Update:', data)}
+        onUpdate={(data) => console.log("Update:", data)}
       />
-      <MobileEditMatchModal
+
+      <MobileAddMatchModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        onEdit={(data) => console.log('Edit:', data)}
+        onSubmit={(data) => {
+          if (selectedMatch) {
+            // Update match
+            console.log("Update match:", data);
+          } else {
+            // Add match
+            console.log("Add match:", data);
+          }
+          setShowEditModal(false);
+          setSelectedMatch(null);
+        }}
+        initialData={selectedMatch}
+        title={
+          selectedMatch?.status === "upcoming"
+            ? "Edit Upcoming Match"
+            : selectedMatch
+              ? "Edit Match"
+              : "Add New Match"
+        }
+        submitText={
+          selectedMatch?.status === "upcoming"
+            ? "Change"
+            : selectedMatch
+              ? "Update Match"
+              : "Add Match"
+        }
       />
-      <MobileEditUpcomingMatchModal
-        isOpen={showEditUpcomingModal}
-        onClose={() => setShowEditUpcomingModal(false)}
-        onEdit={(data) => console.log('Edit upcoming:', data)}
-      /> */}
+
+      <ConfirmModal
+        isOpen={!!confirmState.type}
+        onClose={() => setConfirmState({ type: null, match: null })}
+        onConfirm={() => {
+          if (confirmState.type === "end") {
+            console.log("End match:", confirmState.match);
+          }
+
+          if (confirmState.type === "delete") {
+            console.log("Delete match:", confirmState.match);
+          }
+
+          setConfirmState({ type: null, match: null });
+        }}
+        title={confirmState.type === "end" ? "End Match?" : "Delete Match?"}
+        message={
+          confirmState.type === "end"
+            ? "Are you sure you want to end this match?"
+            : "Are you sure you want to delete this match?"
+        }
+        confirmText={confirmState.type === "end" ? "End" : "Delete"}
+        confirmVariant={confirmState.type === "delete" ? "danger" : "primary"}
+      />
     </div>
   );
 }
