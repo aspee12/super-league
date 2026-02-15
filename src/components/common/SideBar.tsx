@@ -4,6 +4,8 @@ import { LogOut, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { navItems } from '@constants/shared';
+import { MobileAddMatchModal } from './modals/MobileModals/MobileAddMatchModal';
+import { useState } from 'react';
 
 export default function SideBar() {
   const pathname = usePathname();
@@ -13,6 +15,8 @@ export default function SideBar() {
     }
     return pathname.startsWith(path);
   };
+
+  const [showAddMatchModal, setShowAddMatchModal] = useState(false);
 
   return (
     <>
@@ -72,13 +76,21 @@ export default function SideBar() {
 
             {/* Floating Add Button centered */}
             <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-6">
-              <button className="w-12 h-12 bg-[#267c93] rounded-[12px] flex items-center justify-center shadow-lg border-2 border-white">
+              <button 
+                  onClick={() => setShowAddMatchModal(true)}
+                  className="w-12 h-12 bg-[#267c93] rounded-[12px] flex items-center justify-center shadow-lg border-2 border-white">
                 <Plus className="w-6 h-6 text-white" />
               </button>
             </div>
           </div>
         </div>
       </nav>
+
+      <MobileAddMatchModal
+        isOpen={showAddMatchModal}
+        onClose={() => setShowAddMatchModal(false)}
+        onSubmit={(data) => console.log('Add Match:', data)}
+      />
     </>
   );
 }
