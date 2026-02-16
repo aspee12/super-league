@@ -19,6 +19,7 @@
       }
     ],
     "paths": {
+      "@/*": ["./src/*"],
       "@shared-component/*": ["./src/components/common/*"],
       "@components/*": ["./src/components/*"],
       "@ui/*": ["./src/components/ui/*"],
