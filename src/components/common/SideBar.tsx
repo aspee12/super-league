@@ -120,6 +120,6 @@ export default function SideBar() {
         onClose={() => setShowAddMatchModal(false)}
         onSubmit={(data) => console.log('Add Match:', data)}
       />
-    </>
+    </> 
   );
 }

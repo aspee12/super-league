@@ -9,12 +9,15 @@ import {
 import { MobileUpdateScoreModal } from "@shared-component/modals/MobileModals/MobileUpdateScoreModal";
 import { ConfirmModal } from "@shared-component/modals/ConfirmationModal/ConfirmModal";
 import { MobileAddMatchModal } from '@shared-component/modals/MobileModals/MobileAddMatchModal';
+import { useAuthStore } from '@/store/authStore';
 
 export function MobileMatchesView() {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showUpcomingMenu, setShowUpcomingMenu] = useState<string | null>(null);
   const [selectedMatch, setSelectedMatch] = useState<any | null>(null);
+  const user = useAuthStore((response) => response.user);
+  const isSuperAdmin = user?.role === "super_admin";
 
   const teamLogo =
     "https://images.unsplash.com/photo-1760907217330-133432b74939?w=100&h=100&fit=crop";
@@ -110,7 +113,7 @@ export function MobileMatchesView() {
                 </div>
               </div>
 
-              <div className="flex gap-1.5 sm:gap-2 flex-wrap">
+              {isSuperAdmin && (<div className="flex gap-1.5 sm:gap-2 flex-wrap">
                 <button
                   onClick={() => setShowUpdateModal(true)}
                   className="flex-1 min-w-[80px] flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 border-2 rounded-md hover:bg-[#0e7490]/5 transition-colors text-xs sm:text-sm font-medium"
@@ -138,7 +141,7 @@ export function MobileMatchesView() {
                   <Pause size={14} className="sm:w-4 sm:h-4 text-[#0e7490]" />
                   <span>End</span>
                 </button>
-              </div>
+              </div> )}
             </div>
           </div>
         </div>
@@ -225,7 +228,7 @@ export function MobileMatchesView() {
                   )}
                 </button> */}
 
-                <div className="relative self-start">
+                {isSuperAdmin && (<div className="relative self-start">
                   <button
                     onClick={() =>
                       setShowUpcomingMenu(
@@ -264,7 +267,8 @@ export function MobileMatchesView() {
                       </button>
                     </div>
                   )}
-                </div>
+                </div> 
+              )}
               </div>
             </div>
           ))}

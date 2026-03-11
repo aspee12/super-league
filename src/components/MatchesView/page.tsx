@@ -5,12 +5,15 @@ import { MatchCard } from "@shared-component/MatchCard";
 import AddMatchModal from "@shared-component/modals/WebModals/AddMatchModal";
 import { UpdateScoreModal } from "@shared-component/modals/WebModals/UpdateScoreModal";
 import { ConfirmModal } from "@shared-component/modals/ConfirmationModal/ConfirmModal";
+import { useAuthStore } from "@/store/authStore";
 
 export function MatchesView() {
   const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<any | null>(null);
   const [showUpdateScoreModal, setShowUpdateScoreModal] = useState(false);
-  
+  const user = useAuthStore((response) => response.user);
+  const isSuperAdmin = user?.role === "super_admin";
+
   const [confirmState, setConfirmState] = useState<{
     type: "end" | "delete" | null;
     match: any | null;
@@ -33,16 +36,18 @@ export function MatchesView() {
               <div className="w-2 h-2 bg-red-600 rounded-full"></div>
               <h2 className="text-lg f  ont-semibold text-black">Live Now</h2>
             </div>
-            <button
-              onClick={() => {
-                setSelectedMatch(null);
-                setIsMatchModalOpen(true);
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-[#0e7490] text-white rounded-md hover:bg-[#0c6380] transition-colors text-sm"
-            >
-              <Plus size={16} />
-              <span>Add Match</span>
-            </button>
+            {isSuperAdmin && (
+              <button
+                onClick={() => {
+                  setSelectedMatch(null);
+                  setIsMatchModalOpen(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-[#0e7490] text-white rounded-md hover:bg-[#0c6380] transition-colors text-sm"
+              >
+                <Plus size={16} />
+                <span>Add Match</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -53,38 +58,40 @@ export function MatchesView() {
                 key={match.id}
                 className="relative bg-[#F8F9FA] rounded-lg shadow-sm"
               >
-                <div className=" flex justify-end items-center gap-2 px-6 py-3 rounded-tr-lg">
-                  <button
-                    onClick={() => setShowUpdateScoreModal(true)}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#0e7490] bg-[#e0f2f7] hover:bg-[#cce9f0] rounded-md transition-colors"
-                  >
-                    <RefreshCw size={14} />
-                    <span>Update Score</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedMatch(match);
-                      setIsMatchModalOpen(true);
-                    }}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#0e7490] bg-[#e0f2f7] hover:bg-[#cce9f0] rounded-md transition-colors"
-                  >
-                    <Pencil size={14} />
-                    <span>Edit</span>
-                  </button>
-                  <button
-                    onClick={() => setConfirmState({ type: "end", match })}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#0e7490] bg-[#e0f2f7] hover:bg-[#cce9f0] rounded-md transition-colors"
-                  >
-                    <Pause size={14} />
-                    <span>End Match</span>
-                  </button>
-                </div>
-                <MatchCard match={match} variant="live" />
+                {isSuperAdmin && (
+                  <div className=" flex justify-end items-center gap-2 px-6 py-3 rounded-tr-lg">
+                    <button
+                      onClick={() => setShowUpdateScoreModal(true)}
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#0e7490] bg-[#e0f2f7] hover:bg-[#cce9f0] rounded-md transition-colors"
+                    >
+                      <RefreshCw size={14} />
+                      <span>Update Score</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedMatch(match);
+                        setIsMatchModalOpen(true);
+                      }}
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#0e7490] bg-[#e0f2f7] hover:bg-[#cce9f0] rounded-md transition-colors"
+                    >
+                      <Pencil size={14} />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      onClick={() => setConfirmState({ type: "end", match })}
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#0e7490] bg-[#e0f2f7] hover:bg-[#cce9f0] rounded-md transition-colors"
+                    >
+                      <Pause size={14} />
+                      <span>End Match</span>
+                    </button>
+                  </div>
+                )}
+                <MatchCard match={match} showActions={isSuperAdmin} variant="live" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">No live matches</div>
+          <div className="text-center py-8  text-gray-500">No live matches</div>
         )}
       </div>
 
@@ -99,7 +106,7 @@ export function MatchesView() {
               key={match.id}
               match={match}
               variant="upcoming"
-              showActions
+              showActions={isSuperAdmin}
               onEdit={() => {
                 setSelectedMatch(match);
                 setIsMatchModalOpen(true);
