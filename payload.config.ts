@@ -2,9 +2,11 @@ import sharp from 'sharp'
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { buildConfig } from 'payload'
 import { Users } from './src/collections/Users'
+import { Teams } from './src/collections/Teams'
+import { Matches } from './src/collections/Matches'
 
 export default buildConfig({
-  collections: [Users],
+  collections: [Users, Teams, Matches],
 
   // Your Payload secret - should be a complex and secure string, unguessable
   secret: process.env.PAYLOAD_SECRET || '',

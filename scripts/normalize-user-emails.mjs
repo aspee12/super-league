@@ -2,7 +2,7 @@
  * Lowercases all user emails so admin login works (login looks up by lowercase email).
  * Run if you get "email or password incorrect" with correct credentials.
  *
- * Usage: yarn normalize:user-emails
+ * Usage: npm run normalize:user-emails
  */
 
 import { createRequire } from 'node:module'

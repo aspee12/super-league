@@ -7,7 +7,7 @@ If you see this with correct credentials:
 1. **Use lowercase email** – Login looks up by lowercase email. Enter your email in lowercase (e.g. `admin@example.com`).
 2. **Normalize existing emails** – If the user was created with mixed case, run:
    ```bash
-   yarn normalize:user-emails
+   npm run normalize:user-emails
    ```
    Then try logging in again with the **lowercase** email.
 3. **Create first user** – If you have no users, go to `/admin` and use the **Create First User** form. Use a simple password and **lowercase** email.
@@ -47,7 +47,7 @@ If you see this with correct credentials:
 If you already created one user via the admin panel but they still have role **Admin**, you can promote them to **Super Admin** with the seed script:
 
 ```bash
-yarn seed:super-admin
+npm run seed:super-admin
 ```
 
 This script:
