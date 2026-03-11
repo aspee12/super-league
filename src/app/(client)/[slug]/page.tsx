@@ -9,6 +9,43 @@ import Header from "@shared-component/Header";
 import SideBar from "@shared-component/SideBar";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAuthStore } from '@/store/authStore';
+import { Plus } from 'lucide-react';
+
+function TeamsContent() {
+  const canAddTeam = useAuthStore((s) => s.canAddTeam);
+  const [showAddTeam, setShowAddTeam] = useState(false);
+  return (
+    <div className="p-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold text-[#004556]">Teams</h1>
+        {canAddTeam() && (
+          <button
+            type="button"
+            onClick={() => setShowAddTeam(true)}
+            className="flex items-center gap-2 rounded-lg bg-[#267c93] px-4 py-2 font-medium text-white transition hover:bg-[#1e6375]"
+          >
+            <Plus className="w-5 h-5" />
+            Add Team
+          </button>
+        )}
+      </div>
+      <p className="text-gray-600 mt-2">Coming soon...</p>
+      {showAddTeam && (
+        <div className="mt-4 rounded-lg border border-[#a6dfe6] bg-[#ecf9ff] p-4">
+          Add Team form placeholder (configure when Teams collection is ready).
+          <button
+            type="button"
+            onClick={() => setShowAddTeam(false)}
+            className="mt-2 text-[#267c93] underline"
+          >
+            Close
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function DynamicPage() {
   const params = useParams();
@@ -35,12 +72,7 @@ export default function DynamicPage() {
       case "stats":
         return <StatsView />;
       case "teams":
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-bold">Teams</h1>
-            <p className="text-gray-600 mt-2">Coming soon...</p>
-          </div>
-        );
+        return <TeamsContent />;
       default:
         return <LeagueTable />;
     }
@@ -56,7 +88,7 @@ export default function DynamicPage() {
       case "stats":
         return <StatsView />;
       case "teams":
-      // return <MobileTeamsView />;
+        return <TeamsContent />;
       default:
       return <MobileTableView />;
     }

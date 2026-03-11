@@ -2,20 +2,32 @@
   "name": "super-league",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:super-admin": "node scripts/seed-super-admin.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",
+    "@payloadcms/db-mongodb": "^3.76.1",
+    "@payloadcms/next": "^3.76.1",
+    "@tanstack/react-query": "^5.90.21",
+    "dotenv": "^17.3.1",
     "lucide-react": "^0.563.0",
-    "next": "16.1.6",
+    "next": "^16.2.0-canary.35",
+    "payload": "^3.76.1",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-hook-form": "^7.71.1",
+    "sharp": "^0.34.5",
+    "sonner": "^1.7.1",
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "mongodb": "^6.12.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

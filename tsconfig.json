@@ -19,6 +19,7 @@
       }
     ],
     "paths": {
+      "@/*": ["./src/*"],
       "@shared-component/*": ["./src/components/common/*"],
       "@components/*": ["./src/components/*"],
       "@ui/*": ["./src/components/ui/*"],
@@ -26,6 +27,7 @@
       "@app-types/*": ["./src/types/*"],
       "@styles/*": ["./src/styles/*"],
       "@assets/*": ["./src/app/assets/*"],
+      "@payload-config": ["./payload.config.ts"]
     }
   },
   "include": [
