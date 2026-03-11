@@ -26,6 +26,7 @@ export interface ConfirmModalProps {
 
 
 export interface MatchProps {
+    id?: string;
     teamA: string;
     teamB: string;
     date: string;

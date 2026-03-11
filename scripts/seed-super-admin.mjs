@@ -2,7 +2,7 @@
  * Promotes the first user (by createdAt) to super_admin with canAddTeam.
  * Run after creating at least one user via Payload Admin (/admin).
  *
- * Usage: yarn seed:super-admin
+ * Usage: npm run seed:super-admin
  * Requires: DATABASE_URL in .env (and dotenv loads .env from project root)
  */
 
