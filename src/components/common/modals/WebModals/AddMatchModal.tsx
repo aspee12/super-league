@@ -1,22 +1,23 @@
-"use client";
+'use client'
 
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X } from "lucide-react";
-import { toast } from "sonner";
-import { AddMatchModalProps, MatchProps } from "@app-types/shared-type";
-import { Input } from "@ui/Input";
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { X } from 'lucide-react'
+import { toast } from 'sonner'
+import { AddMatchModalProps, MatchProps } from '@app-types/shared-type'
+import { DatePicker } from '@ui/DatePicker'
+import { TimePicker } from '@ui/TimePicker'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@ui/Select";
-import { getTeams, createMatch, updateMatch } from "@/lib/matches-api";
+} from '@ui/Select'
+import { getTeams, createMatch, updateMatch } from '@/lib/matches-api'
 
-type FormValues = MatchProps;
+type FormValues = MatchProps
 
 export default function AddMatchModal({
   isOpen,
@@ -26,55 +27,51 @@ export default function AddMatchModal({
   title,
   submitText,
 }: AddMatchModalProps) {
-  const queryClient = useQueryClient();
-  const isEditMode = !!initialData;
+  const queryClient = useQueryClient()
+  const isEditMode = !!initialData
+
   const { data: teams = [], isLoading: teamsLoading } = useQuery({
-    queryKey: ["teams"],
+    queryKey: ['teams'],
     queryFn: getTeams,
     enabled: isOpen,
-  });
+  })
 
   const createMutation = useMutation({
     mutationFn: createMatch,
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["matches"] });
+      queryClient.invalidateQueries({ queryKey: ['matches'] })
       onSubmit({
         id: data.id,
-        teamA: typeof data.teamA === "object" ? data.teamA.id : data.teamA,
-        teamB: typeof data.teamB === "object" ? data.teamB.id : data.teamB,
+        teamA: typeof data.teamA === 'object' ? data.teamA.id : data.teamA,
+        teamB: typeof data.teamB === 'object' ? data.teamB.id : data.teamB,
         date: data.date,
         time: data.time,
-      });
-      onClose();
-      toast.success("Match added.");
+      })
+      onClose()
+      toast.success('Match added.')
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
-    },
-  });
+    onError: (err: Error) => toast.error(err.message),
+  })
 
   const updateMutation = useMutation({
     mutationFn: ({ id, body }: { id: string; body: Parameters<typeof updateMatch>[1] }) =>
       updateMatch(id, body),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["matches"] });
+      queryClient.invalidateQueries({ queryKey: ['matches'] })
       onSubmit({
         id: data.id,
-        teamA: typeof data.teamA === "object" ? data.teamA.id : data.teamA,
-        teamB: typeof data.teamB === "object" ? data.teamB.id : data.teamB,
+        teamA: typeof data.teamA === 'object' ? data.teamA.id : data.teamA,
+        teamB: typeof data.teamB === 'object' ? data.teamB.id : data.teamB,
         date: data.date,
         time: data.time,
-      });
-      onClose();
-      toast.success("Match updated.");
+      })
+      onClose()
+      toast.success('Match updated.')
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
-    },
-  });
+    onError: (err: Error) => toast.error(err.message),
+  })
 
   const {
-    register,
     handleSubmit,
     reset,
     setValue,
@@ -82,61 +79,71 @@ export default function AddMatchModal({
     setError,
     formState: { errors },
   } = useForm<FormValues>({
-    defaultValues: {
-      teamA: "",
-      teamB: "",
-      date: "",
-      time: "",
-    },
-  });
+    defaultValues: { teamA: '', teamB: '', date: '', time: '' },
+  })
 
-  const teamA = watch("teamA");
-  const teamB = watch("teamB");
+  const teamA = watch('teamA')
+  const teamB = watch('teamB')
+  const dateValue = watch('date')
+  const timeValue = watch('time')
 
   useEffect(() => {
+    if (!isOpen) return
     if (initialData) {
       const teamAId =
-        typeof initialData.teamA === "string"
+        typeof initialData.teamA === 'string'
           ? initialData.teamA
-          : (initialData.teamA as { id?: string })?.id ?? "";
+          : (initialData.teamA as { id?: string })?.id ?? ''
       const teamBId =
-        typeof initialData.teamB === "string"
+        typeof initialData.teamB === 'string'
           ? initialData.teamB
-          : (initialData.teamB as { id?: string })?.id ?? "";
+          : (initialData.teamB as { id?: string })?.id ?? ''
       reset({
         ...(initialData.id && { id: initialData.id }),
         teamA: teamAId,
         teamB: teamBId,
-        date: initialData.date || "",
-        time: initialData.time || "",
-      });
+        date: initialData.date || '',
+        time: initialData.time || '',
+        status: initialData.status,
+      })
     } else {
-      reset({
-        teamA: "",
-        teamB: "",
-        date: "",
-        time: "",
-      });
+      reset({ teamA: '', teamB: '', date: '', time: '' })
     }
-  }, [initialData, reset]);
+  }, [initialData, isOpen, reset])
 
   useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
+    document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const handleClose = () => {
+    reset({ teamA: '', teamB: '', date: '', time: '' })
+    onClose()
+  }
 
   const onFormSubmit = (data: FormValues) => {
     if (!data.teamA) {
-      setError("teamA", { type: "required", message: "Select Team A" });
-      return;
+      setError('teamA', { type: 'required', message: 'Select Team A' })
+      return
     }
     if (!data.teamB) {
-      setError("teamB", { type: "required", message: "Select Team B" });
-      return;
+      setError('teamB', { type: 'required', message: 'Select Team B' })
+      return
+    }
+    if (!data.date) {
+      setError('date', { type: 'required', message: 'Date is required' })
+      return
+    }
+    if (!data.time) {
+      setError('time', { type: 'required', message: 'Time is required' })
+      return
     }
     if (isEditMode && initialData?.id) {
       updateMutation.mutate({
@@ -146,33 +153,38 @@ export default function AddMatchModal({
           teamB: data.teamB,
           date: data.date,
           time: data.time,
+          status: initialData.status,
         },
-      });
+      })
     } else {
       createMutation.mutate({
         teamA: data.teamA,
         teamB: data.teamB,
         date: data.date,
         time: data.time,
-        status: "upcoming",
+        status: 'upcoming',
         scoreA: 0,
         scoreB: 0,
-      });
+      })
     }
-  };
+  }
 
-  const isSubmitting = createMutation.isPending || updateMutation.isPending;
+  const isSubmitting = createMutation.isPending || updateMutation.isPending
+
+  // Filter out selected team from the other dropdown
+  const teamsForA = teams.filter((t) => t.id !== teamB)
+  const teamsForB = teams.filter((t) => t.id !== teamA)
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold">
-            {title ?? (isEditMode ? "Edit Match" : "Add New Match")}
+            {title ?? (isEditMode ? 'Edit Match' : 'Add New Match')}
           </h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 transition"
             aria-label="Close"
           >
@@ -186,21 +198,18 @@ export default function AddMatchModal({
             <div>
               <label className="sr-only" htmlFor="teamA">Team A</label>
               <Select
+                key={`teamA-${teamA}`}
                 value={teamA}
-                onValueChange={(value) => setValue("teamA", value, { shouldValidate: true })}
+                onValueChange={(value) => setValue('teamA', value, { shouldValidate: true })}
                 disabled={teamsLoading}
               >
-                <SelectTrigger
-                  id="teamA"
-                  className="w-full"
-                  aria-invalid={!!errors.teamA}
-                >
-                  <SelectValue placeholder={teamsLoading ? "Loading…" : "Select Team A"} />
+                <SelectTrigger id="teamA" className="w-full" aria-invalid={!!errors.teamA}>
+                  <SelectValue placeholder={teamsLoading ? 'Loading…' : 'Select Team A'} />
                 </SelectTrigger>
                 <SelectContent>
-                  {teams.map((t) => (
+                  {teamsForA.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
-                      {t.logo ? `${t.logo} ` : ""}{t.name}
+                      {t.logo ? `${t.logo} ` : ''}{t.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -214,21 +223,18 @@ export default function AddMatchModal({
             <div>
               <label className="sr-only" htmlFor="teamB">Team B</label>
               <Select
+                key={`teamB-${teamB}`}
                 value={teamB}
-                onValueChange={(value) => setValue("teamB", value, { shouldValidate: true })}
+                onValueChange={(value) => setValue('teamB', value, { shouldValidate: true })}
                 disabled={teamsLoading}
               >
-                <SelectTrigger
-                  id="teamB"
-                  className="w-full"
-                  aria-invalid={!!errors.teamB}
-                >
-                  <SelectValue placeholder={teamsLoading ? "Loading…" : "Select Team B"} />
+                <SelectTrigger id="teamB" className="w-full" aria-invalid={!!errors.teamB}>
+                  <SelectValue placeholder={teamsLoading ? 'Loading…' : 'Select Team B'} />
                 </SelectTrigger>
                 <SelectContent>
-                  {teams.map((t) => (
+                  {teamsForB.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
-                      {t.logo ? `${t.logo} ` : ""}{t.name}
+                      {t.logo ? `${t.logo} ` : ''}{t.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -246,24 +252,23 @@ export default function AddMatchModal({
             {/* Date & Time */}
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="sr-only" htmlFor="date">Date</label>
-                <Input
-                  id="date"
-                  type="date"
-                  {...register("date", { required: "Date is required" })}
-                  aria-invalid={!!errors.date}
+                <label className="sr-only">Date</label>
+                <DatePicker
+                  value={dateValue}
+                  onChange={(val) => setValue('date', val, { shouldValidate: true })}
+                  minDate={today}
+                  placeholder="Pick a date"
                 />
                 {errors.date && (
                   <p className="text-sm text-red-600 mt-1">{errors.date.message}</p>
                 )}
               </div>
               <div className="flex-1">
-                <label className="sr-only" htmlFor="time">Time</label>
-                <Input
-                  id="time"
-                  type="time"
-                  {...register("time", { required: "Time is required" })}
-                  aria-invalid={!!errors.time}
+                <label className="sr-only">Time</label>
+                <TimePicker
+                  value={timeValue}
+                  onChange={(val) => setValue('time', val, { shouldValidate: true })}
+                  placeholder="Pick time"
                 />
                 {errors.time && (
                   <p className="text-sm text-red-600 mt-1">{errors.time.message}</p>
@@ -275,7 +280,7 @@ export default function AddMatchModal({
           <div className="flex gap-3 justify-end mt-6">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition"
               disabled={isSubmitting}
             >
@@ -287,12 +292,12 @@ export default function AddMatchModal({
               className="px-4 py-2 text-sm text-white bg-[#0e7490] rounded-md hover:bg-[#0c6380] transition disabled:opacity-50"
             >
               {isSubmitting
-                ? "Saving…"
-                : submitText ?? (isEditMode ? "Update Match" : "Add Match")}
+                ? 'Saving…'
+                : submitText ?? (isEditMode ? 'Update Match' : 'Add Match')}
             </button>
           </div>
         </form>
       </div>
     </div>
-  );
+  )
 }

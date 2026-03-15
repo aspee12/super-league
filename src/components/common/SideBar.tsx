@@ -118,7 +118,9 @@ export default function SideBar() {
       <MobileAddMatchModal
         isOpen={showAddMatchModal}
         onClose={() => setShowAddMatchModal(false)}
-        onSubmit={(data) => console.log('Add Match:', data)}
+        onSubmit={() => setShowAddMatchModal(false)}
+        title="Add New Match"
+        submitText="Add Match"
       />
     </> 
   );

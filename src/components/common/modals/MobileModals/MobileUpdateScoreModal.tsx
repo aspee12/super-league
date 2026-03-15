@@ -1,136 +1,273 @@
-import { ScoreModalProps } from '@app-types/shared-type';
-import { ChevronDown } from 'lucide-react';
-import { useState, useEffect } from 'react';
+'use client'
 
-export function MobileUpdateScoreModal({ isOpen, onClose, onUpdate }: ScoreModalProps) {
+import { ChevronDown } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { updateScore } from '@/lib/matches-api'
+import { getPlayersForTeam } from '@constants/team-players'
+import type { Match } from '@app-types/matchTypes'
+
+export interface MobileUpdateScoreModalProps {
+  isOpen: boolean
+  onClose: () => void
+  match: Match | null
+}
+
+export function MobileUpdateScoreModal({
+  isOpen,
+  onClose,
+  match,
+}: MobileUpdateScoreModalProps) {
+  const queryClient = useQueryClient()
+
   const [formData, setFormData] = useState({
-    team: '',
+    team: '' as '' | 'teamA' | 'teamB',
     player: '',
-    score: '',
+    goals: '',
     assist: '',
-    card: '',
-  });
+    card: '' as '' | 'none' | 'yellow' | 'red',
+  })
 
-  // Prevent background scroll when modal is open
+  const mutation = useMutation({
+    mutationFn: () => {
+      if (!match) throw new Error('No match selected')
+      return updateScore(
+        match.id,
+        {
+          scoreA: match.scoreA,
+          scoreB: match.scoreB,
+          playerStats: match.playerStats,
+        },
+        {
+          team: formData.team as 'teamA' | 'teamB',
+          playerName: formData.player,
+          goals: parseInt(formData.goals) || 0,
+          assists: formData.assist ? 1 : 0,
+          assistName: formData.assist || undefined,
+          card: (formData.card || 'none') as 'none' | 'yellow' | 'red',
+        },
+      )
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matches'] })
+      toast.success('Score updated.')
+      handleClose()
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
   useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : '';
+    document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({ team: '', player: '', goals: '', assist: '', card: '' })
+    }
+  }, [isOpen, match?.id])
+
+  if (!isOpen || !match) return null
+
+  const teamAName = match.teamA.name
+  const teamBName = match.teamB.name
+
+  const selectedTeamName =
+    formData.team === 'teamA' ? teamAName : formData.team === 'teamB' ? teamBName : ''
+  const playersForTeam = selectedTeamName ? getPlayersForTeam(selectedTeamName) : []
+
+  const handleClose = () => {
+    setFormData({ team: '', player: '', goals: '', assist: '', card: '' })
+    onClose()
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onUpdate(formData);
-    onClose();
-  };
+    e.preventDefault()
+    if (!formData.team) {
+      toast.error('Select a team.')
+      return
+    }
+    if (!formData.player) {
+      toast.error('Select a player.')
+      return
+    }
+    if (!formData.goals) {
+      toast.error('Enter goals.')
+      return
+    }
+    mutation.mutate()
+  }
+
+  const selectClass =
+    'w-full px-0 py-3 border-b border-[#0e7490] text-gray-700 focus:outline-none focus:border-[#0c6380] appearance-none bg-transparent text-base'
+  const inputClass =
+    'w-full px-0 py-3 border-b border-[#0e7490] text-gray-700 focus:outline-none focus:border-[#0c6380] bg-transparent text-base'
 
   return (
-    <div className="fixed inset-0 bg-white flex flex-col sm:bg-black/50 sm:items-center sm:justify-center sm:p-4 z-9999">
-      {/* Full-page modal for mobile, centered modal for desktop */}
-      <div className="bg-white w-full h-full flex flex-col sm:h-auto sm:rounded-lg sm:max-w-md sm:shadow-xl">
-        {/* Header - only show on desktop */}
-        <div className="hidden sm:flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold">Update</h2>
-          <button 
-            onClick={onClose} 
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+    <div className="fixed inset-0 bg-white flex flex-col z-9999">
+      <div className="bg-white w-full h-full flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
+          <h2 className="text-lg font-semibold">Update Score</h2>
+          <button
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors text-2xl leading-none"
             aria-label="Close modal"
           >
             ×
           </button>
         </div>
 
+        {/* Match info bar */}
+        <div className="flex items-center justify-center gap-3 px-4 py-3 bg-gray-50 text-sm">
+          <span className="font-medium text-gray-800">
+            {match.teamA.logo || '⚽'} {teamAName}
+          </span>
+          <span className="text-gray-800 font-bold">
+            {match.scoreA} - {match.scoreB}
+          </span>
+          <span className="font-medium text-gray-800">
+            {teamBName} {match.teamB.logo || '⚽'}
+          </span>
+        </div>
+
         {/* Form content */}
-        <form onSubmit={handleSubmit} className="flex-1 flex flex-col p-4 sm:p-6">
-          <div className="flex-1 space-y-6 sm:space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col p-4">
+          <div className="flex-1 space-y-6">
+            {/* Team Select */}
             <div className="relative">
               <select
                 value={formData.team}
-                onChange={(e) => setFormData({ ...formData, team: e.target.value })}
-                className="w-full px-0 py-3 border-b border-[#0e7490] text-gray-700 focus:outline-none focus:border-[#0c6380] appearance-none bg-transparent text-base sm:text-sm"
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    team: e.target.value as '' | 'teamA' | 'teamB',
+                    player: '',
+                    assist: '',
+                  })
+                }
+                className={selectClass}
               >
-                <option value="" className="text-gray-500">Select Team</option>
-                <option value="team1">Single Aunty</option>
-                <option value="team2">Uncle</option>
+                <option value="">Select Team</option>
+                <option value="teamA">{teamAName}</option>
+                <option value="teamB">{teamBName}</option>
               </select>
-              <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
+              <ChevronDown
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                size={20}
+              />
             </div>
 
+            {/* Player Select */}
             <div className="relative">
               <select
                 value={formData.player}
-                onChange={(e) => setFormData({ ...formData, player: e.target.value })}
-                className="w-full px-0 py-3 border-b border-[#0e7490] text-gray-700 focus:outline-none focus:border-[#0c6380] appearance-none bg-transparent text-base sm:text-sm"
+                onChange={(e) =>
+                  setFormData({ ...formData, player: e.target.value })
+                }
+                disabled={!formData.team}
+                className={selectClass + (formData.team ? '' : ' opacity-50')}
               >
-                <option value="" className="text-gray-500">Player</option>
-                <option value="player1">Karma Dorji</option>
-                <option value="player2">Sonam Wang</option>
+                <option value="">
+                  {formData.team ? 'Select Player' : 'Select team first'}
+                </option>
+                {playersForTeam.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
               </select>
-              <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
+              <ChevronDown
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                size={20}
+              />
             </div>
 
-            <div className="relative">
-              <select
-                value={formData.score}
-                onChange={(e) => setFormData({ ...formData, score: e.target.value })}
-                className="w-full px-0 py-3 border-b border-[#0e7490] text-gray-700 focus:outline-none focus:border-[#0c6380] appearance-none bg-transparent text-base sm:text-sm"
-              >
-                <option value="" className="text-gray-500">Score</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-              </select>
-              <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
-            </div>
+            {/* Goals */}
+            <input
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={10}
+              placeholder="Goals"
+              value={formData.goals}
+              onChange={(e) =>
+                setFormData({ ...formData, goals: e.target.value })
+              }
+              className={inputClass}
+            />
 
+            {/* Assist Select */}
             <div className="relative">
               <select
                 value={formData.assist}
-                onChange={(e) => setFormData({ ...formData, assist: e.target.value })}
-                className="w-full px-0 py-3 border-b border-[#0e7490] text-gray-700 focus:outline-none focus:border-[#0c6380] appearance-none bg-transparent text-base sm:text-sm"
+                onChange={(e) =>
+                  setFormData({ ...formData, assist: e.target.value })
+                }
+                disabled={!formData.team}
+                className={selectClass + (formData.team ? '' : ' opacity-50')}
               >
-                <option value="" className="text-gray-500">Assist</option>
-                <option value="player1">Karma Dorji</option>
-                <option value="player2">Sonam Wang</option>
+                <option value="">Assist (optional)</option>
+                {playersForTeam
+                  .filter((p) => p !== formData.player)
+                  .map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
               </select>
-              <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
+              <ChevronDown
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                size={20}
+              />
             </div>
 
+            {/* Card */}
             <div className="relative">
               <select
                 value={formData.card}
-                onChange={(e) => setFormData({ ...formData, card: e.target.value })}
-                className="w-full px-0 py-3 border-b border-[#0e7490] text-gray-700 focus:outline-none focus:border-[#0c6380] appearance-none bg-transparent text-base sm:text-sm"
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    card: e.target.value as '' | 'none' | 'yellow' | 'red',
+                  })
+                }
+                className={selectClass}
               >
-                <option value="" className="text-gray-500">Card</option>
+                <option value="">Card (optional)</option>
                 <option value="yellow">Yellow Card</option>
                 <option value="red">Red Card</option>
               </select>
-              <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
+              <ChevronDown
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                size={20}
+              />
             </div>
           </div>
 
-          {/* Action buttons - fixed at bottom on mobile */}
-          <div className="flex gap-3 pt-6 mt-auto sm:pt-4">
+          {/* Action buttons */}
+          <div className="flex gap-3 pt-6 mt-auto">
             <button
               type="button"
-              onClick={onClose}
-              className="flex-1 px-6 py-3 text-base sm:text-sm text-[#0e7490] border border-[#0e7490] rounded-md hover:bg-gray-50 active:bg-gray-100 transition-colors font-medium"
+              onClick={handleClose}
+              disabled={mutation.isPending}
+              className="flex-1 px-6 py-3 text-base text-[#0e7490] border border-[#0e7490] rounded-md hover:bg-gray-50 active:bg-gray-100 transition-colors font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-6 py-3 text-base sm:text-sm text-white bg-[#0e7490] rounded-md hover:bg-[#0c6380] active:bg-[#0a5569] transition-colors font-medium"
+              disabled={mutation.isPending}
+              className="flex-1 px-6 py-3 text-base text-white bg-[#0e7490] rounded-md hover:bg-[#0c6380] active:bg-[#0a5569] transition-colors font-medium disabled:opacity-50"
             >
-              Update
+              {mutation.isPending ? 'Updating…' : 'Update'}
             </button>
           </div>
         </form>
       </div>
     </div>
-  );
+  )
 }
