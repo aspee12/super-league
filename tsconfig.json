@@ -27,6 +27,7 @@
       "@app-types/*": ["./src/types/*"],
       "@styles/*": ["./src/styles/*"],
       "@assets/*": ["./src/app/assets/*"],
+      "@payload-config": ["./payload.config.ts"]
     }
   },
   "include": [

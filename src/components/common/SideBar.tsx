@@ -2,13 +2,19 @@
 
 import { LogOut, Plus } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { navItems } from '@constants/shared';
 import { MobileAddMatchModal } from './modals/MobileModals/MobileAddMatchModal';
 import { useState } from 'react';
+import { useAuthStore } from '@/store/authStore';
+import { logout as logoutApi } from '@/lib/auth-api';
 
 export default function SideBar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const logoutStore = useAuthStore((s) => s.logout);
+
   const isActive = (path: string) => {
     if (path === "/") {
       return pathname === "/";
@@ -17,6 +23,12 @@ export default function SideBar() {
   };
 
   const [showAddMatchModal, setShowAddMatchModal] = useState(false);
+
+  const handleLogout = async () => {
+    await logoutApi();
+    logoutStore();
+    router.replace('/login');
+  };
 
   return (
     <>
@@ -43,10 +55,23 @@ export default function SideBar() {
               })}
             </nav>
             <div className="mt-auto pb-4">
-              <button className="flex items-center cursor-pointer gap-2 px-3 py-2 rounded text-[#201f1e] transition-colors hover:bg-white">
-                <LogOut className="w-5 h-5 shrink-0 text-[#605e5c]" />
-                <span className="font-medium text-[16px]" style={{ lineHeight: '24px', fontFamily: 'Roboto, sans-serif' }}>Logout</span>
-              </button>
+              {user ? (
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex items-center cursor-pointer gap-2 px-3 py-2 rounded text-[#201f1e] transition-colors hover:bg-white w-full"
+                >
+                  <LogOut className="w-5 h-5 shrink-0 text-[#605e5c]" />
+                  <span className="font-medium text-[16px]" style={{ lineHeight: '24px', fontFamily: 'Roboto, sans-serif' }}>Logout</span>
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  className="flex items-center gap-2 px-3 py-2 rounded text-[#201f1e] transition-colors hover:bg-white w-full"
+                >
+                  <span className="font-medium text-[16px]" style={{ lineHeight: '24px', fontFamily: 'Roboto, sans-serif' }}>Login</span>
+                </Link>
+              )}
             </div>
         </aside>
 
@@ -74,14 +99,18 @@ export default function SideBar() {
               );
             })}
 
-            {/* Floating Add Button centered */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-6">
-              <button 
+            {/* Floating Add Match - only when logged in */}
+            {user && (
+              <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-6">
+                <button
+                  type="button"
                   onClick={() => setShowAddMatchModal(true)}
-                  className="w-12 h-12 bg-[#267c93] rounded-[12px] flex items-center justify-center shadow-lg border-2 border-white">
-                <Plus className="w-6 h-6 text-white" />
-              </button>
-            </div>
+                  className="w-12 h-12 bg-[#267c93] rounded-[12px] flex items-center justify-center shadow-lg border-2 border-white"
+                >
+                  <Plus className="w-6 h-6 text-white" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
@@ -89,8 +118,10 @@ export default function SideBar() {
       <MobileAddMatchModal
         isOpen={showAddMatchModal}
         onClose={() => setShowAddMatchModal(false)}
-        onSubmit={(data) => console.log('Add Match:', data)}
+        onSubmit={() => setShowAddMatchModal(false)}
+        title="Add New Match"
+        submitText="Add Match"
       />
-    </>
+    </> 
   );
 }

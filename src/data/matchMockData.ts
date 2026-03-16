@@ -1,4 +1,4 @@
-import { Team, Match, TableEntry, PlayerStat, TeamMember, Player } from '../types';
+import type { Team, Match, TableEntry, PlayerStat, TeamMember, Player } from '../types';
 
 export const teams: Team[] = [
   { id: '1', name: 'Single Aunty', logo: '🏆' },
@@ -35,8 +35,9 @@ export const matches: Match[] = [
     date: '21-9-2026',
     time: '20:00',
     status: 'live',
-    scorersA: [],
-    scorersB: ['Yeshi Norbu: 2'],
+    playerStats: [
+      { playerName: 'Yeshi Norbu', team: 'teamB', goals: 2, assists: 0, card: 'none' },
+    ],
   },
   {
     id: 'm2',
@@ -67,8 +68,9 @@ export const matches: Match[] = [
     date: '21-9-2026',
     time: '20:00',
     status: 'finished',
-    scorersA: [],
-    scorersB: ['Yeshi Norbu: 2'],
+    playerStats: [
+      { playerName: 'Yeshi Norbu', team: 'teamB', goals: 2, assists: 0, card: 'none' },
+    ],
   },
 ];
 
