@@ -42,9 +42,10 @@ export function TeamsSidebar({
             {teams.map((team) => {
               const isSelected = team.id === selectedTeamId
               return (
-                <button
+                <div
                   key={team.id}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   className={`
                     relative w-full flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-left
                     ${
@@ -54,6 +55,7 @@ export function TeamsSidebar({
                     }
                   `}
                   onClick={() => onSelectTeam(team.id)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelectTeam(team.id) }}
                 >
                   {isSelected && <Check className="h-5 w-5 shrink-0" />}
                   <span className="text-xl">{team.icon || "⚽"}</span>
@@ -90,7 +92,7 @@ export function TeamsSidebar({
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                </button>
+                </div>
               )
             })}
           </div>

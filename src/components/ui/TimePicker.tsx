@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Clock } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '@ui/Popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@ui/popover'
 import { formatTime12h } from '@/lib/format-time'
 
 interface TimePickerProps {

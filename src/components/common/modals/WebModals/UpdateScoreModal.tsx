@@ -4,14 +4,14 @@ import { X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Input } from '@ui/Input'
+import { Input } from '@ui/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@ui/Select'
+} from '@ui/select'
 import { updateScore } from '@/lib/matches-api'
 import { getPlayersForTeam } from '@constants/team-players'
 import type { Match } from '@app-types/matchTypes'
