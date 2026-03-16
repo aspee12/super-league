@@ -162,6 +162,7 @@ export interface Team {
  */
 export interface Match {
   id: string;
+  matchName?: string | null;
   teamA: string | Team;
   teamB: string | Team;
   date: string;
@@ -169,6 +170,16 @@ export interface Match {
   status: 'live' | 'upcoming' | 'finished';
   scoreA: number;
   scoreB: number;
+  playerStats?:
+    | {
+        playerName: string;
+        team: 'teamA' | 'teamB';
+        goals: number;
+        assists: number;
+        card?: ('none' | 'yellow' | 'red') | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -293,6 +304,7 @@ export interface TeamsSelect<T extends boolean = true> {
  * via the `definition` "matches_select".
  */
 export interface MatchesSelect<T extends boolean = true> {
+  matchName?: T;
   teamA?: T;
   teamB?: T;
   date?: T;
@@ -300,6 +312,16 @@ export interface MatchesSelect<T extends boolean = true> {
   status?: T;
   scoreA?: T;
   scoreB?: T;
+  playerStats?:
+    | T
+    | {
+        playerName?: T;
+        team?: T;
+        goals?: T;
+        assists?: T;
+        card?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

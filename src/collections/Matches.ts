@@ -60,5 +60,53 @@ export const Matches: CollectionConfig = {
       required: true,
       defaultValue: 0,
     },
+    {
+      name: 'playerStats',
+      type: 'array',
+      label: 'Player Statistics',
+      fields: [
+        {
+          name: 'playerName',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'team',
+          type: 'select',
+          required: true,
+          options: [
+            { label: 'Team A', value: 'teamA' },
+            { label: 'Team B', value: 'teamB' },
+          ],
+        },
+        {
+          name: 'goals',
+          type: 'number',
+          required: true,
+          defaultValue: 0,
+        },
+        {
+          name: 'assists',
+          type: 'number',
+          required: true,
+          defaultValue: 0,
+        },
+        {
+          name: 'assistName',
+          type: 'text',
+          required: false,
+        },
+        {
+          name: 'card',
+          type: 'select',
+          options: [
+            { label: 'None', value: 'none' },
+            { label: 'Yellow', value: 'yellow' },
+            { label: 'Red', value: 'red' },
+          ],
+          defaultValue: 'none',
+        },
+      ],
+    },
   ],
 }

@@ -1,117 +1,239 @@
-import { ScoreModalProps } from '@app-types/shared-type';
-import { X } from 'lucide-react';
-import { useState } from 'react';
+'use client'
 
-export function UpdateScoreModal({ isOpen, onClose, onUpdate }: ScoreModalProps) {
+import { X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { Input } from '@ui/Input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@ui/Select'
+import { updateScore } from '@/lib/matches-api'
+import { getPlayersForTeam } from '@constants/team-players'
+import type { Match } from '@app-types/matchTypes'
+
+export interface UpdateScoreModalProps {
+  isOpen: boolean
+  onClose: () => void
+  match: Match | null
+}
+
+export function UpdateScoreModal({
+  isOpen,
+  onClose,
+  match,
+}: UpdateScoreModalProps) {
+  const queryClient = useQueryClient()
+
   const [formData, setFormData] = useState({
-    team: '',
+    team: '' as '' | 'teamA' | 'teamB',
     player: '',
-    score: '',
+    goals: '',
     assist: '',
-    card: '',
-  });
+    card: '' as '' | 'none' | 'yellow' | 'red',
+  })
 
-  if (!isOpen) return null;
+  const mutation = useMutation({
+    mutationFn: () => {
+      if (!match) throw new Error('No match selected')
+      return updateScore(
+        match.id,
+        {
+          scoreA: match.scoreA,
+          scoreB: match.scoreB,
+          playerStats: match.playerStats,
+        },
+        {
+          team: formData.team as 'teamA' | 'teamB',
+          playerName: formData.player,
+          goals: parseInt(formData.goals) || 0,
+          assists: formData.assist ? 1 : 0,
+          assistName: formData.assist || undefined,
+          card: (formData.card || 'none') as 'none' | 'yellow' | 'red',
+        },
+      )
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matches'] })
+      toast.success('Score updated.')
+      handleClose()
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({ team: '', player: '', goals: '', assist: '', card: '' })
+    }
+  }, [isOpen, match?.id])
+
+  if (!isOpen || !match) return null
+
+  const teamAName = match.teamA.name
+  const teamBName = match.teamB.name
+
+  const selectedTeamName =
+    formData.team === 'teamA' ? teamAName : formData.team === 'teamB' ? teamBName : ''
+  const playersForTeam = selectedTeamName ? getPlayersForTeam(selectedTeamName) : []
+
+  const handleClose = () => {
+    setFormData({ team: '', player: '', goals: '', assist: '', card: '' })
+    onClose()
+  }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    onUpdate(formData);
-    onClose();
-  };
+    e.preventDefault()
+    if (!formData.team) {
+      toast.error('Select a team.')
+      return
+    }
+    if (!formData.player) {
+      toast.error('Select a player.')
+      return
+    }
+    if (!formData.goals) {
+      toast.error('Enter goals.')
+      return
+    }
+    mutation.mutate()
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Update Score</h2>
           <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600 transition"
+            aria-label="Close"
           >
             <X size={20} />
           </button>
         </div>
 
+        {/* Match info */}
+        <div className="flex items-center justify-center gap-3 mb-6 text-sm text-gray-600">
+          <span className="font-medium">{teamAName}</span>
+          <span className="font-bold text-gray-800">
+            {match.scoreA} - {match.scoreB}
+          </span>
+          <span className="font-medium">{teamBName}</span>
+        </div>
+
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <select
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-md text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0e7490]"
+            {/* Team */}
+            <Select
               value={formData.team}
-              onChange={(e) =>
-                setFormData({ ...formData, team: e.target.value })
+              onValueChange={(value) =>
+                setFormData({ ...formData, team: value as 'teamA' | 'teamB', player: '', assist: '' })
               }
             >
-              <option value="">Select Team</option>
-              <option value="team1">Single Aunty</option>
-              <option value="team2">Aunti Jaram</option>
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Team" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="teamA">{teamAName}</SelectItem>
+                <SelectItem value="teamB">{teamBName}</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <select
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-md text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0e7490]"
+            {/* Player */}
+            <Select
               value={formData.player}
-              onChange={(e) =>
-                setFormData({ ...formData, player: e.target.value })
+              onValueChange={(value) =>
+                setFormData({ ...formData, player: value })
               }
+              disabled={!formData.team}
             >
-              <option value="">Player</option>
-              <option value="player1">Karma Wangchuk</option>
-              <option value="player2">Yeshi Norbu</option>
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={formData.team ? 'Select Player' : 'Select team first'} />
+              </SelectTrigger>
+              <SelectContent>
+                {playersForTeam.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {p}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-            <select
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-md text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0e7490]"
-              value={formData.score}
+            {/* Goals */}
+            <Input
+              type="number"
+              min={1}
+              max={10}
+              placeholder="Goals"
+              value={formData.goals}
               onChange={(e) =>
-                setFormData({ ...formData, score: e.target.value })
+                setFormData({ ...formData, goals: e.target.value })
               }
-            >
-              <option value="">Score</option>
-              <option value="1">1 Goal</option>
-              <option value="2">2 Goals</option>
-            </select>
+            />
 
-            <select
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-md text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0e7490]"
+            {/* Assist */}
+            <Select
               value={formData.assist}
-              onChange={(e) =>
-                setFormData({ ...formData, assist: e.target.value })
+              onValueChange={(value) =>
+                setFormData({ ...formData, assist: value })
               }
+              disabled={!formData.team}
             >
-              <option value="">Assist</option>
-              <option value="player1">Player 1</option>
-              <option value="player2">Player 2</option>
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Assist (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                {playersForTeam
+                  .filter((p) => p !== formData.player)
+                  .map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {p}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
 
-            <select
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-md text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0e7490]"
+            {/* Card */}
+            <Select
               value={formData.card}
-              onChange={(e) =>
-                setFormData({ ...formData, card: e.target.value })
+              onValueChange={(value) =>
+                setFormData({ ...formData, card: value as 'none' | 'yellow' | 'red' })
               }
             >
-              <option value="">Card</option>
-              <option value="yellow">Yellow Card</option>
-              <option value="red">Red Card</option>
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Card (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No Card</SelectItem>
+                <SelectItem value="yellow">Yellow Card</SelectItem>
+                <SelectItem value="red">Red Card</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex gap-3 justify-end mt-6">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
+              disabled={mutation.isPending}
               className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm text-white bg-[#0e7490] rounded-md hover:bg-[#0c6380] transition-colors"
+              disabled={mutation.isPending}
+              className="px-4 py-2 text-sm text-white bg-[#0e7490] rounded-md hover:bg-[#0c6380] transition-colors disabled:opacity-50"
             >
-              Update
+              {mutation.isPending ? 'Updating…' : 'Update'}
             </button>
           </div>
         </form>
       </div>
     </div>
-  );
+  )
 }
