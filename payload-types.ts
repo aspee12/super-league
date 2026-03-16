@@ -162,7 +162,6 @@ export interface Team {
  */
 export interface Match {
   id: string;
-  matchName?: string | null;
   teamA: string | Team;
   teamB: string | Team;
   date: string;
@@ -176,6 +175,7 @@ export interface Match {
         team: 'teamA' | 'teamB';
         goals: number;
         assists: number;
+        assistName?: string | null;
         card?: ('none' | 'yellow' | 'red') | null;
         id?: string | null;
       }[]
@@ -304,7 +304,6 @@ export interface TeamsSelect<T extends boolean = true> {
  * via the `definition` "matches_select".
  */
 export interface MatchesSelect<T extends boolean = true> {
-  matchName?: T;
   teamA?: T;
   teamB?: T;
   date?: T;
@@ -319,6 +318,7 @@ export interface MatchesSelect<T extends boolean = true> {
         team?: T;
         goals?: T;
         assists?: T;
+        assistName?: T;
         card?: T;
         id?: T;
       };
