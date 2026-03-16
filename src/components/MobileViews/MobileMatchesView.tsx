@@ -103,7 +103,7 @@ export function MobileMatchesView() {
           {liveMatches.length > 0 ? (
             <div className="space-y-3">
               {liveMatches.map((match) => {
-                const hasStats = (match.playerStats ?? []).length > 0
+
                 const isExpanded = expandedStats[match.id]
 
                 return (
@@ -139,18 +139,20 @@ export function MobileMatchesView() {
                         </div>
                       </div>
 
-                      {/* Expandable stats */}
-                      {hasStats && (
+                      {/* Stats */}
+                      {(match.playerStats ?? []).length > 0 && (
                         <div className="border-t border-gray-100 pt-2 mb-3">
-                          <button
-                            onClick={() => toggleStats(match.id)}
-                            className="flex items-center gap-1 text-xs text-[#0e7490] font-medium"
-                          >
-                            {isExpanded ? <Minus size={12} /> : <Plus size={12} />}
-                            <span>{isExpanded ? 'Hide' : 'Match Details'}</span>
-                          </button>
-                          {isExpanded && (
-                            <ExpandedMatchStats stats={match.playerStats ?? []} />
+                          <ExpandedMatchStats
+                            stats={isExpanded ? (match.playerStats ?? []) : (match.playerStats ?? []).slice(0, 2)}
+                          />
+                          {(match.playerStats ?? []).length > 2 && (
+                            <button
+                              onClick={() => toggleStats(match.id)}
+                              className="text-[#0e7490] mt-1"
+                              aria-label={isExpanded ? 'Show less' : 'Show all'}
+                            >
+                              {isExpanded ? <Minus size={16} /> : <Plus size={16} />}
+                            </button>
                           )}
                         </div>
                       )}
@@ -257,7 +259,6 @@ export function MobileMatchesView() {
         {recentMatches.length > 0 ? (
           <div className="space-y-3">
             {recentMatches.map((match) => {
-              const hasStats = (match.playerStats ?? []).length > 0
               const isExpanded = expandedStats[match.id]
 
               return (
@@ -279,18 +280,20 @@ export function MobileMatchesView() {
                     </div>
                   </div>
 
-                  {/* Expandable stats */}
-                  {hasStats && (
+                  {/* Stats */}
+                  {(match.playerStats ?? []).length > 0 && (
                     <div className="border-t border-gray-100 mt-3 pt-2">
-                      <button
-                        onClick={() => toggleStats(match.id)}
-                        className="flex items-center gap-1 text-xs text-[#0e7490] font-medium"
-                      >
-                        {isExpanded ? <Minus size={12} /> : <Plus size={12} />}
-                        <span>{isExpanded ? 'Hide' : 'Match Details'}</span>
-                      </button>
-                      {isExpanded && (
-                        <ExpandedMatchStats stats={match.playerStats ?? []} />
+                      <ExpandedMatchStats
+                        stats={isExpanded ? (match.playerStats ?? []) : (match.playerStats ?? []).slice(0, 2)}
+                      />
+                      {(match.playerStats ?? []).length > 2 && (
+                        <button
+                          onClick={() => toggleStats(match.id)}
+                          className="text-[#0e7490] mt-1"
+                          aria-label={isExpanded ? 'Show less' : 'Show all'}
+                        >
+                          {isExpanded ? <Minus size={16} /> : <Plus size={16} />}
+                        </button>
                       )}
                     </div>
                   )}
@@ -360,7 +363,13 @@ export function MobileMatchesView() {
   )
 }
 
-/** Expanded stats panel — PL-style with goals + assists */
+function CardIcon({ card }: { card?: 'none' | 'yellow' | 'red' }) {
+  if (card === 'yellow') return <span className="inline-block w-2 h-3 bg-yellow-400 rounded-sm" />
+  if (card === 'red') return <span className="inline-block w-2 h-3 bg-red-600 rounded-sm" />
+  return null
+}
+
+/** Expanded stats panel — PL-style with goals, assists & cards */
 function ExpandedMatchStats({ stats }: { stats: PlayerStat[] }) {
   const teamAStats = stats.filter((s) => s.team === 'teamA')
   const teamBStats = stats.filter((s) => s.team === 'teamB')
@@ -368,38 +377,56 @@ function ExpandedMatchStats({ stats }: { stats: PlayerStat[] }) {
   return (
     <div className="flex justify-between text-xs text-gray-600 mt-2 px-1">
       <div className="space-y-1.5">
-        {teamAStats.map((s, i) => (
-          <div key={i}>
-            {s.goals > 0 && (
-              <div className="flex items-center gap-1">
-                <span className="font-medium">{s.playerName}</span>
-                <span>{s.goals}'</span>
-                {s.card === 'yellow' && <span className="inline-block w-2 h-3 bg-yellow-400 rounded-sm" />}
-                {s.card === 'red' && <span className="inline-block w-2 h-3 bg-red-600 rounded-sm" />}
-              </div>
-            )}
-            {s.assistName && (
-              <div className="text-gray-400 text-[10px]">{s.assistName} (Assist)</div>
-            )}
-          </div>
-        ))}
+        {teamAStats.map((s, i) => {
+          const hasGoals = s.goals > 0
+          const hasCard = s.card === 'yellow' || s.card === 'red'
+          return (
+            <div key={i}>
+              {hasGoals && (
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">{s.playerName}</span>
+                  <span>{s.goals}&apos;</span>
+                  {hasCard && <CardIcon card={s.card} />}
+                </div>
+              )}
+              {!hasGoals && hasCard && (
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">{s.playerName}</span>
+                  <CardIcon card={s.card} />
+                </div>
+              )}
+              {s.assistName && (
+                <div className="text-gray-400 text-[10px]">{s.assistName} (Assist)</div>
+              )}
+            </div>
+          )
+        })}
       </div>
       <div className="space-y-1.5 text-right">
-        {teamBStats.map((s, i) => (
-          <div key={i}>
-            {s.goals > 0 && (
-              <div className="flex items-center justify-end gap-1">
-                {s.card === 'yellow' && <span className="inline-block w-2 h-3 bg-yellow-400 rounded-sm" />}
-                {s.card === 'red' && <span className="inline-block w-2 h-3 bg-red-600 rounded-sm" />}
-                <span>{s.goals}'</span>
-                <span className="font-medium">{s.playerName}</span>
-              </div>
-            )}
-            {s.assistName && (
-              <div className="text-gray-400 text-[10px]">{s.assistName} (Assist)</div>
-            )}
-          </div>
-        ))}
+        {teamBStats.map((s, i) => {
+          const hasGoals = s.goals > 0
+          const hasCard = s.card === 'yellow' || s.card === 'red'
+          return (
+            <div key={i}>
+              {hasGoals && (
+                <div className="flex items-center justify-end gap-1">
+                  {hasCard && <CardIcon card={s.card} />}
+                  <span>{s.goals}&apos;</span>
+                  <span className="font-medium">{s.playerName}</span>
+                </div>
+              )}
+              {!hasGoals && hasCard && (
+                <div className="flex items-center justify-end gap-1">
+                  <CardIcon card={s.card} />
+                  <span className="font-medium">{s.playerName}</span>
+                </div>
+              )}
+              {s.assistName && (
+                <div className="text-gray-400 text-[10px]">{s.assistName} (Assist)</div>
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )

@@ -10,18 +10,30 @@ interface MatchCardProps {
   variant?: 'live' | 'upcoming' | 'result'
 }
 
+function CardIcon({ card }: { card?: 'none' | 'yellow' | 'red' }) {
+  if (card === 'yellow') return <span className="inline-block w-2.5 h-3.5 bg-yellow-400 rounded-sm" />
+  if (card === 'red') return <span className="inline-block w-2.5 h-3.5 bg-red-600 rounded-sm" />
+  return null
+}
+
 function StatLine({ stat, side }: { stat: PlayerStat; side: 'left' | 'right' }) {
-  const goalText = stat.goals > 0 ? `${stat.goals}'` : ''
+  const hasGoals = stat.goals > 0
+  const hasCard = stat.card === 'yellow' || stat.card === 'red'
   const assistText = stat.assistName ? `${stat.assistName} (Assist)` : ''
 
   if (side === 'left') {
     return (
       <div className="flex flex-col gap-0.5">
-        {stat.goals > 0 && (
+        {hasGoals && (
           <div className="flex items-center gap-1">
-            <span>{stat.playerName} {goalText}</span>
-            {stat.card === 'yellow' && <span className="inline-block w-2 h-3 bg-yellow-400 rounded-sm" />}
-            {stat.card === 'red' && <span className="inline-block w-2 h-3 bg-red-600 rounded-sm" />}
+            <span>{stat.playerName} {stat.goals}&apos;</span>
+            {hasCard && <CardIcon card={stat.card} />}
+          </div>
+        )}
+        {!hasGoals && hasCard && (
+          <div className="flex items-center gap-1">
+            <span>{stat.playerName}</span>
+            <CardIcon card={stat.card} />
           </div>
         )}
         {assistText && (
@@ -33,11 +45,16 @@ function StatLine({ stat, side }: { stat: PlayerStat; side: 'left' | 'right' }) 
 
   return (
     <div className="flex flex-col gap-0.5 items-end">
-      {stat.goals > 0 && (
+      {hasGoals && (
         <div className="flex items-center justify-end gap-1">
-          {stat.card === 'yellow' && <span className="inline-block w-2 h-3 bg-yellow-400 rounded-sm" />}
-          {stat.card === 'red' && <span className="inline-block w-2 h-3 bg-red-600 rounded-sm" />}
-          <span>{goalText} {stat.playerName}</span>
+          {hasCard && <CardIcon card={stat.card} />}
+          <span>{stat.goals}&apos; {stat.playerName}</span>
+        </div>
+      )}
+      {!hasGoals && hasCard && (
+        <div className="flex items-center justify-end gap-1">
+          <CardIcon card={stat.card} />
+          <span>{stat.playerName}</span>
         </div>
       )}
       {assistText && (
