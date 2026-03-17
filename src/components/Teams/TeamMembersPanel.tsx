@@ -16,12 +16,12 @@ import type { Team } from "./types"
 
 interface TeamMembersPanelProps {
   team: Team
-  onAddMember: () => void
-  onEditMember: (memberId: string) => void
-  onSaveMember: (memberId: string, stats: { appearances: number; goals: number; assists: number }) => void
+  onAddMember?: () => void
+  onEditMember?: (memberId: string) => void
+  onSaveMember?: (memberId: string, stats: { appearances: number; goals: number; assists: number }) => void
   onCancelEdit: () => void
-  onTransferMember: (memberId: string) => void
-  onDeleteMember: (memberId: string) => void
+  onTransferMember?: (memberId: string) => void
+  onDeleteMember?: (memberId: string) => void
   editingMemberId: string | null
   playerStats: { appearances: number; goals: number; assists: number }
   onStatsChange: (stats: { appearances: number; goals: number; assists: number }) => void
@@ -40,22 +40,32 @@ export function TeamMembersPanel({
   onStatsChange,
 }: TeamMembersPanelProps) {
   const handleSave = () => {
-    if (editingMemberId) {
+    if (editingMemberId && onSaveMember) {
       onSaveMember(editingMemberId, playerStats)
     }
   }
+
+  const hasActions = onEditMember || onTransferMember || onDeleteMember
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-6 mx-6 border-b border-gray-200 mb-6">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">{team.icon || "⚽"}</span>
+          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
+            {team.icon && (team.icon.startsWith("/") || team.icon.startsWith("http")) ? (
+              <img src={team.icon} alt={team.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-xl">{team.icon || team.name.charAt(0)}</span>
+            )}
+          </div>
           <h2 className="text-xl font-semibold">{team.name}</h2>
         </div>
-        <Button onClick={onAddMember} className="bg-[#267c93] hover:bg-[#1e6477] text-white">
-          <Plus className="h-4 w-4 mr-2" />
-          Add New Member
-        </Button>
+        {onAddMember && (
+          <Button onClick={onAddMember} className="bg-[#267c93] hover:bg-[#1e6477] text-white">
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Member
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         <div className="rounded-lg overflow-hidden border">
@@ -66,7 +76,9 @@ export function TeamMembersPanel({
                 <TableHead className="text-white font-semibold">Appearances</TableHead>
                 <TableHead className="text-white font-semibold">Goal</TableHead>
                 <TableHead className="text-white font-semibold">Assist</TableHead>
-                <TableHead className="text-white font-semibold">Actions</TableHead>
+                {hasActions && (
+                  <TableHead className="text-white font-semibold">Actions</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -141,61 +153,71 @@ export function TeamMembersPanel({
                           member.assists
                         )}
                       </TableCell>
-                      <TableCell>
-                        {isEditing ? (
-                          <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={onCancelEdit}
-                              className="h-8"
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={handleSave}
-                              className="h-8 bg-[#267c93] hover:bg-[#1e6477] text-white"
-                            >
-                              <Save className="h-4 w-4 mr-1" />
-                              Save
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-8 w-8 text-gray-600 hover:text-gray-900"
-                              onClick={() => onEditMember(member.id)}
-                            >
-                              <SquarePen className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-8 w-8 text-blue-600 hover:text-blue-700"
-                              onClick={() => onTransferMember(member.id)}
-                            >
-                              <ArrowLeftRight className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-8 w-8 text-red-500 hover:text-red-700"
-                              onClick={() => onDeleteMember(member.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </TableCell>
+                      {hasActions && (
+                        <TableCell>
+                          {isEditing ? (
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={onCancelEdit}
+                                className="h-8"
+                              >
+                                Cancel
+                              </Button>
+                              {onSaveMember && (
+                                <Button
+                                  size="sm"
+                                  onClick={handleSave}
+                                  className="h-8 bg-[#267c93] hover:bg-[#1e6477] text-white"
+                                >
+                                  <Save className="h-4 w-4 mr-1" />
+                                  Save
+                                </Button>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              {onEditMember && (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8 text-gray-600 hover:text-gray-900"
+                                  onClick={() => onEditMember(member.id)}
+                                >
+                                  <SquarePen className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {onTransferMember && (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8 text-blue-600 hover:text-blue-700"
+                                  onClick={() => onTransferMember(member.id)}
+                                >
+                                  <ArrowLeftRight className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {onDeleteMember && (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8 text-red-500 hover:text-red-700"
+                                  onClick={() => onDeleteMember(member.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          )}
+                        </TableCell>
+                      )}
                     </TableRow>
                   )
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={hasActions ? 5 : 4} className="text-center py-8 text-gray-500">
                     No members found. Add a new member to get started.
                   </TableCell>
                 </TableRow>

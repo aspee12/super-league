@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useStandings } from '@/hooks/useStandings'
+import { TeamLogo } from '@shared-component/TeamLogo'
 
 type MobileTab = 'short' | 'full' | 'form'
 
@@ -131,7 +132,7 @@ export function MobileTableView() {
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-base">{entry.team.logo}</span>
+                        <TeamLogo logo={entry.team.logo} name={entry.team.name} className="w-5 h-5" textClassName="text-base" />
                         <span className="text-xs font-medium truncate text-black">
                           {entry.team.name}
                         </span>
@@ -146,7 +147,7 @@ export function MobileTableView() {
                         <td className="px-2 py-3 text-center text-xs font-bold text-black">{entry.points}</td>
                         <td className="px-2 py-3 text-center">
                           {entry.nextOpponent ? (
-                            <span className="text-base" title={entry.nextOpponent.name}>{entry.nextOpponent.logo}</span>
+                            <TeamLogo logo={entry.nextOpponent.logo} name={entry.nextOpponent.name} className="w-5 h-5" textClassName="text-base" />
                           ) : (
                             <span className="text-gray-400 text-xs">-</span>
                           )}
@@ -166,7 +167,7 @@ export function MobileTableView() {
                         <td className="px-2 py-3 text-center text-xs font-bold text-black">{entry.points}</td>
                         <td className="px-2 py-3 text-center">
                           {entry.nextOpponent ? (
-                            <span className="text-base" title={entry.nextOpponent.name}>{entry.nextOpponent.logo}</span>
+                            <TeamLogo logo={entry.nextOpponent.logo} name={entry.nextOpponent.name} className="w-5 h-5" textClassName="text-base" />
                           ) : (
                             <span className="text-gray-400 text-xs">-</span>
                           )}

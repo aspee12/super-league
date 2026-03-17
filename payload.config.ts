@@ -4,9 +4,11 @@ import { buildConfig } from 'payload'
 import { Users } from './src/collections/Users'
 import { Teams } from './src/collections/Teams'
 import { Matches } from './src/collections/Matches'
+import { Players } from './src/collections/Players'
+import { Media } from './src/collections/Media'
 
 export default buildConfig({
-  collections: [Users, Teams, Matches],
+  collections: [Users, Teams, Matches, Players, Media],
 
   // Your Payload secret - should be a complex and secure string, unguessable
   secret: process.env.PAYLOAD_SECRET || '',

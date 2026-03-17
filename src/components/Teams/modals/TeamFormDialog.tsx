@@ -20,6 +20,8 @@ interface TeamFormDialogProps {
   mode?: "add" | "edit"
   initialName?: string
   initialFile?: File | null
+  /** Existing logo URL for edit mode preview */
+  existingLogoUrl?: string
 }
 
 export function TeamFormDialog({
@@ -29,14 +31,17 @@ export function TeamFormDialog({
   mode = "add",
   initialName = "",
   initialFile = null,
+  existingLogoUrl,
 }: TeamFormDialogProps) {
   const [teamName, setTeamName] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [showExisting, setShowExisting] = useState(true)
 
   useEffect(() => {
     if (isOpen) {
       setTeamName(initialName)
       setSelectedFile(initialFile)
+      setShowExisting(true)
     }
   }, [isOpen, initialName, initialFile])
 
@@ -49,6 +54,7 @@ export function TeamFormDialog({
   const handleClose = () => {
     setTeamName("")
     setSelectedFile(null)
+    setShowExisting(true)
     onClose()
   }
 
@@ -76,6 +82,8 @@ export function TeamFormDialog({
               file={selectedFile}
               onFileChange={setSelectedFile}
               id={mode === "add" ? "new-team-file-upload" : "team-file-upload"}
+              existingImageUrl={showExisting ? existingLogoUrl : undefined}
+              onClearExisting={() => setShowExisting(false)}
             />
           </div>
         </div>

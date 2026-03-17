@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@ui/select'
 import { getTeams, createMatch, updateMatch } from '@/lib/matches-api'
+import { TeamLogo } from '@shared-component/TeamLogo'
 
 type FormValues = MatchProps
 
@@ -209,7 +210,10 @@ export default function AddMatchModal({
                 <SelectContent>
                   {teamsForA.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
-                      {t.logo ? `${t.logo} ` : ''}{t.name}
+                      <span className="flex items-center gap-2">
+                        {t.logo && <TeamLogo logo={t.logo} name={t.name} className="w-5 h-5" textClassName="text-base" />}
+                        {t.name}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -234,7 +238,10 @@ export default function AddMatchModal({
                 <SelectContent>
                   {teamsForB.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
-                      {t.logo ? `${t.logo} ` : ''}{t.name}
+                      <span className="flex items-center gap-2">
+                        {t.logo && <TeamLogo logo={t.logo} name={t.name} className="w-5 h-5" textClassName="text-base" />}
+                        {t.name}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>

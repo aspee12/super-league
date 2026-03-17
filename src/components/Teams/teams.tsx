@@ -1,7 +1,11 @@
 "use client"
 
 import { useState } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useTeams } from "@/hooks/useTeams"
+import { useAuthStore } from "@/store/authStore"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
@@ -23,100 +27,75 @@ import { AddMemberDialog } from "./modals/AddMemberDialog"
 import { TransferDialog } from "./modals/TransferDialog"
 import { TeamsSidebar } from "./TeamsSidebar"
 import { TeamMembersPanel } from "./TeamMembersPanel"
+import {
+  createTeam,
+  updateTeam,
+  deleteTeam,
+  createPlayer,
+  deletePlayer,
+  transferPlayer,
+  uploadMedia,
+} from "@/lib/teams-api"
+import type { PayloadTeam } from "@/lib/matches-api"
+import type { PayloadPlayer } from "@/lib/teams-api"
 import type { Team, TeamMember } from "./types"
 
-// Mock data - Replace with actual data fetching
-const mockTeams: Team[] = [
-  {
-    id: "1",
-    name: "Read Dragon",
-    icon: "🐉",
-    playerCount: 12,
-    members: [
-      {
-        id: "1",
-        name: "Tashi Dorji",
-        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop",
-        appearances: 10,
-        goals: 5,
-        assists: 3,
-      },
-      {
-        id: "2",
-        name: "Lhamo Tshering",
-        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
-        appearances: 8,
-        goals: 3,
-        assists: 2,
-      },
-      {
-        id: "3",
-        name: "Karma Wangchuk",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
-        appearances: 12,
-        goals: 7,
-        assists: 4,
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "Blue kak",
-    icon: "🔵",
-    playerCount: 15,
-    members: [
-      {
-        id: "4",
-        name: "Sonam Tashi",
-        appearances: 9,
-        goals: 4,
-        assists: 2,
-      },
-    ],
-  },
-  {
-    id: "3",
-    name: "Green tea",
-    icon: "🟢",
-    playerCount: 10,
-    members: [
-      {
-        id: "5",
-        name: "Pema Dorji",
-        appearances: 7,
-        goals: 2,
-        assists: 1,
-      },
-    ],
-  },
-  {
-    id: "4",
-    name: "Red apple",
-    icon: "🔴",
-    playerCount: 20,
-    members: [
-      {
-        id: "6",
-        name: "Tenzin Wangmo",
-        appearances: 11,
-        goals: 6,
-        assists: 3,
-      },
-    ],
-  },
-]
+/** Convert API data to component types */
+function toTeamView(
+  team: PayloadTeam,
+  players: PayloadPlayer[],
+): Team {
+  const teamPlayers = players.filter((p) => {
+    const pTeamId = typeof p.team === "string" ? p.team : p.team?.id
+    return pTeamId === team.id
+  })
+  return {
+    id: team.id,
+    name: team.name,
+    icon: team.logo || "",
+    playerCount: teamPlayers.length,
+    members: teamPlayers.map((p) => ({
+      id: p.id,
+      name: p.name,
+      avatar: p.avatar || undefined,
+      appearances: 0,
+      goals: 0,
+      assists: 0,
+    })),
+  }
+}
 
 export default function Teams() {
   const isMobile = useIsMobile()
-  const [selectedTeamId, setSelectedTeamId] = useState<string>("1")
+  const { teams: rawTeams, players, isLoading } = useTeams()
+  const [selectedTeamId, setSelectedTeamId] = useState<string>("")
 
-  const selectedTeam = mockTeams.find((team) => team.id === selectedTeamId) || mockTeams[0]
+  const teams = rawTeams.map((t) => toTeamView(t, players))
 
-  if (isMobile) {
-    return <MobileTeamsView teams={mockTeams} />
+  // Auto-select first team if none selected
+  const effectiveSelectedId = selectedTeamId || teams[0]?.id || ""
+  const selectedTeam = teams.find((t) => t.id === effectiveSelectedId) || teams[0]
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Loading teams...</p>
+      </div>
+    )
   }
 
-  return <DesktopTeamsView teams={mockTeams} selectedTeamId={selectedTeamId} onSelectTeam={setSelectedTeamId} selectedTeam={selectedTeam} />
+  if (isMobile) {
+    return <MobileTeamsView teams={teams} players={players} />
+  }
+
+  return (
+    <DesktopTeamsView
+      teams={teams}
+      selectedTeamId={effectiveSelectedId}
+      onSelectTeam={setSelectedTeamId}
+      selectedTeam={selectedTeam}
+    />
+  )
 }
 
 // Desktop View Component
@@ -131,6 +110,12 @@ function DesktopTeamsView({
   readonly onSelectTeam: (id: string) => void
   readonly selectedTeam: Team
 }) {
+  const queryClient = useQueryClient()
+  const user = useAuthStore((s) => s.user)
+  const canAddTeam = useAuthStore((s) => s.canAddTeam)
+  const isSuperAdmin = user?.role === "super_admin"
+  const hasTeamPermission = canAddTeam()
+
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [addTeamDialogOpen, setAddTeamDialogOpen] = useState(false)
@@ -146,9 +131,93 @@ function DesktopTeamsView({
     assists: 0,
   })
 
-  const handleAddTeam = () => {
-    setAddTeamDialogOpen(true)
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["teams"] })
+    queryClient.invalidateQueries({ queryKey: ["players"] })
   }
+
+  const createTeamMutation = useMutation({
+    mutationFn: async (data: { name: string; file: File | null }) => {
+      let logo: string | undefined
+      if (data.file) {
+        logo = await uploadMedia(data.file)
+      }
+      return createTeam({ name: data.name, logo })
+    },
+    onSuccess: () => {
+      invalidate()
+      toast.success("Team created.")
+      setAddTeamDialogOpen(false)
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const updateTeamMutation = useMutation({
+    mutationFn: async ({ id, name, file }: { id: string; name: string; file: File | null }) => {
+      let logo: string | undefined
+      if (file) {
+        logo = await uploadMedia(file)
+      }
+      return updateTeam(id, { name, ...(logo && { logo }) })
+    },
+    onSuccess: () => {
+      invalidate()
+      toast.success("Team updated.")
+      setEditDialogOpen(false)
+      setTeamToEdit(null)
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const deleteTeamMutation = useMutation({
+    mutationFn: (id: string) => deleteTeam(id),
+    onSuccess: () => {
+      invalidate()
+      toast.success("Team deleted.")
+      setDeleteDialogOpen(false)
+      setTeamToDelete(null)
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const addMemberMutation = useMutation({
+    mutationFn: async (data: { name: string; file: File | null; teamId: string }) => {
+      let avatar: string | undefined
+      if (data.file) {
+        avatar = await uploadMedia(data.file)
+      }
+      return createPlayer({ name: data.name, avatar, team: data.teamId })
+    },
+    onSuccess: () => {
+      invalidate()
+      toast.success("Member added.")
+      setAddMemberDialogOpen(false)
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const deleteMemberMutation = useMutation({
+    mutationFn: (id: string) => deletePlayer(id),
+    onSuccess: () => {
+      invalidate()
+      toast.success("Member removed.")
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const transferMutation = useMutation({
+    mutationFn: (data: { playerId: string; toTeamId: string }) =>
+      transferPlayer(data.playerId, data.toTeamId),
+    onSuccess: () => {
+      invalidate()
+      toast.success("Player transferred.")
+      setTransferDialogOpen(false)
+      setMemberToTransfer(null)
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const handleAddTeam = () => setAddTeamDialogOpen(true)
 
   const handleEditTeam = (teamId: string) => {
     const team = teams.find((t) => t.id === teamId)
@@ -168,46 +237,21 @@ function DesktopTeamsView({
 
   const handleTeamSubmit = (data: { name: string; file: File | null }, mode: "add" | "edit") => {
     if (mode === "edit" && teamToEdit) {
-      // TODO: Implement API call to update team
-      console.log("Update team:", {
-        id: teamToEdit.id,
-        name: data.name,
-        file: data.file,
-      })
-      setEditDialogOpen(false)
-      setTeamToEdit(null)
+      updateTeamMutation.mutate({ id: teamToEdit.id, name: data.name, file: data.file })
     } else {
-      // TODO: Implement API call to create team
-      console.log("Add team:", {
-        name: data.name,
-        file: data.file,
-      })
-      setAddTeamDialogOpen(false)
+      createTeamMutation.mutate({ name: data.name, file: data.file })
     }
   }
 
   const handleDeleteConfirm = () => {
     if (!teamToDelete) return
-    
-    // TODO: Implement API call to delete team
-    console.log("Delete team:", teamToDelete.id)
-    
-    setDeleteDialogOpen(false)
-    setTeamToDelete(null)
+    deleteTeamMutation.mutate(teamToDelete.id)
   }
 
-  const handleAddMember = () => {
-    setAddMemberDialogOpen(true)
-  }
+  const handleAddMember = () => setAddMemberDialogOpen(true)
 
   const handleAddMemberSubmit = (data: { name: string; file: File | null }) => {
-    // TODO: Implement API call to add member
-    console.log("Add member:", {
-      name: data.name,
-      picture: data.file,
-      teamId: selectedTeam.id,
-    })
-    setAddMemberDialogOpen(false)
+    addMemberMutation.mutate({ name: data.name, file: data.file, teamId: selectedTeam.id })
   }
 
   const handleEditMember = (memberId: string) => {
@@ -223,12 +267,6 @@ function DesktopTeamsView({
   }
 
   const handleSaveMember = (memberId: string, stats: { appearances: number; goals: number; assists: number }) => {
-    // TODO: Implement API call to update member stats
-    console.log("Update member:", {
-      id: memberId,
-      stats,
-    })
-    
     setEditingMemberId(null)
     setPlayerStats({ appearances: 0, goals: 0, assists: 0 })
   }
@@ -252,15 +290,11 @@ function DesktopTeamsView({
     toTeamId: string
     stats: { appearances: number; goals: number; assists: number }
   }) => {
-    // TODO: Implement API call to transfer member
-    console.log("Transfer member:", data)
-    setTransferDialogOpen(false)
-    setMemberToTransfer(null)
+    transferMutation.mutate({ playerId: data.playerId, toTeamId: data.toTeamId })
   }
 
   const handleDeleteMember = (memberId: string) => {
-    // TODO: Implement delete member functionality
-    console.log("Delete member", memberId)
+    deleteMemberMutation.mutate(memberId)
   }
 
   return (
@@ -270,32 +304,31 @@ function DesktopTeamsView({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
-        {/* Left Panel - Teams Sidebar */}
         <TeamsSidebar
           teams={teams}
           selectedTeamId={selectedTeamId}
           onSelectTeam={onSelectTeam}
-          onAddTeam={handleAddTeam}
-          onEditTeam={handleEditTeam}
-          onDeleteTeam={handleDeleteTeam}
+          onAddTeam={hasTeamPermission ? handleAddTeam : undefined}
+          onEditTeam={hasTeamPermission ? handleEditTeam : undefined}
+          onDeleteTeam={isSuperAdmin ? handleDeleteTeam : undefined}
         />
 
-        {/* Right Panel - Team Members */}
-        <TeamMembersPanel
-          team={selectedTeam}
-          onAddMember={handleAddMember}
-          onEditMember={handleEditMember}
-          onSaveMember={handleSaveMember}
-          onCancelEdit={handleCancelEdit}
-          onTransferMember={handleTransferMember}
-          onDeleteMember={handleDeleteMember}
-          editingMemberId={editingMemberId}
-          playerStats={playerStats}
-          onStatsChange={setPlayerStats}
-        />
+        {selectedTeam && (
+          <TeamMembersPanel
+            team={selectedTeam}
+            onAddMember={hasTeamPermission ? handleAddMember : undefined}
+            onEditMember={hasTeamPermission ? handleEditMember : undefined}
+            onSaveMember={hasTeamPermission ? handleSaveMember : undefined}
+            onCancelEdit={handleCancelEdit}
+            onTransferMember={hasTeamPermission ? handleTransferMember : undefined}
+            onDeleteMember={isSuperAdmin ? handleDeleteMember : undefined}
+            editingMemberId={editingMemberId}
+            playerStats={playerStats}
+            onStatsChange={setPlayerStats}
+          />
+        )}
       </div>
 
-      {/* Edit Team Dialog */}
       <TeamFormDialog
         isOpen={editDialogOpen}
         onClose={() => {
@@ -305,9 +338,9 @@ function DesktopTeamsView({
         onSubmit={(data) => handleTeamSubmit(data, "edit")}
         mode="edit"
         initialName={teamToEdit?.name || ""}
+        existingLogoUrl={teamToEdit?.icon && (teamToEdit.icon.startsWith("/") || teamToEdit.icon.startsWith("http")) ? teamToEdit.icon : undefined}
       />
 
-      {/* Delete Team Dialog */}
       <DeleteTeamDialog
         isOpen={deleteDialogOpen}
         onClose={() => {
@@ -318,7 +351,6 @@ function DesktopTeamsView({
         teamName={teamToDelete?.name}
       />
 
-      {/* Add New Team Dialog */}
       <TeamFormDialog
         isOpen={addTeamDialogOpen}
         onClose={() => setAddTeamDialogOpen(false)}
@@ -326,14 +358,12 @@ function DesktopTeamsView({
         mode="add"
       />
 
-      {/* Add New Member Dialog */}
       <AddMemberDialog
         isOpen={addMemberDialogOpen}
         onClose={() => setAddMemberDialogOpen(false)}
         onSubmit={handleAddMemberSubmit}
       />
 
-      {/* Transfer Dialog */}
       <TransferDialog
         isOpen={transferDialogOpen}
         onClose={() => {
@@ -342,7 +372,7 @@ function DesktopTeamsView({
         }}
         onSubmit={handleTransferSubmit}
         player={memberToTransfer}
-        currentTeamId={selectedTeam.id}
+        currentTeamId={selectedTeam?.id || ""}
         teams={teams}
       />
     </div>
@@ -350,17 +380,103 @@ function DesktopTeamsView({
 }
 
 // Mobile View Component
-function MobileTeamsView({ teams }: { readonly teams: Team[] }) {
+function MobileTeamsView({
+  teams,
+  players,
+}: {
+  readonly teams: Team[]
+  readonly players: PayloadPlayer[]
+}) {
+  const queryClient = useQueryClient()
+  const user = useAuthStore((s) => s.user)
+  const canAddTeam = useAuthStore((s) => s.canAddTeam)
+  const isSuperAdmin = user?.role === "super_admin"
+  const hasTeamPermission = canAddTeam()
+
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [addTeamDialogOpen, setAddTeamDialogOpen] = useState(false)
   const [teamToEdit, setTeamToEdit] = useState<Team | null>(null)
   const [teamToDelete, setTeamToDelete] = useState<Team | null>(null)
+  const [selectedTeamForMembers, setSelectedTeamForMembers] = useState<Team | null>(null)
+  const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
 
-  const handleAddTeam = () => {
-    setAddTeamDialogOpen(true)
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["teams"] })
+    queryClient.invalidateQueries({ queryKey: ["players"] })
   }
+
+  const createTeamMutation = useMutation({
+    mutationFn: async (data: { name: string; file: File | null }) => {
+      let logo: string | undefined
+      if (data.file) {
+        logo = await uploadMedia(data.file)
+      }
+      return createTeam({ name: data.name, logo })
+    },
+    onSuccess: () => {
+      invalidate()
+      toast.success("Team created.")
+      setAddTeamDialogOpen(false)
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const updateTeamMutation = useMutation({
+    mutationFn: async ({ id, name, file }: { id: string; name: string; file: File | null }) => {
+      let logo: string | undefined
+      if (file) {
+        logo = await uploadMedia(file)
+      }
+      return updateTeam(id, { name, ...(logo && { logo }) })
+    },
+    onSuccess: () => {
+      invalidate()
+      toast.success("Team updated.")
+      setEditDialogOpen(false)
+      setTeamToEdit(null)
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const deleteTeamMutation = useMutation({
+    mutationFn: (id: string) => deleteTeam(id),
+    onSuccess: () => {
+      invalidate()
+      toast.success("Team deleted.")
+      setDeleteDialogOpen(false)
+      setTeamToDelete(null)
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const addMemberMutation = useMutation({
+    mutationFn: async (data: { name: string; file: File | null; teamId: string }) => {
+      let avatar: string | undefined
+      if (data.file) {
+        avatar = await uploadMedia(data.file)
+      }
+      return createPlayer({ name: data.name, avatar, team: data.teamId })
+    },
+    onSuccess: () => {
+      invalidate()
+      toast.success("Member added.")
+      setAddMemberDialogOpen(false)
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const deleteMemberMutation = useMutation({
+    mutationFn: (id: string) => deletePlayer(id),
+    onSuccess: () => {
+      invalidate()
+      toast.success("Member removed.")
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const handleAddTeam = () => setAddTeamDialogOpen(true)
 
   const handleEditTeam = (teamId: string) => {
     setOpenMenuId(null)
@@ -382,65 +498,43 @@ function MobileTeamsView({ teams }: { readonly teams: Team[] }) {
 
   const handleTeamSubmit = (data: { name: string; file: File | null }, mode: "add" | "edit") => {
     if (mode === "edit" && teamToEdit) {
-      // TODO: Implement API call to update team
-      console.log("Update team:", {
-        id: teamToEdit.id,
-        name: data.name,
-        file: data.file,
-      })
-      setEditDialogOpen(false)
-      setTeamToEdit(null)
+      updateTeamMutation.mutate({ id: teamToEdit.id, name: data.name, file: data.file })
     } else {
-      // TODO: Implement API call to create team
-      console.log("Add team:", {
-        name: data.name,
-        file: data.file,
-      })
-      setAddTeamDialogOpen(false)
+      createTeamMutation.mutate({ name: data.name, file: data.file })
     }
   }
 
   const handleDeleteConfirm = () => {
     if (!teamToDelete) return
-    
-    // TODO: Implement API call to delete team
-    console.log("Delete team:", teamToDelete.id)
-    
-    setDeleteDialogOpen(false)
-    setTeamToDelete(null)
+    deleteTeamMutation.mutate(teamToDelete.id)
   }
 
   const handleTeamClick = (teamId: string) => {
-    // TODO: Navigate to team detail page
-    console.log("Navigate to team", teamId)
+    const team = teams.find((t) => t.id === teamId)
+    if (team) {
+      setSelectedTeamForMembers(selectedTeamForMembers?.id === teamId ? null : team)
+    }
+  }
+
+  const handleDeleteMember = (memberId: string) => {
+    deleteMemberMutation.mutate(memberId)
   }
 
   return (
     <div className="min-h-screen pb-20">
-      {/* Header Banner */}
-      {/* <div className="bg-gradient-to-r from-blue-200 via-green-200 to-blue-200 rounded-b-3xl px-4 pt-4 pb-6 mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 rounded-full flex items-center justify-center">
-            <span className="text-2xl">⚽</span>
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Selise Super League</h1>
-            <p className="text-sm text-gray-600">Season 1/2026</p>
-          </div>
-        </div>
-      </div> */}
-
       {/* Team Management Section */}
       <div className="px-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">Team Management</h2>
-          <Button
-            size="icon"
-            className="h-10 w-10 mt-4 rounded-full bg-teal-500 hover:bg-teal-600"
-            onClick={handleAddTeam}
-          >
-            <Plus className="h-5 w-5 text-white" />
-          </Button>
+          {hasTeamPermission && (
+            <Button
+              size="icon"
+              className="h-10 w-10 mt-4 rounded-full bg-teal-500 hover:bg-teal-600"
+              onClick={handleAddTeam}
+            >
+              <Plus className="h-5 w-5 text-white" />
+            </Button>
+          )}
         </div>
 
         {/* Team Cards */}
@@ -459,8 +553,12 @@ function MobileTeamsView({ teams }: { readonly teams: Team[] }) {
                       className="flex items-center gap-3 flex-1 cursor-pointer text-left"
                       onClick={() => handleTeamClick(team.id)}
                     >
-                      <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center shrink-0">
-                        <span className="text-white text-lg">{team.icon || "⚽"}</span>
+                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
+                        {team.icon && (team.icon.startsWith("/") || team.icon.startsWith("http")) ? (
+                          <img src={team.icon} alt={team.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-2xl">{team.icon || team.name.charAt(0)}</span>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-gray-900 truncate">{team.name}</h3>
@@ -470,16 +568,18 @@ function MobileTeamsView({ teams }: { readonly teams: Team[] }) {
                       </div>
                     </button>
                     <div className="flex items-center gap-2">
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <MoreVertical className="h-5 w-5 text-gray-600" />
-                        </Button>
-                      </DropdownMenuTrigger>
+                      {hasTeamPermission && (
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreVertical className="h-5 w-5 text-gray-600" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                      )}
                       <Button
                         size="icon"
                         variant="ghost"
@@ -493,28 +593,98 @@ function MobileTeamsView({ teams }: { readonly teams: Team[] }) {
                       </Button>
                     </div>
                   </div>
+
+                  {/* Expandable Members Section for Mobile */}
+                  {selectedTeamForMembers?.id === team.id && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-semibold text-gray-700">Members</h4>
+                        {hasTeamPermission && (
+                          <Button
+                            size="sm"
+                            className="h-8 bg-[#267c93] hover:bg-[#1e6477] text-white text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setAddMemberDialogOpen(true)
+                            }}
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Add
+                          </Button>
+                        )}
+                      </div>
+                      {team.members.length > 0 ? (
+                        <div className="space-y-2">
+                          {team.members.map((member) => (
+                            <div
+                              key={member.id}
+                              className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2"
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium shrink-0 overflow-hidden">
+                                  {member.avatar && (member.avatar.startsWith("/") || member.avatar.startsWith("http")) ? (
+                                    <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    member.name.split(" ").map((n) => n[0]).join("").toUpperCase()
+                                  )}
+                                </div>
+                                <span className="text-sm font-medium text-gray-900 truncate">
+                                  {member.name}
+                                </span>
+                              </div>
+                              {isSuperAdmin && (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-7 w-7 text-red-500 hover:text-red-700 shrink-0"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleDeleteMember(member.id)
+                                  }}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-400 text-center py-2">No members yet</p>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
-              <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem onClick={() => handleEditTeam(team.id)} className="py-3">
-                  <SquarePen className="h-4 w-4 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleDeleteTeam(team.id)}
-                  className="py-3 text-red-600 focus:text-red-600"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
+              {hasTeamPermission && (
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem onClick={() => handleEditTeam(team.id)} className="py-3">
+                    <SquarePen className="h-4 w-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                  {isSuperAdmin && (
+                    <DropdownMenuItem
+                      onClick={() => handleDeleteTeam(team.id)}
+                      className="py-3 text-red-600 focus:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              )}
             </DropdownMenu>
           ))}
         </div>
+
+        {teams.length === 0 && (
+          <div className="text-center py-12 text-gray-400">
+            <p>No teams yet. Add a team to get started.</p>
+          </div>
+        )}
       </div>
 
-      {/* Edit Team Dialog */}
+      {/* Dialogs */}
       <TeamFormDialog
         isOpen={editDialogOpen}
         onClose={() => {
@@ -524,9 +694,9 @@ function MobileTeamsView({ teams }: { readonly teams: Team[] }) {
         onSubmit={(data) => handleTeamSubmit(data, "edit")}
         mode="edit"
         initialName={teamToEdit?.name || ""}
+        existingLogoUrl={teamToEdit?.icon && (teamToEdit.icon.startsWith("/") || teamToEdit.icon.startsWith("http")) ? teamToEdit.icon : undefined}
       />
 
-      {/* Delete Team Dialog */}
       <DeleteTeamDialog
         isOpen={deleteDialogOpen}
         onClose={() => {
@@ -537,12 +707,21 @@ function MobileTeamsView({ teams }: { readonly teams: Team[] }) {
         teamName={teamToDelete?.name}
       />
 
-      {/* Add New Team Dialog */}
       <TeamFormDialog
         isOpen={addTeamDialogOpen}
         onClose={() => setAddTeamDialogOpen(false)}
         onSubmit={(data) => handleTeamSubmit(data, "add")}
         mode="add"
+      />
+
+      <AddMemberDialog
+        isOpen={addMemberDialogOpen}
+        onClose={() => setAddMemberDialogOpen(false)}
+        onSubmit={(data) => {
+          if (selectedTeamForMembers) {
+            addMemberMutation.mutate({ name: data.name, file: data.file, teamId: selectedTeamForMembers.id })
+          }
+        }}
       />
     </div>
   )

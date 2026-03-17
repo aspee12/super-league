@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Upload, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
 
 interface FileUploadProps {
   readonly file: File | null
@@ -10,6 +9,9 @@ interface FileUploadProps {
   readonly accept?: string
   readonly maxSizeMB?: number
   readonly id?: string
+  /** Existing image URL to show as preview when editing */
+  readonly existingImageUrl?: string
+  readonly onClearExisting?: () => void
 }
 
 export function FileUpload({
@@ -18,9 +20,12 @@ export function FileUpload({
   accept = "image/*",
   maxSizeMB = 10,
   id = "file-upload",
+  existingImageUrl,
+  onClearExisting,
 }: FileUploadProps) {
   const [dragActive, setDragActive] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (file?.type.startsWith("image/")) {
@@ -34,6 +39,8 @@ export function FileUpload({
       setPreviewUrl(null)
     }
   }, [file])
+
+  const displayUrl = previewUrl || (existingImageUrl && !file ? existingImageUrl : null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -67,9 +74,22 @@ export function FileUpload({
     }
   }
 
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    onFileChange(null)
+    onClearExisting?.()
+    if (inputRef.current) {
+      inputRef.current.value = ""
+    }
+  }
+
+  const hasContent = file || (existingImageUrl && !file)
+
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       className={`
         w-full border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
         ${
@@ -82,55 +102,66 @@ export function FileUpload({
       onDragLeave={handleDrag}
       onDragOver={handleDrag}
       onDrop={handleDrop}
-      onClick={() => document.getElementById(id)?.click()}
+      onClick={() => inputRef.current?.click()}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          inputRef.current?.click()
+        }
+      }}
     >
       <input
+        ref={inputRef}
         id={id}
         type="file"
         accept={accept}
         className="hidden"
         onChange={handleFileChange}
       />
-      {file ? (
+      {displayUrl ? (
         <div className="space-y-3">
-          {previewUrl && file.type.startsWith("image/") ? (
-            <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
-              <img
-                src={previewUrl}
-                alt={file.name}
-                className="w-full h-full object-contain"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 h-8 w-8 bg-white/90 hover:bg-white text-red-500 hover:text-red-700 shadow-md"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onFileChange(null)
-                }}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center gap-2 text-[#267c93] p-4 bg-gray-50 rounded-lg">
-              <Upload className="h-5 w-5" />
-              <span className="font-medium">{file.name}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-transparent"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onFileChange(null)
-                }}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
+          <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+            <img
+              src={displayUrl}
+              alt={file?.name || "Current image"}
+              className="w-full h-full object-contain"
+            />
+            <span
+              role="button"
+              tabIndex={0}
+              className="absolute top-2 right-2 h-8 w-8 flex items-center justify-center rounded-md bg-white/90 hover:bg-white text-red-500 hover:text-red-700 shadow-md cursor-pointer"
+              onClick={handleRemove}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") handleRemove(e as unknown as React.MouseEvent)
+              }}
+            >
+              <X className="h-4 w-4" />
+            </span>
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-medium text-gray-700">
+              {file ? file.name : "Current image"}
+            </p>
+            <p className="text-xs text-gray-500">Click to change file</p>
+          </div>
+        </div>
+      ) : file ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-center gap-2 text-[#267c93] p-4 bg-gray-50 rounded-lg">
+            <Upload className="h-5 w-5" />
+            <span className="font-medium">{file.name}</span>
+            <span
+              role="button"
+              tabIndex={0}
+              className="h-6 w-6 flex items-center justify-center rounded-md text-red-500 hover:text-red-700 cursor-pointer"
+              onClick={handleRemove}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") handleRemove(e as unknown as React.MouseEvent)
+              }}
+            >
+              <X className="h-4 w-4" />
+            </span>
+          </div>
           <div className="text-center">
             <p className="text-sm font-medium text-gray-700">{file.name}</p>
             <p className="text-xs text-gray-500">Click to change file</p>
@@ -146,6 +177,6 @@ export function FileUpload({
           <p className="text-xs text-gray-500">Upload file upto {maxSizeMB} mb</p>
         </div>
       )}
-    </button>
+    </div>
   )
 }

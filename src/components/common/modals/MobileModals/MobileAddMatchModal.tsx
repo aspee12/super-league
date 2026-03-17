@@ -202,7 +202,7 @@ export function MobileAddMatchModal({
                 </option>
                 {teamsForA.map((t) => (
                   <option key={t.id} value={t.id}>
-                    {t.logo ? `${t.logo} ` : ''}{t.name}
+                    {t.logo && !t.logo.startsWith('/') && !t.logo.startsWith('http') ? `${t.logo} ` : ''}{t.name}
                   </option>
                 ))}
               </select>
@@ -228,7 +228,7 @@ export function MobileAddMatchModal({
                 </option>
                 {teamsForB.map((t) => (
                   <option key={t.id} value={t.id}>
-                    {t.logo ? `${t.logo} ` : ''}{t.name}
+                    {t.logo && !t.logo.startsWith('/') && !t.logo.startsWith('http') ? `${t.logo} ` : ''}{t.name}
                   </option>
                 ))}
               </select>
