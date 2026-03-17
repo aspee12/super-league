@@ -5,6 +5,7 @@ import { MatchesView } from "@components/MatchesView/page";
 import { StatsView } from "@components/StatsView/page";
 import { MobileMatchesView } from '@components/MobileViews/MobileMatchesView';
 import { MobileTableView } from '@components/MobileViews/MobileTabelView';
+import Teams from "@components/Teams/teams";
 import Header from "@shared-component/Header";
 import SideBar from "@shared-component/SideBar";
 import { useParams } from "next/navigation";
@@ -72,7 +73,7 @@ export default function DynamicPage() {
       case "stats":
         return <StatsView />;
       case "teams":
-        return <TeamsContent />;
+        return <Teams />;
       default:
         return <LeagueTable />;
     }
@@ -88,7 +89,7 @@ export default function DynamicPage() {
       case "stats":
         return <StatsView />;
       case "teams":
-        return <TeamsContent />;
+        return <Teams />;
       default:
       return <MobileTableView />;
     }

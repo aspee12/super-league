@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "./typography.css";
 @import "@fortawesome/fontawesome-free/css/all.css";
+/* @import "tw-animate-css"; */
+/*---break---
+  */
+@custom-variant dark (&:is(.dark *));
 
 :root {
   --font-size: 16px;
@@ -190,5 +194,17 @@
     font-size: var(--text-base);
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
+  }
+}
+
+/*---break---
+  */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
