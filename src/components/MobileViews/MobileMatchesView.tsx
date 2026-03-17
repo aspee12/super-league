@@ -21,6 +21,7 @@ import { endMatch, deleteMatch } from '@/lib/matches-api'
 import type { Match, PlayerStat } from '@app-types/matchTypes'
 import { formatTime12h } from '@/lib/format-time'
 import { TeamLogo } from '@shared-component/TeamLogo'
+import { FullPageLoader } from '@shared-component/FullPageLoader'
 
 export function MobileMatchesView() {
   const queryClient = useQueryClient()
@@ -73,14 +74,7 @@ export function MobileMatchesView() {
   }
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center pb-20">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-2 border-[#0e7490] border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-500 text-sm">Loading matches...</p>
-        </div>
-      </div>
-    )
+    return <FullPageLoader message="Loading matches..." />
   }
 
   return (
@@ -306,10 +300,13 @@ export function MobileMatchesView() {
           <p className="text-center text-gray-500 text-sm py-4">No recent results</p>
         )}
 
-        <button className="w-full mt-4 bg-white rounded-xl shadow-sm p-4 flex items-center justify-center gap-2 text-gray-800 hover:bg-gray-50 active:bg-gray-100 transition-colors">
+        <a
+          href="/table"
+          className="w-full mt-4 bg-white rounded-xl shadow-sm p-4 flex items-center justify-center gap-2 text-gray-800 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+        >
           <span className="text-sm font-medium">View all results</span>
           <ChevronRight size={16} className="text-gray-600" />
-        </button>
+        </a>
       </div>
 
       {/* Modals */}

@@ -2,7 +2,7 @@ export interface TeamMember {
   id: string
   name: string
   avatar?: string
-  appearances: number
+  // appearances: number  // TODO: re-enable when appearance tracking is added
   goals: number
   assists: number
 }

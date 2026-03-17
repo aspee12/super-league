@@ -32,13 +32,12 @@ interface TransferDialogProps {
     playerId: string
     fromTeamId: string
     toTeamId: string
-    stats: { appearances: number; goals: number; assists: number }
+    stats: { goals: number; assists: number }
   }) => void
   player: {
     id: string
     name: string
     avatar?: string
-    appearances: number
     goals: number
     assists: number
   } | null
@@ -56,7 +55,6 @@ export function TransferDialog({
 }: TransferDialogProps) {
   const [playerName, setPlayerName] = useState("")
   const [playerStats, setPlayerStats] = useState({
-    appearances: 0,
     goals: 0,
     assists: 0,
   })
@@ -66,7 +64,6 @@ export function TransferDialog({
     if (isOpen && player) {
       setPlayerName(player.name)
       setPlayerStats({
-        appearances: player.appearances,
         goals: player.goals,
         assists: player.assists,
       })
@@ -88,7 +85,7 @@ export function TransferDialog({
   const handleClose = () => {
     setPlayerName("")
     setTransferToTeam("")
-    setPlayerStats({ appearances: 0, goals: 0, assists: 0 })
+    setPlayerStats({ goals: 0, assists: 0 })
     onClose()
   }
 
@@ -128,21 +125,16 @@ export function TransferDialog({
               </div>
             </div>
           )}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-4">
+            {/* <div className="space-y-2">
               <Label htmlFor="transfer-appearance">Appearance</Label>
               <Input
                 id="transfer-appearance"
                 type="number"
-                value={playerStats.appearances}
-                onChange={(e) =>
-                  setPlayerStats({
-                    ...playerStats,
-                    appearances: Number.parseInt(e.target.value) || 0,
-                  })
-                }
+                value={0}
+                disabled
               />
-            </div>
+            </div> */}
             <div className="space-y-2">
               <Label htmlFor="transfer-goal">Goal</Label>
               <Input

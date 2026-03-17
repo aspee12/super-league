@@ -10,6 +10,7 @@ export interface AggregatedPlayerStat {
     id: string
     name: string
     team: string
+    teamLogo: string
     avatar: string
   }
   goals: number
@@ -18,14 +19,28 @@ export interface AggregatedPlayerStat {
   redCards: number
 }
 
+const TOP_N = 10
+
 export function useStats() {
   const { matches } = useMatches()
-  const { teams } = useTeams()
+  const { teams, players } = useTeams()
+
+  // Build a lookup: playerName+teamName -> player avatar URL
+  const playerAvatarMap = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const p of players) {
+      const teamId = typeof p.team === 'string' ? p.team : p.team?.id
+      const team = teams.find((t) => t.id === teamId)
+      if (team) {
+        map.set(`${p.name}-${team.name}`, p.avatar || '')
+      }
+    }
+    return map
+  }, [players, teams])
 
   const stats = useMemo(() => {
     const playerMap = new Map<string, AggregatedPlayerStat>()
 
-    // Only count finished and live matches
     const relevantMatches = matches.filter((m) => m.status === 'finished' || m.status === 'live')
 
     for (const match of relevantMatches) {
@@ -49,7 +64,8 @@ export function useStats() {
               id: key,
               name: ps.playerName,
               team: teamName,
-              avatar: teamObj.logo || '',
+              teamLogo: teamObj.logo || '',
+              avatar: playerAvatarMap.get(key) || '',
             },
             goals: ps.goals,
             assists: ps.assists,
@@ -61,25 +77,25 @@ export function useStats() {
     }
 
     return Array.from(playerMap.values())
-  }, [matches, teams])
+  }, [matches, teams, playerAvatarMap])
 
   const topScorers = useMemo(
-    () => [...stats].sort((a, b) => b.goals - a.goals),
+    () => [...stats].sort((a, b) => b.goals - a.goals).slice(0, TOP_N),
     [stats],
   )
 
   const topAssists = useMemo(
-    () => [...stats].sort((a, b) => b.assists - a.assists),
+    () => [...stats].sort((a, b) => b.assists - a.assists).slice(0, TOP_N),
     [stats],
   )
 
   const topYellowCards = useMemo(
-    () => [...stats].filter((s) => s.yellowCards > 0).sort((a, b) => b.yellowCards - a.yellowCards),
+    () => [...stats].filter((s) => s.yellowCards > 0).sort((a, b) => b.yellowCards - a.yellowCards).slice(0, TOP_N),
     [stats],
   )
 
   const topRedCards = useMemo(
-    () => [...stats].filter((s) => s.redCards > 0).sort((a, b) => b.redCards - a.redCards),
+    () => [...stats].filter((s) => s.redCards > 0).sort((a, b) => b.redCards - a.redCards).slice(0, TOP_N),
     [stats],
   )
 

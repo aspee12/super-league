@@ -129,7 +129,13 @@ export function StatsView() {
                         {index + 1}
                       </span>
                       <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#e7e6e6] flex items-center justify-center text-xl md:text-2xl shrink-0 overflow-hidden">
-                        {stat.player.avatar || stat.player.name.charAt(0)}
+                        {stat.player.avatar && (stat.player.avatar.startsWith('/') || stat.player.avatar.startsWith('http')) ? (
+                          <img src={stat.player.avatar} alt={stat.player.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-sm font-semibold text-gray-500">
+                            {stat.player.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
+                          </span>
+                        )}
                       </div>
                       <div className="min-w-0">
                         <div className="font-semibold md:font-normal text-[14px] md:text-[16px] leading-[22px] md:leading-[28px] text-[#201f1e] truncate">
