@@ -14,7 +14,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@ui/Select'
+} from '@ui/select'
 import { getTeams, createMatch, updateMatch } from '@/lib/matches-api'
 
 type FormValues = MatchProps
