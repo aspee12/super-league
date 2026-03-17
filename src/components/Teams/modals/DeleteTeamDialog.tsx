@@ -39,17 +39,17 @@ export function DeleteTeamDialog({
             ? `Are you sure you want to delete "${teamName}"?`
             : "Are you sure you want to delete this team?"}
         </DialogDescription>
-        <DialogFooter>
+        <DialogFooter className="flex flex-row gap-3 sm:gap-2">
           <Button
             variant="outline"
             onClick={onClose}
-            className="border-blue-300 text-blue-600 hover:bg-blue-50"
+            className="flex-1 sm:flex-none border-blue-300 text-blue-600 hover:bg-blue-50"
           >
             Cancel
           </Button>
           <Button
             onClick={handleConfirm}
-            className="bg-blue-700 hover:bg-blue-800 text-white"
+            className="flex-1 sm:flex-none bg-blue-700 hover:bg-blue-800 text-white"
           >
             Delete
           </Button>
