@@ -264,7 +264,7 @@ function DesktopTeamsView({
   }
 
   return (
-    <div className="p-6 min-h-screen bg-gradient-to-br from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4]">
+    <div className="p-6 min-h-screen from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4]">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Futsal Club</h1>
       </div>
@@ -416,9 +416,9 @@ function MobileTeamsView({ teams }: { readonly teams: Team[] }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-20">
+    <div className="min-h-screen pb-20">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-blue-200 via-green-200 to-blue-200 rounded-b-3xl px-4 pt-4 pb-6 mb-4">
+      {/* <div className="bg-gradient-to-r from-blue-200 via-green-200 to-blue-200 rounded-b-3xl px-4 pt-4 pb-6 mb-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 rounded-full flex items-center justify-center">
             <span className="text-2xl">⚽</span>
@@ -428,7 +428,7 @@ function MobileTeamsView({ teams }: { readonly teams: Team[] }) {
             <p className="text-sm text-gray-600">Season 1/2026</p>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Team Management Section */}
       <div className="px-4">
@@ -436,7 +436,7 @@ function MobileTeamsView({ teams }: { readonly teams: Team[] }) {
           <h2 className="text-lg font-semibold text-gray-900">Team Management</h2>
           <Button
             size="icon"
-            className="h-10 w-10 rounded-full bg-teal-500 hover:bg-teal-600"
+            className="h-10 w-10 mt-4 rounded-full bg-teal-500 hover:bg-teal-600"
             onClick={handleAddTeam}
           >
             <Plus className="h-5 w-5 text-white" />
@@ -496,14 +496,14 @@ function MobileTeamsView({ teams }: { readonly teams: Team[] }) {
                 </CardContent>
               </Card>
 
-              <DropdownMenuContent align="end" className="w-32">
-                <DropdownMenuItem onClick={() => handleEditTeam(team.id)}>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem onClick={() => handleEditTeam(team.id)} className="py-3">
                   <SquarePen className="h-4 w-4 mr-2" />
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => handleDeleteTeam(team.id)}
-                  className="text-red-600 focus:text-red-600"
+                  className="py-3 text-red-600 focus:text-red-600"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete

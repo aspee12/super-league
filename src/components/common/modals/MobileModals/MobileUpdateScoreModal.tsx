@@ -94,8 +94,9 @@ export function MobileUpdateScoreModal({
       toast.error('Select a player.')
       return
     }
-    if (!formData.goals) {
-      toast.error('Enter goals.')
+    const hasCard = formData.card === 'yellow' || formData.card === 'red'
+    if (!formData.goals && !hasCard) {
+      toast.error('Enter goals or select a card.')
       return
     }
     mutation.mutate()
@@ -190,9 +191,9 @@ export function MobileUpdateScoreModal({
             <input
               type="number"
               inputMode="numeric"
-              min={1}
+              min={0}
               max={10}
-              placeholder="Goals"
+              placeholder="Goals (optional)"
               value={formData.goals}
               onChange={(e) =>
                 setFormData({ ...formData, goals: e.target.value })
