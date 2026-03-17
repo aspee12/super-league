@@ -1,6 +1,7 @@
 import type { Match, PlayerStat } from '@app-types/matchTypes'
 import { Pencil, Trash2 } from 'lucide-react'
 import { formatTime12h } from '@/lib/format-time'
+import { TeamLogo } from '@shared-component/TeamLogo'
 
 interface MatchCardProps {
   match: Match
@@ -122,7 +123,7 @@ export function MatchCard({ match, showActions = false, onEdit, onDelete, varian
         <div className="flex items-center justify-between">
           {/* Team A */}
           <div className="flex flex-col items-center w-1/4">
-            <div className="text-4xl mb-3">{match.teamA.logo || '⚽'}</div>
+            <div className="mb-3"><TeamLogo logo={match.teamA.logo || '⚽'} name={match.teamA.name} className="w-12 h-12" textClassName="text-4xl" /></div>
             <div className="text-sm font-medium text-center text-black">{match.teamA.name}</div>
           </div>
 
@@ -154,7 +155,7 @@ export function MatchCard({ match, showActions = false, onEdit, onDelete, varian
 
           {/* Team B */}
           <div className="flex flex-col items-center w-1/4">
-            <div className="text-4xl mb-3">{match.teamB.logo || '⚽'}</div>
+            <div className="mb-3"><TeamLogo logo={match.teamB.logo || '⚽'} name={match.teamB.name} className="w-12 h-12" textClassName="text-4xl" /></div>
             <div className="text-sm font-medium text-center text-black">{match.teamB.name}</div>
           </div>
         </div>

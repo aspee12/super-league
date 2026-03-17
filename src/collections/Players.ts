@@ -1,10 +1,10 @@
 import type { CollectionConfig } from 'payload'
 
-export const Teams: CollectionConfig = {
-  slug: 'teams',
+export const Players: CollectionConfig = {
+  slug: 'players',
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'logo', 'updatedAt'],
+    defaultColumns: ['name', 'team', 'updatedAt'],
   },
   access: {
     read: () => true,
@@ -30,10 +30,17 @@ export const Teams: CollectionConfig = {
       required: true,
     },
     {
-      name: 'logo',
+      name: 'avatar',
       type: 'text',
       required: false,
       defaultValue: '',
+    },
+    {
+      name: 'team',
+      type: 'relationship',
+      relationTo: 'teams',
+      required: true,
+      hasMany: false,
     },
   ],
 }

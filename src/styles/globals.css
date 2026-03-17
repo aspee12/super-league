@@ -125,12 +125,14 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Dark mode disabled — app is light-mode only.
+   Remove or uncomment this block if dark mode support is added later.
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 @layer base {
   * {
@@ -152,6 +154,7 @@
 
   html {
     font-size: var(--font-size);
+    color-scheme: light;
   }
 
   h1 {
@@ -207,4 +210,40 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Override react-day-picker default styles that conflict with Tailwind */
+.rdp-root {
+  --rdp-accent-color: #000;
+  --rdp-accent-background-color: #f3f4f6;
+  --rdp-day-height: 2rem;
+  --rdp-day-width: 2rem;
+  --rdp-day_button-height: 2rem;
+  --rdp-day_button-width: 2rem;
+  --rdp-day_button-border-radius: 0.375rem;
+  --rdp-day_button-border: none;
+  --rdp-selected-border: none;
+  --rdp-nav-height: 2rem;
+  --rdp-nav_button-height: 2rem;
+  --rdp-nav_button-width: 2rem;
+}
+
+.rdp-month_caption {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.rdp-selected {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.rdp-selected .rdp-day_button {
+  border: none;
+  background-color: #000;
+  color: #fff;
+}
+
+.rdp-today:not(.rdp-outside) {
+  color: inherit;
 }

@@ -2,10 +2,11 @@
 
 import { ChevronDown } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { updateScore } from '@/lib/matches-api'
-import { getPlayersForTeam } from '@constants/team-players'
+import { TeamLogo } from '@shared-component/TeamLogo'
+import { getPlayers, type PayloadPlayer } from '@/lib/teams-api'
 import type { Match } from '@app-types/matchTypes'
 
 export interface MobileUpdateScoreModalProps {
@@ -20,6 +21,12 @@ export function MobileUpdateScoreModal({
   match,
 }: MobileUpdateScoreModalProps) {
   const queryClient = useQueryClient()
+
+  const { data: allPlayers = [] } = useQuery({
+    queryKey: ['players'],
+    queryFn: () => getPlayers(),
+    enabled: isOpen,
+  })
 
   const [formData, setFormData] = useState({
     team: '' as '' | 'teamA' | 'teamB',
@@ -75,9 +82,20 @@ export function MobileUpdateScoreModal({
   const teamAName = match.teamA.name
   const teamBName = match.teamB.name
 
-  const selectedTeamName =
-    formData.team === 'teamA' ? teamAName : formData.team === 'teamB' ? teamBName : ''
-  const playersForTeam = selectedTeamName ? getPlayersForTeam(selectedTeamName) : []
+  const selectedTeamId =
+    formData.team === 'teamA'
+      ? match.teamA.id
+      : formData.team === 'teamB'
+        ? match.teamB.id
+        : ''
+  const playersForTeam = selectedTeamId
+    ? allPlayers
+        .filter((p: PayloadPlayer) => {
+          const pTeamId = typeof p.team === 'string' ? p.team : p.team?.id
+          return pTeamId === selectedTeamId
+        })
+        .map((p: PayloadPlayer) => p.name)
+    : []
 
   const handleClose = () => {
     setFormData({ team: '', player: '', goals: '', assist: '', card: '' })
@@ -124,14 +142,16 @@ export function MobileUpdateScoreModal({
 
         {/* Match info bar */}
         <div className="flex items-center justify-center gap-3 px-4 py-3 bg-gray-50 text-sm">
-          <span className="font-medium text-gray-800">
-            {match.teamA.logo || '⚽'} {teamAName}
+          <span className="font-medium text-gray-800 flex items-center gap-1">
+            <TeamLogo logo={match.teamA.logo || '⚽'} name={teamAName} className="w-5 h-5" textClassName="text-base" />
+            {teamAName}
           </span>
           <span className="text-gray-800 font-bold">
             {match.scoreA} - {match.scoreB}
           </span>
-          <span className="font-medium text-gray-800">
-            {teamBName} {match.teamB.logo || '⚽'}
+          <span className="font-medium text-gray-800 flex items-center gap-1">
+            {teamBName}
+            <TeamLogo logo={match.teamB.logo || '⚽'} name={teamBName} className="w-5 h-5" textClassName="text-base" />
           </span>
         </div>
 

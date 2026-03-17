@@ -2,7 +2,7 @@
 
 import { X } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Input } from '@ui/input'
 import {
@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@ui/select'
 import { updateScore } from '@/lib/matches-api'
-import { getPlayersForTeam } from '@constants/team-players'
+import { getPlayers, type PayloadPlayer } from '@/lib/teams-api'
 import type { Match } from '@app-types/matchTypes'
 
 export interface UpdateScoreModalProps {
@@ -28,6 +28,12 @@ export function UpdateScoreModal({
   match,
 }: UpdateScoreModalProps) {
   const queryClient = useQueryClient()
+
+  const { data: allPlayers = [] } = useQuery({
+    queryKey: ['players'],
+    queryFn: () => getPlayers(),
+    enabled: isOpen,
+  })
 
   const [formData, setFormData] = useState({
     team: '' as '' | 'teamA' | 'teamB',
@@ -76,9 +82,20 @@ export function UpdateScoreModal({
   const teamAName = match.teamA.name
   const teamBName = match.teamB.name
 
-  const selectedTeamName =
-    formData.team === 'teamA' ? teamAName : formData.team === 'teamB' ? teamBName : ''
-  const playersForTeam = selectedTeamName ? getPlayersForTeam(selectedTeamName) : []
+  const selectedTeamId =
+    formData.team === 'teamA'
+      ? match.teamA.id
+      : formData.team === 'teamB'
+        ? match.teamB.id
+        : ''
+  const playersForTeam = selectedTeamId
+    ? allPlayers
+        .filter((p: PayloadPlayer) => {
+          const pTeamId = typeof p.team === 'string' ? p.team : p.team?.id
+          return pTeamId === selectedTeamId
+        })
+        .map((p: PayloadPlayer) => p.name)
+    : []
 
   const handleClose = () => {
     setFormData({ team: '', player: '', goals: '', assist: '', card: '' })

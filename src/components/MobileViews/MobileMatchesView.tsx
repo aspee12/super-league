@@ -20,6 +20,7 @@ import { useMatches } from '@/hooks/useMatches'
 import { endMatch, deleteMatch } from '@/lib/matches-api'
 import type { Match, PlayerStat } from '@app-types/matchTypes'
 import { formatTime12h } from '@/lib/format-time'
+import { TeamLogo } from '@shared-component/TeamLogo'
 
 export function MobileMatchesView() {
   const queryClient = useQueryClient()
@@ -115,7 +116,7 @@ export function MobileMatchesView() {
                       <div className="flex items-center justify-between mb-4 gap-2">
                         {/* Team A */}
                         <div className="flex flex-col items-center flex-1 min-w-0">
-                          <div className="text-3xl mb-1.5">{match.teamA.logo || '⚽'}</div>
+                          <div className="mb-1.5"><TeamLogo logo={match.teamA.logo || '⚽'} name={match.teamA.name} className="w-10 h-10" textClassName="text-3xl" /></div>
                           <span className="text-xs font-medium text-center px-1 line-clamp-2">
                             {match.teamA.name}
                           </span>
@@ -132,7 +133,7 @@ export function MobileMatchesView() {
 
                         {/* Team B */}
                         <div className="flex flex-col items-center flex-1 min-w-0">
-                          <div className="text-3xl mb-1.5">{match.teamB.logo || '⚽'}</div>
+                          <div className="mb-1.5"><TeamLogo logo={match.teamB.logo || '⚽'} name={match.teamB.name} className="w-10 h-10" textClassName="text-3xl" /></div>
                           <span className="text-xs font-medium text-center px-1 line-clamp-2">
                             {match.teamB.name}
                           </span>
@@ -203,7 +204,7 @@ export function MobileMatchesView() {
               <div key={match.id} className="bg-white rounded-xl shadow-sm p-4 relative">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex flex-col items-center flex-1 min-w-0">
-                    <div className="text-3xl mb-1.5">{match.teamA.logo || '⚽'}</div>
+                    <div className="mb-1.5"><TeamLogo logo={match.teamA.logo || '⚽'} name={match.teamA.name} className="w-10 h-10" textClassName="text-3xl" /></div>
                     <span className="text-xs font-medium text-gray-800 text-center px-1 line-clamp-2">{match.teamA.name}</span>
                   </div>
                   <div className="flex flex-col items-center shrink-0 px-1">
@@ -212,7 +213,7 @@ export function MobileMatchesView() {
                     <div className="text-sm font-medium text-gray-800 whitespace-nowrap">{formatTime12h(match.time)}</div>
                   </div>
                   <div className="flex flex-col items-center flex-1 min-w-0">
-                    <div className="text-3xl mb-1.5">{match.teamB.logo || '⚽'}</div>
+                    <div className="mb-1.5"><TeamLogo logo={match.teamB.logo || '⚽'} name={match.teamB.name} className="w-10 h-10" textClassName="text-3xl" /></div>
                     <span className="text-xs font-medium text-gray-800 text-center px-1 line-clamp-2">{match.teamB.name}</span>
                   </div>
                   {isSuperAdmin && (
@@ -265,7 +266,7 @@ export function MobileMatchesView() {
                 <div key={match.id} className="bg-white rounded-xl shadow-sm p-4">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex flex-col items-center flex-1 min-w-0">
-                      <div className="text-2xl mb-1.5">{match.teamA.logo || '⚽'}</div>
+                      <div className="mb-1.5"><TeamLogo logo={match.teamA.logo || '⚽'} name={match.teamA.name} className="w-8 h-8" textClassName="text-2xl" /></div>
                       <span className="text-xs font-medium text-gray-800 text-center px-1 line-clamp-2">{match.teamA.name}</span>
                     </div>
                     <div className="flex flex-col items-center shrink-0 px-1">
@@ -275,7 +276,7 @@ export function MobileMatchesView() {
                       <div className="text-xs text-gray-500 mt-1 whitespace-nowrap">{match.date}</div>
                     </div>
                     <div className="flex flex-col items-center flex-1 min-w-0">
-                      <div className="text-2xl mb-1.5">{match.teamB.logo || '⚽'}</div>
+                      <div className="mb-1.5"><TeamLogo logo={match.teamB.logo || '⚽'} name={match.teamB.name} className="w-8 h-8" textClassName="text-2xl" /></div>
                       <span className="text-xs font-medium text-gray-800 text-center px-1 line-clamp-2">{match.teamB.name}</span>
                     </div>
                   </div>

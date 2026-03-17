@@ -1,5 +1,4 @@
 import { HandHeart, LucideIcon, RectangleVertical, Trophy } from "lucide-react";
-import { playerStats } from "../data/matchMockData";
 
 export const CATEGORY_CONFIG: Record<StatCategory, CategoryConfig> = {
   goals: {
@@ -15,7 +14,7 @@ export const CATEGORY_CONFIG: Record<StatCategory, CategoryConfig> = {
     shortLabel: "Assists",
     cardTitle: "Assists",
     icon: HandHeart,
-    valueKey: "goals",
+    valueKey: "assists",
     valueLabel: "Assists",
   },
   yellowCard: {
@@ -23,7 +22,7 @@ export const CATEGORY_CONFIG: Record<StatCategory, CategoryConfig> = {
     shortLabel: "Yellow",
     cardTitle: "Yellow Cards",
     icon: RectangleVertical,
-    valueKey: "goals",
+    valueKey: "yellowCards",
     valueLabel: "Yellow Card",
     iconClassName: "text-yellow-500 fill-yellow-500",
   },
@@ -32,7 +31,7 @@ export const CATEGORY_CONFIG: Record<StatCategory, CategoryConfig> = {
     shortLabel: "Red",
     cardTitle: "Red Cards",
     icon: RectangleVertical,
-    valueKey: "goals",
+    valueKey: "redCards",
     valueLabel: "Red Card",
     iconClassName: "text-red-500 fill-red-500",
   },
@@ -45,7 +44,7 @@ export interface CategoryConfig {
     shortLabel: string;
     cardTitle: string;
     icon: LucideIcon;
-    valueKey: keyof any;
+    valueKey: string;
     valueLabel: string;
     iconClassName?: string;
   }
