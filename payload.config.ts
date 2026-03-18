@@ -6,6 +6,7 @@ import { Teams } from './src/collections/Teams'
 import { Matches } from './src/collections/Matches'
 import { Players } from './src/collections/Players'
 import { Media } from './src/collections/Media'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 
 export default buildConfig({
   collections: [Users, Teams, Matches, Players, Media],
@@ -17,6 +18,16 @@ export default buildConfig({
   db: mongooseAdapter({
     url: process.env.DATABASE_URL || '',
   }),
+  plugins: [
+    vercelBlobStorage({
+      collections: {
+        media: {
+          disablePayloadAccessControl: true,
+        },
+      },
+      token: process.env.BLOB_READ_WRITE_TOKEN!,
+    }),
+  ],
   // If you want to resize images, crop, set focal point, etc.
   // make sure to install it and pass it to the config.
   // This is optional - if you don't need to do these things,
