@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useStandings } from '@/hooks/useStandings'
 import { TeamLogo } from '@shared-component/TeamLogo'
+import { FullPageLoader } from '@shared-component/FullPageLoader'
 
 type MobileTab = 'short' | 'full' | 'form'
 
@@ -43,13 +44,7 @@ export function MobileTableView() {
   const [activeTab, setActiveTab] = useState<MobileTab>('short')
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen pb-20 mt-10 px-4">
-        <div className="flex items-center justify-center py-20 text-gray-500">
-          Loading standings...
-        </div>
-      </div>
-    )
+    return <FullPageLoader message="Loading standings..." />
   }
 
   return (

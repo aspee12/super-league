@@ -64,7 +64,9 @@ export default function SideBar() {
                   <LogOut className="w-5 h-5 shrink-0 text-[#605e5c]" />
                   <span className="font-medium text-[16px]" style={{ lineHeight: '24px', fontFamily: 'Roboto, sans-serif' }}>Logout</span>
                 </button>
-              ) : (
+              ) : null}
+              {/* Login button hidden for now
+              {!user && (
                 <Link
                   href="/login"
                   className="flex items-center gap-2 px-3 py-2 rounded text-[#201f1e] transition-colors hover:bg-white w-full"
@@ -72,6 +74,7 @@ export default function SideBar() {
                   <span className="font-medium text-[16px]" style={{ lineHeight: '24px', fontFamily: 'Roboto, sans-serif' }}>Login</span>
                 </Link>
               )}
+              */}
             </div>
         </aside>
 

@@ -12,6 +12,7 @@ import { useAuthStore } from '@/store/authStore'
 import { useMatches } from '@/hooks/useMatches'
 import { endMatch, deleteMatch } from '@/lib/matches-api'
 import type { Match } from '@app-types/matchTypes'
+import { FullPageLoader } from '@shared-component/FullPageLoader'
 
 export function MatchesView() {
   const queryClient = useQueryClient()
@@ -58,11 +59,7 @@ export function MatchesView() {
   }
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex-1 p-6 flex items-center justify-center">
-        <p className="text-gray-500">Loading matches...</p>
-      </div>
-    )
+    return <FullPageLoader message="Loading matches..." />
   }
 
   return (
