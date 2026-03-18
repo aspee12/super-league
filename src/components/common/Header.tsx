@@ -1,4 +1,21 @@
+'use client';
+
+import { LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/authStore';
+import { logout as logoutApi } from '@/lib/auth-api';
+
 export default function Header() {
+  const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const logoutStore = useAuthStore((s) => s.logout);
+
+  const handleLogout = async () => {
+    await logoutApi();
+    logoutStore();
+    router.replace('/login');
+  };
+
   return (
     <header
       data-node-id="9550:21613"
@@ -41,6 +58,18 @@ export default function Header() {
               Season 1/2026
             </p>
           </div>
+
+          {/* Mobile Logout Button */}
+          {user && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#605e5c] hover:bg-white/60 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="text-[12px] font-medium" style={{ fontFamily: 'Roboto, sans-serif' }}>Logout</span>
+            </button>
+          )}
       </div>
     </header>
   );

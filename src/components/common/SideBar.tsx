@@ -102,20 +102,6 @@ export default function SideBar() {
               );
             })}
 
-            {/* Logout - only when logged in */}
-            {user && (
-              <div className="flex-1 flex justify-center">
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="flex flex-col items-center justify-center py-1 px-2"
-                >
-                  <LogOut className="w-5 h-5 mb-1 text-[#605e5c]" />
-                  <span className="text-[12px] text-[#605e5c]">Logout</span>
-                </button>
-              </div>
-            )}
-
             {/* Floating Add Match - only when logged in */}
             {user && (
               <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-6">
