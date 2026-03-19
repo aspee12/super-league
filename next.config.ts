@@ -1,9 +1,7 @@
 import withPayload from '@payloadcms/next/withPayload';
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
+const nextConfig: NextConfig = {};
 
 // Make sure you wrap your `nextConfig`
 // with the `withPayload` plugin
