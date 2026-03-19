@@ -26,7 +26,6 @@ export default buildConfig({
         },
       },
       token: process.env.BLOB_READ_WRITE_TOKEN!,
-      access: 'private',
     }),
   ],
   // If you want to resize images, crop, set focal point, etc.
