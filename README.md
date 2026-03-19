@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Selise Super League (SSL) Portal
+
+A sports league management portal for tracking teams, players, matches, and standings — built with Next.js and Payload CMS.
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (React 19, TypeScript)
+- **CMS:** Payload CMS 3
+- **Database:** MongoDB
+- **Storage:** Vercel Blob
+- **Styling:** Tailwind CSS 4, Radix UI (shadcn/ui)
+- **State:** Zustand, TanStack React Query
+- **Package Manager:** Yarn 4
+
+## Prerequisites
+
+- Node.js 18+
+- Yarn
+- MongoDB instance (local or Atlas)
+- Vercel Blob store (public access)
 
 ## Getting Started
 
-First, run the development server:
+### 1. Install dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+yarn install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Set up environment variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create a `.env.local` file in the project root:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+DATABASE_URL=your_mongodb_connection_string
+PAYLOAD_SECRET=your_secret_key
+BLOB_READ_WRITE_TOKEN=your_vercel_blob_token
+```
 
-## Learn More
+### 3. Seed the database (optional)
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+yarn seed:super-admin
+yarn seed:teams
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 4. Run the development server
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+yarn dev
+```
 
-## Deploy on Vercel
+The app will be available at [http://localhost:3000](http://localhost:3000).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Command                  | Description                     |
+| ------------------------ | ------------------------------- |
+| `yarn dev`               | Start development server        |
+| `yarn build`             | Build for production            |
+| `yarn start`             | Start production server         |
+| `yarn lint`              | Run ESLint                      |
+| `yarn seed:super-admin`  | Seed super admin user           |
+| `yarn seed:teams`        | Seed teams data                 |
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── (client)/        # Public-facing routes (table, login, team pages)
+│   └── (payload)/       # Payload CMS admin panel (/admin)
+├── collections/         # Payload collection schemas (Users, Teams, Players, Matches, Media)
+├── components/          # React components (ui, auth, teams, matches, stats)
+├── hooks/               # Custom React hooks
+├── lib/                 # API clients & utilities
+├── store/               # Zustand state management
+├── types/               # TypeScript type definitions
+└── styles/              # Global styles
+```
+
+## Deployment
+
+The project is deployed on **Vercel**. Push to `main` to trigger a production deployment.
+
+Required Vercel environment variables:
+
+- `DATABASE_URL`
+- `PAYLOAD_SECRET`
+- `BLOB_READ_WRITE_TOKEN`
