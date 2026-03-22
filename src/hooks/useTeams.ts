@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getTeams } from '@/lib/matches-api'
 import { getPlayers, type PayloadPlayer } from '@/lib/teams-api'
@@ -8,32 +9,44 @@ export function useTeams() {
   const teamsQuery = useQuery({
     queryKey: ['teams'],
     queryFn: getTeams,
-    refetchInterval: 60_000,
+    refetchInterval: 120_000,
   })
 
   const playersQuery = useQuery({
     queryKey: ['players'],
     queryFn: () => getPlayers(),
-    refetchInterval: 60_000,
+    refetchInterval: 120_000,
   })
 
-  const teams = teamsQuery.data ?? []
-  const players = playersQuery.data ?? []
+  const teams = useMemo(() => teamsQuery.data ?? [], [teamsQuery.data])
+  const players = useMemo(() => playersQuery.data ?? [], [playersQuery.data])
 
-  /** Get players belonging to a specific team. */
-  function getPlayersByTeam(teamId: string): PayloadPlayer[] {
-    return players.filter((p) => {
-      const pTeamId = typeof p.team === 'string' ? p.team : p.team?.id
-      return pTeamId === teamId
-    })
-  }
+  // Pre-build a Map<teamId, PayloadPlayer[]> so lookups are O(1) instead of O(n)
+  const playersByTeamMap = useMemo(() => {
+    const map = new Map<string, PayloadPlayer[]>()
+    for (const p of players) {
+      const teamId = typeof p.team === 'string' ? p.team : p.team?.id
+      if (!teamId) continue
+      const arr = map.get(teamId)
+      if (arr) arr.push(p)
+      else map.set(teamId, [p])
+    }
+    return map
+  }, [players])
 
-  /** Get player names for a team (by team name). Used by score update modals. */
-  function getPlayerNamesByTeamName(teamName: string): string[] {
-    const team = teams.find((t) => t.name === teamName)
-    if (!team) return []
-    return getPlayersByTeam(team.id).map((p) => p.name)
-  }
+  const getPlayersByTeam = useCallback(
+    (teamId: string): PayloadPlayer[] => playersByTeamMap.get(teamId) ?? [],
+    [playersByTeamMap],
+  )
+
+  const getPlayerNamesByTeamName = useCallback(
+    (teamName: string): string[] => {
+      const team = teams.find((t) => t.name === teamName)
+      if (!team) return []
+      return (playersByTeamMap.get(team.id) ?? []).map((p) => p.name)
+    },
+    [teams, playersByTeamMap],
+  )
 
   return {
     teams,

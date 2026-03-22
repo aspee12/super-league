@@ -30,13 +30,21 @@ export function useStandings() {
   const matchesQuery = useQuery({
     queryKey: ['matches'],
     queryFn: getMatches,
-    refetchInterval: 30_000,
+    // Standings page: poll every 15s when a live match exists, else 2min.
+    refetchInterval: (query) => {
+      const docs = query.state.data as PayloadMatch[] | undefined
+      if (!docs) return 30_000
+      const hasLive = docs.some(
+        (d) => computeMatchStatus(d.status, d.date, d.time) === 'live',
+      )
+      return hasLive ? 15_000 : 120_000
+    },
   })
 
   const teamsQuery = useQuery({
     queryKey: ['teams'],
     queryFn: getTeams,
-    refetchInterval: 60_000,
+    refetchInterval: 120_000,
   })
 
   const standings: StandingEntry[] = useMemo(() => {
