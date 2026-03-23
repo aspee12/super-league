@@ -1,10 +1,24 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, CollectionAfterDeleteHook } from 'payload'
+import { deleteMediaByUrl } from '../lib/delete-media'
+
+/**
+ * When a player is deleted, delete their avatar from the Media collection
+ * (which in turn triggers blob cleanup via Media's afterDelete hook).
+ */
+const cleanupPlayerAvatar: CollectionAfterDeleteHook = async ({ doc, req }) => {
+  if (doc.avatar) {
+    await deleteMediaByUrl(req.payload, doc.avatar)
+  }
+}
 
 export const Players: CollectionConfig = {
   slug: 'players',
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'team', 'updatedAt'],
+  },
+  hooks: {
+    afterDelete: [cleanupPlayerAvatar],
   },
   access: {
     read: () => true,

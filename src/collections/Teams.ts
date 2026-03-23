@@ -1,10 +1,24 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, CollectionAfterDeleteHook } from 'payload'
+import { deleteMediaByUrl } from '../lib/delete-media'
+
+/**
+ * When a team is deleted, delete its logo from the Media collection
+ * (which in turn triggers blob cleanup via Media's afterDelete hook).
+ */
+const cleanupTeamLogo: CollectionAfterDeleteHook = async ({ doc, req }) => {
+  if (doc.logo) {
+    await deleteMediaByUrl(req.payload, doc.logo)
+  }
+}
 
 export const Teams: CollectionConfig = {
   slug: 'teams',
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'logo', 'updatedAt'],
+  },
+  hooks: {
+    afterDelete: [cleanupTeamLogo],
   },
   access: {
     read: () => true,

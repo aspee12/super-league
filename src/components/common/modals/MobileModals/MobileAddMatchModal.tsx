@@ -241,7 +241,7 @@ export function MobileAddMatchModal({
               )}
               {!teamsLoading && teams.length === 0 && (
                 <p className="text-sm text-amber-600 mt-1">
-                  No teams in database. Run: npm run seed:teams
+                  No teams available. Please add teams and players first.
                 </p>
               )}
             </div>

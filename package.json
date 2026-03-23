@@ -16,7 +16,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@payloadcms/db-mongodb": "^3.76.1",
     "@payloadcms/next": "^3.76.1",
-    "@payloadcms/storage-vercel-blob": "^3.79.1",
+    "@payloadcms/storage-vercel-blob": "3.76.1",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-aspect-ratio": "^1.1.8",
     "@radix-ui/react-avatar": "^1.1.11",
