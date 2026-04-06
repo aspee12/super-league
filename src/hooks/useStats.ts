@@ -104,12 +104,12 @@ export function useStats() {
   }, [matches, teams, playerAvatarMap])
 
   const topScorers = useMemo(
-    () => [...stats].sort((a, b) => b.goals - a.goals).slice(0, TOP_N),
+    () => [...stats].filter((s) => s.goals > 0).sort((a, b) => b.goals - a.goals).slice(0, TOP_N),
     [stats],
   )
 
   const topAssists = useMemo(
-    () => [...stats].sort((a, b) => b.assists - a.assists).slice(0, TOP_N),
+    () => [...stats].filter((s) => s.assists > 0).sort((a, b) => b.assists - a.assists).slice(0, TOP_N),
     [stats],
   )
 
