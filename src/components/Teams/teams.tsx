@@ -53,13 +53,28 @@ function buildPlayerStatsMap(matches: Match[]) {
     if (!match.playerStats) continue
     for (const ps of match.playerStats) {
       const teamObj = ps.team === "teamA" ? match.teamA : match.teamB
-      const key = `${ps.playerName}-${teamObj.name}`
-      const existing = map.get(key)
-      if (existing) {
-        existing.goals += ps.goals
-        existing.assists += ps.assists
-      } else {
-        map.set(key, { goals: ps.goals, assists: ps.assists })
+      const teamName = teamObj.name
+
+      // Credit goals to the scorer
+      if (ps.goals > 0) {
+        const key = `${ps.playerName}-${teamName}`
+        const existing = map.get(key)
+        if (existing) {
+          existing.goals += ps.goals
+        } else {
+          map.set(key, { goals: ps.goals, assists: 0 })
+        }
+      }
+
+      // Credit assists to the actual assister, not the scorer
+      if (ps.assists > 0 && ps.assistName) {
+        const assistKey = `${ps.assistName}-${teamName}`
+        const existing = map.get(assistKey)
+        if (existing) {
+          existing.assists += ps.assists
+        } else {
+          map.set(assistKey, { goals: 0, assists: ps.assists })
+        }
       }
     }
   }
