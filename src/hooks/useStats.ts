@@ -51,10 +51,10 @@ export function useStats() {
         const teamName = teamObj.name
         const key = `${ps.playerName}-${teamName}`
 
+        // Credit goals and cards to the scorer
         const existing = playerMap.get(key)
         if (existing) {
           existing.goals += ps.goals
-          existing.assists += ps.assists
           if (ps.card === 'yellow') existing.yellowCards += 1
           if (ps.card === 'red') existing.redCards += 1
         } else {
@@ -68,10 +68,34 @@ export function useStats() {
               avatar: playerAvatarMap.get(key) || '',
             },
             goals: ps.goals,
-            assists: ps.assists,
+            assists: 0,
             yellowCards: ps.card === 'yellow' ? 1 : 0,
             redCards: ps.card === 'red' ? 1 : 0,
           })
+        }
+
+        // Credit assists to the actual assister, not the scorer
+        if (ps.assists > 0 && ps.assistName) {
+          const assistKey = `${ps.assistName}-${teamName}`
+          const existingAssister = playerMap.get(assistKey)
+          if (existingAssister) {
+            existingAssister.assists += ps.assists
+          } else {
+            playerMap.set(assistKey, {
+              id: assistKey,
+              player: {
+                id: assistKey,
+                name: ps.assistName,
+                team: teamName,
+                teamLogo: teamObj.logo || '',
+                avatar: playerAvatarMap.get(assistKey) || '',
+              },
+              goals: 0,
+              assists: ps.assists,
+              yellowCards: 0,
+              redCards: 0,
+            })
+          }
         }
       }
     }
