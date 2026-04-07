@@ -17,6 +17,7 @@ export interface AggregatedPlayerStat {
   assists: number
   yellowCards: number
   redCards: number
+  cleanSheets: number
 }
 
 const TOP_N = 10
@@ -37,6 +38,20 @@ export function useStats() {
     }
     return map
   }, [players, teams])
+
+  // Build a lookup: teamId -> goalkeeper names
+  const goalkeepersByTeamId = useMemo(() => {
+    const map = new Map<string, string[]>()
+    for (const p of players) {
+      if (!p.isGoalkeeper) continue
+      const teamId = typeof p.team === 'string' ? p.team : p.team?.id
+      if (!teamId) continue
+      const arr = map.get(teamId)
+      if (arr) arr.push(p.name)
+      else map.set(teamId, [p.name])
+    }
+    return map
+  }, [players])
 
   const stats = useMemo(() => {
     const playerMap = new Map<string, AggregatedPlayerStat>()
@@ -71,6 +86,7 @@ export function useStats() {
             assists: 0,
             yellowCards: ps.card === 'yellow' ? 1 : 0,
             redCards: ps.card === 'red' ? 1 : 0,
+            cleanSheets: 0,
           })
         }
 
@@ -94,6 +110,67 @@ export function useStats() {
               assists: ps.assists,
               yellowCards: 0,
               redCards: 0,
+              cleanSheets: 0,
+            })
+          }
+        }
+      }
+    }
+
+    // Compute clean sheets for goalkeepers from finished matches
+    const finishedMatches = matches.filter((m) => m.status === 'finished')
+    for (const match of finishedMatches) {
+      // Team A kept a clean sheet if scoreB === 0
+      if (match.scoreB === 0) {
+        const gkNames = goalkeepersByTeamId.get(match.teamA.id) ?? []
+        for (const gkName of gkNames) {
+          const key = `${gkName}-${match.teamA.name}`
+          const existing = playerMap.get(key)
+          if (existing) {
+            existing.cleanSheets += 1
+          } else {
+            playerMap.set(key, {
+              id: key,
+              player: {
+                id: key,
+                name: gkName,
+                team: match.teamA.name,
+                teamLogo: match.teamA.logo || '',
+                avatar: playerAvatarMap.get(key) || '',
+              },
+              goals: 0,
+              assists: 0,
+              yellowCards: 0,
+              redCards: 0,
+              cleanSheets: 1,
+            })
+          }
+        }
+      }
+
+      // Team B kept a clean sheet if scoreA === 0
+      if (match.scoreA === 0) {
+        const gkNames = goalkeepersByTeamId.get(match.teamB.id) ?? []
+        for (const gkName of gkNames) {
+          const key = `${gkName}-${match.teamB.name}`
+          const existing = playerMap.get(key)
+          if (existing) {
+            existing.cleanSheets += 1
+          } else {
+            playerMap.set(key, {
+              id: key,
+              player: {
+                id: key,
+                name: gkName,
+                team: match.teamB.name,
+                teamLogo: match.teamB.logo || '',
+                avatar: playerAvatarMap.get(key) || '',
+              },
+              goals: 0,
+              assists: 0,
+              yellowCards: 0,
+              redCards: 0,
+              cleanSheets: 1,
             })
           }
         }
@@ -101,7 +178,7 @@ export function useStats() {
     }
 
     return Array.from(playerMap.values())
-  }, [matches, teams, playerAvatarMap])
+  }, [matches, teams, playerAvatarMap, goalkeepersByTeamId])
 
   const topScorers = useMemo(
     () => [...stats].filter((s) => s.goals > 0).sort((a, b) => b.goals - a.goals).slice(0, TOP_N),
@@ -123,11 +200,17 @@ export function useStats() {
     [stats],
   )
 
+  const topCleanSheets = useMemo(
+    () => [...stats].filter((s) => s.cleanSheets > 0).sort((a, b) => b.cleanSheets - a.cleanSheets).slice(0, TOP_N),
+    [stats],
+  )
+
   return {
     stats,
     topScorers,
     topAssists,
     topYellowCards,
     topRedCards,
+    topCleanSheets,
   }
 }

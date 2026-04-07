@@ -50,6 +50,12 @@ export const Players: CollectionConfig = {
       defaultValue: '',
     },
     {
+      name: 'isGoalkeeper',
+      type: 'checkbox',
+      label: 'Goalkeeper',
+      defaultValue: false,
+    },
+    {
       name: 'team',
       type: 'relationship',
       relationTo: 'teams',
