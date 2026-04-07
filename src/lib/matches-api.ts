@@ -178,6 +178,35 @@ export async function deleteMatch(id: string): Promise<void> {
   }
 }
 
+/**
+ * Update all match records that reference a player by oldName,
+ * replacing with newName in both playerName and assistName fields.
+ */
+export async function updatePlayerNameInMatches(
+  oldName: string,
+  newName: string,
+): Promise<void> {
+  if (oldName === newName) return
+
+  const matches = await getMatches()
+  const affectedMatches = matches.filter((m) =>
+    m.playerStats?.some(
+      (ps) => ps.playerName === oldName || ps.assistName === oldName,
+    ),
+  )
+
+  await Promise.all(
+    affectedMatches.map((match) => {
+      const updatedStats = match.playerStats!.map((ps) => ({
+        ...ps,
+        playerName: ps.playerName === oldName ? newName : ps.playerName,
+        assistName: ps.assistName === oldName ? newName : ps.assistName,
+      }))
+      return updateMatch(match.id, { playerStats: updatedStats })
+    }),
+  )
+}
+
 async function extractErrorMessage(res: Response, fallback: string): Promise<string> {
   const err = (await res.json().catch(() => ({}))) as {
     message?: string
