@@ -40,7 +40,6 @@ import {
   transferPlayer,
   uploadMedia,
 } from "@/lib/teams-api"
-import { updatePlayerNameInMatches } from "@/lib/matches-api"
 import type { PayloadTeam } from "@/lib/matches-api"
 import type { PayloadPlayer } from "@/lib/teams-api"
 import type { Match } from "@/types/matchTypes"
@@ -176,16 +175,12 @@ function DesktopTeamsView({
   }
 
   const editMemberMutation = useMutation({
-    mutationFn: async (data: { id: string; name: string; oldName: string; file: File | null }) => {
+    mutationFn: async (data: { id: string; name: string; file: File | null }) => {
       let avatar: string | undefined
       if (data.file) {
         avatar = await uploadMedia(data.file)
       }
-      const result = await updatePlayer(data.id, { name: data.name, ...(avatar && { avatar }) })
-      if (data.oldName !== data.name) {
-        await updatePlayerNameInMatches(data.oldName, data.name)
-      }
-      return result
+      return updatePlayer(data.id, { name: data.name, ...(avatar && { avatar }) })
     },
     onSuccess: () => {
       invalidate()
@@ -325,7 +320,7 @@ function DesktopTeamsView({
 
   const handleEditMemberSubmit = (data: { name: string; file: File | null }) => {
     if (!memberToEdit) return
-    editMemberMutation.mutate({ id: memberToEdit.id, name: data.name, oldName: memberToEdit.name, file: data.file })
+    editMemberMutation.mutate({ id: memberToEdit.id, name: data.name, file: data.file })
   }
 
   const handleTransferMember = (memberId: string) => {
@@ -468,16 +463,12 @@ function MobileTeamsView({
   }
 
   const editMemberMutation = useMutation({
-    mutationFn: async (data: { id: string; name: string; oldName: string; file: File | null }) => {
+    mutationFn: async (data: { id: string; name: string; file: File | null }) => {
       let avatar: string | undefined
       if (data.file) {
         avatar = await uploadMedia(data.file)
       }
-      const result = await updatePlayer(data.id, { name: data.name, ...(avatar && { avatar }) })
-      if (data.oldName !== data.name) {
-        await updatePlayerNameInMatches(data.oldName, data.name)
-      }
-      return result
+      return updatePlayer(data.id, { name: data.name, ...(avatar && { avatar }) })
     },
     onSuccess: () => {
       invalidate()
@@ -598,7 +589,7 @@ function MobileTeamsView({
 
   const handleEditMemberSubmit = (data: { name: string; file: File | null }) => {
     if (!memberToEdit) return
-    editMemberMutation.mutate({ id: memberToEdit.id, name: data.name, oldName: memberToEdit.name, file: data.file })
+    editMemberMutation.mutate({ id: memberToEdit.id, name: data.name, file: data.file })
   }
 
   const handleTeamClick = (teamId: string) => {
