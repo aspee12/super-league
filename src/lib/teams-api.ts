@@ -29,6 +29,7 @@ export type PayloadPlayer = {
   id: string
   name: string
   avatar?: string
+  isGoalkeeper?: boolean
   team: string | { id: string; name: string; logo?: string }
   updatedAt: string
 }
@@ -91,7 +92,7 @@ export async function createPlayer(body: { name: string; avatar?: string; team: 
 }
 
 /** Update a player. */
-export async function updatePlayer(id: string, body: { name?: string; avatar?: string; team?: string }): Promise<PayloadPlayer> {
+export async function updatePlayer(id: string, body: { name?: string; avatar?: string; isGoalkeeper?: boolean; team?: string }): Promise<PayloadPlayer> {
   const res = await fetch(`${API_BASE}/players/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },

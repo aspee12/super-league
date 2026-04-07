@@ -46,9 +46,9 @@ import type { PayloadPlayer } from "@/lib/teams-api"
 import type { Match } from "@/types/matchTypes"
 import type { Team, TeamMember } from "./types"
 
-/** Build a map of playerName-teamName -> { goals, assists } from all matches */
-function buildPlayerStatsMap(matches: Match[]) {
-  const map = new Map<string, { goals: number; assists: number }>()
+/** Build a map of playerName-teamName -> { goals, assists, cleanSheets } from all matches */
+function buildPlayerStatsMap(matches: Match[], goalkeeperNames: Set<string>) {
+  const map = new Map<string, { goals: number; assists: number; cleanSheets: number }>()
   const relevant = matches.filter((m) => m.status === "finished" || m.status === "live")
   for (const match of relevant) {
     if (!match.playerStats) continue
@@ -63,7 +63,7 @@ function buildPlayerStatsMap(matches: Match[]) {
         if (existing) {
           existing.goals += ps.goals
         } else {
-          map.set(key, { goals: ps.goals, assists: 0 })
+          map.set(key, { goals: ps.goals, assists: 0, cleanSheets: 0 })
         }
       }
 
@@ -74,11 +74,35 @@ function buildPlayerStatsMap(matches: Match[]) {
         if (existing) {
           existing.assists += ps.assists
         } else {
-          map.set(assistKey, { goals: 0, assists: ps.assists })
+          map.set(assistKey, { goals: 0, assists: ps.assists, cleanSheets: 0 })
         }
       }
     }
   }
+
+  // Compute clean sheets for goalkeepers from finished matches
+  const finished = matches.filter((m) => m.status === "finished")
+  for (const match of finished) {
+    // Team A kept clean sheet if scoreB === 0
+    if (match.scoreB === 0) {
+      for (const gkName of goalkeeperNames) {
+        const key = `${gkName}-${match.teamA.name}`
+        const existing = map.get(key)
+        if (existing) existing.cleanSheets += 1
+        else map.set(key, { goals: 0, assists: 0, cleanSheets: 1 })
+      }
+    }
+    // Team B kept clean sheet if scoreA === 0
+    if (match.scoreA === 0) {
+      for (const gkName of goalkeeperNames) {
+        const key = `${gkName}-${match.teamB.name}`
+        const existing = map.get(key)
+        if (existing) existing.cleanSheets += 1
+        else map.set(key, { goals: 0, assists: 0, cleanSheets: 1 })
+      }
+    }
+  }
+
   return map
 }
 
@@ -86,7 +110,7 @@ function buildPlayerStatsMap(matches: Match[]) {
 function toTeamView(
   team: PayloadTeam,
   players: PayloadPlayer[],
-  statsMap: Map<string, { goals: number; assists: number }>,
+  statsMap: Map<string, { goals: number; assists: number; cleanSheets: number }>,
 ): Team {
   const teamPlayers = players.filter((p) => {
     const pTeamId = typeof p.team === "string" ? p.team : p.team?.id
@@ -98,13 +122,15 @@ function toTeamView(
     icon: team.logo || "",
     playerCount: teamPlayers.length,
     members: teamPlayers.map((p) => {
-      const stats = statsMap.get(`${p.name}-${team.name}`) || { goals: 0, assists: 0 }
+      const stats = statsMap.get(`${p.name}-${team.name}`) || { goals: 0, assists: 0, cleanSheets: 0 }
       return {
         id: p.id,
         name: p.name,
         avatar: p.avatar || undefined,
+        isGoalkeeper: p.isGoalkeeper || false,
         goals: stats.goals,
         assists: stats.assists,
+        cleanSheets: stats.cleanSheets,
       }
     }),
   }
@@ -116,7 +142,8 @@ export default function Teams() {
   const { matches } = useMatches()
   const [selectedTeamId, setSelectedTeamId] = useState<string>("")
 
-  const statsMap = buildPlayerStatsMap(matches)
+  const goalkeeperNames = new Set(players.filter((p) => p.isGoalkeeper).map((p) => p.name))
+  const statsMap = buildPlayerStatsMap(matches, goalkeeperNames)
   const teams = rawTeams.map((t) => toTeamView(t, players, statsMap))
 
   // Auto-select first team if none selected
@@ -176,12 +203,12 @@ function DesktopTeamsView({
   }
 
   const editMemberMutation = useMutation({
-    mutationFn: async (data: { id: string; name: string; oldName: string; file: File | null }) => {
+    mutationFn: async (data: { id: string; name: string; oldName: string; file: File | null; isGoalkeeper: boolean }) => {
       let avatar: string | undefined
       if (data.file) {
         avatar = await uploadMedia(data.file)
       }
-      const result = await updatePlayer(data.id, { name: data.name, ...(avatar && { avatar }) })
+      const result = await updatePlayer(data.id, { name: data.name, isGoalkeeper: data.isGoalkeeper, ...(avatar && { avatar }) })
       if (data.oldName !== data.name) {
         await updatePlayerNameInMatches(data.oldName, data.name)
       }
@@ -323,9 +350,9 @@ function DesktopTeamsView({
     }
   }
 
-  const handleEditMemberSubmit = (data: { name: string; file: File | null }) => {
+  const handleEditMemberSubmit = (data: { name: string; file: File | null; isGoalkeeper: boolean }) => {
     if (!memberToEdit) return
-    editMemberMutation.mutate({ id: memberToEdit.id, name: data.name, oldName: memberToEdit.name, file: data.file })
+    editMemberMutation.mutate({ id: memberToEdit.id, name: data.name, oldName: memberToEdit.name, file: data.file, isGoalkeeper: data.isGoalkeeper })
   }
 
   const handleTransferMember = (memberId: string) => {
@@ -419,6 +446,7 @@ function DesktopTeamsView({
         }}
         onSubmit={handleEditMemberSubmit}
         initialName={memberToEdit?.name || ""}
+        initialIsGoalkeeper={memberToEdit?.isGoalkeeper || false}
         existingAvatarUrl={memberToEdit?.avatar && (memberToEdit.avatar.startsWith("/") || memberToEdit.avatar.startsWith("http")) ? memberToEdit.avatar : undefined}
       />
 
@@ -468,12 +496,12 @@ function MobileTeamsView({
   }
 
   const editMemberMutation = useMutation({
-    mutationFn: async (data: { id: string; name: string; oldName: string; file: File | null }) => {
+    mutationFn: async (data: { id: string; name: string; oldName: string; file: File | null; isGoalkeeper: boolean }) => {
       let avatar: string | undefined
       if (data.file) {
         avatar = await uploadMedia(data.file)
       }
-      const result = await updatePlayer(data.id, { name: data.name, ...(avatar && { avatar }) })
+      const result = await updatePlayer(data.id, { name: data.name, isGoalkeeper: data.isGoalkeeper, ...(avatar && { avatar }) })
       if (data.oldName !== data.name) {
         await updatePlayerNameInMatches(data.oldName, data.name)
       }
@@ -596,9 +624,9 @@ function MobileTeamsView({
     setEditMemberDialogOpen(true)
   }
 
-  const handleEditMemberSubmit = (data: { name: string; file: File | null }) => {
+  const handleEditMemberSubmit = (data: { name: string; file: File | null; isGoalkeeper: boolean }) => {
     if (!memberToEdit) return
-    editMemberMutation.mutate({ id: memberToEdit.id, name: data.name, oldName: memberToEdit.name, file: data.file })
+    editMemberMutation.mutate({ id: memberToEdit.id, name: data.name, oldName: memberToEdit.name, file: data.file, isGoalkeeper: data.isGoalkeeper })
   }
 
   const handleTeamClick = (teamId: string) => {
@@ -721,12 +749,20 @@ function MobileTeamsView({
                                   )}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <span className="text-sm font-medium text-gray-900 truncate block">
-                                    {member.name}
-                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-sm font-medium text-gray-900 truncate">
+                                      {member.name}
+                                    </span>
+                                    {member.isGoalkeeper && (
+                                      <span className="text-[9px] font-semibold bg-green-100 text-green-700 px-1 py-0.5 rounded shrink-0">GK</span>
+                                    )}
+                                  </div>
                                   <div className="flex gap-3 text-[11px] text-gray-500">
                                     <span>G: <span className="font-semibold text-gray-700">{member.goals}</span></span>
                                     <span>A: <span className="font-semibold text-gray-700">{member.assists}</span></span>
+                                    {member.isGoalkeeper && (
+                                      <span>CS: <span className="font-semibold text-gray-700">{member.cleanSheets}</span></span>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -845,6 +881,7 @@ function MobileTeamsView({
         }}
         onSubmit={handleEditMemberSubmit}
         initialName={memberToEdit?.name || ""}
+        initialIsGoalkeeper={memberToEdit?.isGoalkeeper || false}
         existingAvatarUrl={memberToEdit?.avatar && (memberToEdit.avatar.startsWith("/") || memberToEdit.avatar.startsWith("http")) ? memberToEdit.avatar : undefined}
       />
     </div>

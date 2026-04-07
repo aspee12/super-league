@@ -29,6 +29,7 @@ export function TeamMembersPanel({
   onDeleteMember,
 }: TeamMembersPanelProps) {
   const hasActions = onEditMember || onTransferMember || onDeleteMember
+  const hasGoalkeeper = team.members.some((m) => m.isGoalkeeper)
 
   return (
     <Card>
@@ -59,6 +60,9 @@ export function TeamMembersPanel({
                 {/* <TableHead className="text-white font-semibold">Appearances</TableHead> */}
                 <TableHead className="text-white font-semibold">Goal</TableHead>
                 <TableHead className="text-white font-semibold">Assist</TableHead>
+                {hasGoalkeeper && (
+                  <TableHead className="text-white font-semibold">CS</TableHead>
+                )}
                 {hasActions && (
                   <TableHead className="text-white font-semibold">Actions</TableHead>
                 )}
@@ -80,12 +84,22 @@ export function TeamMembersPanel({
                               .toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="font-medium text-gray-900">{member.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900">{member.name}</span>
+                          {member.isGoalkeeper && (
+                            <span className="text-[10px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">GK</span>
+                          )}
+                        </div>
                       </div>
                     </TableCell>
                     {/* <TableCell className="text-gray-700">{member.appearances}</TableCell> */}
                     <TableCell className="text-gray-700">{member.goals}</TableCell>
                     <TableCell className="text-gray-700">{member.assists}</TableCell>
+                    {hasGoalkeeper && (
+                      <TableCell className="text-gray-700">
+                        {member.isGoalkeeper ? member.cleanSheets : "-"}
+                      </TableCell>
+                    )}
                     {hasActions && (
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -126,7 +140,7 @@ export function TeamMembersPanel({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={hasActions ? 4 : 3} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={hasActions ? (hasGoalkeeper ? 5 : 4) : (hasGoalkeeper ? 4 : 3)} className="text-center py-8 text-gray-500">
                     No members found. Add a new member to get started.
                   </TableCell>
                 </TableRow>

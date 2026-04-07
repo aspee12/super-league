@@ -6,7 +6,7 @@ import { CATEGORY_CONFIG, StatCategory } from '@constants/stats';
 
 export function StatsView() {
   const [activeCategory, setActiveCategory] = useState<StatCategory>('goals');
-  const { topScorers, topAssists, topYellowCards, topRedCards } = useStats();
+  const { topScorers, topAssists, topYellowCards, topRedCards, topCleanSheets } = useStats();
   const activeConfig = CATEGORY_CONFIG[activeCategory];
   const IconComponent = activeConfig.icon;
   const categories = Object.keys(CATEGORY_CONFIG) as StatCategory[];
@@ -18,6 +18,8 @@ export function StatsView() {
         return topScorers;
       case 'assists':
         return topAssists;
+      case 'cleanSheet':
+        return topCleanSheets;
       case 'yellowCard':
         return topYellowCards;
       case 'redCard':
@@ -33,6 +35,8 @@ export function StatsView() {
         return stat.goals;
       case 'assists':
         return stat.assists;
+      case 'cleanSheet':
+        return stat.cleanSheets;
       case 'yellowCard':
         return stat.yellowCards;
       case 'redCard':

@@ -1,4 +1,4 @@
-import { HandHeart, LucideIcon, RectangleVertical, Trophy } from "lucide-react";
+import { HandHeart, LucideIcon, RectangleVertical, Shield, Trophy } from "lucide-react";
 
 export const CATEGORY_CONFIG: Record<StatCategory, CategoryConfig> = {
   goals: {
@@ -16,6 +16,15 @@ export const CATEGORY_CONFIG: Record<StatCategory, CategoryConfig> = {
     icon: HandHeart,
     valueKey: "assists",
     valueLabel: "Assists",
+  },
+  cleanSheet: {
+    label: "Clean Sheet",
+    shortLabel: "CS",
+    cardTitle: "Clean Sheets",
+    icon: Shield,
+    valueKey: "cleanSheets",
+    valueLabel: "Clean Sheet",
+    iconClassName: "text-green-600 fill-green-100",
   },
   yellowCard: {
     label: "Yellow Card",
@@ -37,7 +46,7 @@ export const CATEGORY_CONFIG: Record<StatCategory, CategoryConfig> = {
   },
 };
 
-export type StatCategory = "goals" | "assists" | "yellowCard" | "redCard";
+export type StatCategory = "goals" | "assists" | "cleanSheet" | "yellowCard" | "redCard";
 
 export interface CategoryConfig {
     label: string;

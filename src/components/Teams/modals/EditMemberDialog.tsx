@@ -11,13 +11,15 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import { FileUpload } from "./FileUpload"
 
 interface EditMemberDialogProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (data: { name: string; file: File | null }) => void
+  onSubmit: (data: { name: string; file: File | null; isGoalkeeper: boolean }) => void
   initialName?: string
+  initialIsGoalkeeper?: boolean
   existingAvatarUrl?: string
 }
 
@@ -26,29 +28,33 @@ export function EditMemberDialog({
   onClose,
   onSubmit,
   initialName = "",
+  initialIsGoalkeeper = false,
   existingAvatarUrl,
 }: EditMemberDialogProps) {
   const [playerName, setPlayerName] = useState("")
   const [playerPicture, setPlayerPicture] = useState<File | null>(null)
+  const [isGoalkeeper, setIsGoalkeeper] = useState(false)
   const [showExisting, setShowExisting] = useState(true)
 
   useEffect(() => {
     if (isOpen) {
       setPlayerName(initialName)
+      setIsGoalkeeper(initialIsGoalkeeper)
       setPlayerPicture(null)
       setShowExisting(true)
     }
-  }, [isOpen, initialName])
+  }, [isOpen, initialName, initialIsGoalkeeper])
 
   const handleSubmit = () => {
     if (!playerName.trim()) return
-    onSubmit({ name: playerName, file: playerPicture })
+    onSubmit({ name: playerName, file: playerPicture, isGoalkeeper })
     handleClose()
   }
 
   const handleClose = () => {
     setPlayerName("")
     setPlayerPicture(null)
+    setIsGoalkeeper(false)
     setShowExisting(true)
     onClose()
   }
@@ -78,6 +84,16 @@ export function EditMemberDialog({
               existingImageUrl={showExisting ? existingAvatarUrl : undefined}
               onClearExisting={() => setShowExisting(false)}
             />
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="edit-is-goalkeeper"
+              checked={isGoalkeeper}
+              onCheckedChange={(checked) => setIsGoalkeeper(checked === true)}
+            />
+            <Label htmlFor="edit-is-goalkeeper" className="cursor-pointer">
+              Goalkeeper
+            </Label>
           </div>
         </div>
         <DialogFooter>
