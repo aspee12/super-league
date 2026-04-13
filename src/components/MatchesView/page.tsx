@@ -1,6 +1,6 @@
 'use client'
 
-import { Pause, Pencil, Plus, RefreshCw } from 'lucide-react'
+import { ChevronRight, Pause, Pencil, Plus, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -11,6 +11,7 @@ import { ConfirmModal } from '@shared-component/modals/ConfirmationModal/Confirm
 import { useAuthStore } from '@/store/authStore'
 import { useMatches } from '@/hooks/useMatches'
 import { endMatch, deleteMatch } from '@/lib/matches-api'
+import Link from 'next/link'
 import type { Match } from '@app-types/matchTypes'
 import { FullPageLoader } from '@shared-component/FullPageLoader'
 
@@ -174,6 +175,13 @@ export function MatchesView() {
         ) : (
           <div className="text-center py-8 text-gray-500">No recent results</div>
         )}
+        <Link
+          href="/results"
+          className="w-full mt-4 bg-white rounded-lg shadow-sm p-4 flex items-center justify-center gap-2 text-gray-800 hover:bg-gray-50 transition-colors"
+        >
+          <span className="text-sm font-medium">View all results</span>
+          <ChevronRight size={16} className="text-gray-600" />
+        </Link>
       </div>
 
       {/* Modals */}

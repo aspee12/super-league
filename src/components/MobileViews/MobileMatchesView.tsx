@@ -301,7 +301,7 @@ export function MobileMatchesView() {
         )}
 
         <a
-          href="/table"
+          href="/results"
           className="w-full mt-4 bg-white rounded-xl shadow-sm p-4 flex items-center justify-center gap-2 text-gray-800 hover:bg-gray-50 active:bg-gray-100 transition-colors"
         >
           <span className="text-sm font-medium">View all results</span>
