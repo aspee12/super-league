@@ -73,11 +73,24 @@ export function useMatches() {
     [matches],
   )
 
+  const allResults = useMemo(
+    () =>
+      matches
+        .filter((m) => m.status === 'finished')
+        .sort((a, b) => {
+          const dateA = new Date(`${a.date}T${a.time}`)
+          const dateB = new Date(`${b.date}T${b.time}`)
+          return dateB.getTime() - dateA.getTime()
+        }),
+    [matches],
+  )
+
   return {
     ...query,
     matches,
     liveMatches,
     upcomingMatches,
     recentMatches,
+    allResults,
   }
 }

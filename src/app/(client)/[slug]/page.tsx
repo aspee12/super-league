@@ -3,8 +3,10 @@
 import LeagueTable from "@components/LeagueTable/LeagueTable";
 import { MatchesView } from "@components/MatchesView/page";
 import { StatsView } from "@components/StatsView/page";
+import { AllResultsView } from "@components/ResultsView/AllResultsView";
 import { MobileMatchesView } from '@components/MobileViews/MobileMatchesView';
 import { MobileTableView } from '@components/MobileViews/MobileTabelView';
+import { MobileAllResultsView } from '@components/MobileViews/MobileAllResultsView';
 import Teams from "@components/Teams/teams";
 import Header from "@shared-component/Header";
 import SideBar from "@shared-component/SideBar";
@@ -70,6 +72,8 @@ export default function DynamicPage() {
         return <LeagueTable />;
       case "matches":
         return <MatchesView />;
+      case "results":
+        return <AllResultsView />;
       case "stats":
         return <StatsView />;
       case "teams":
@@ -86,12 +90,14 @@ export default function DynamicPage() {
         return <MobileTableView />;
       case "matches":
         return <MobileMatchesView />;
+      case "results":
+        return <MobileAllResultsView />;
       case "stats":
         return <StatsView />;
       case "teams":
         return <Teams />;
       default:
-      return <MobileTableView />;
+        return <MobileTableView />;
     }
   };
 

@@ -195,6 +195,7 @@ export interface Player {
   id: string;
   name: string;
   avatar?: string | null;
+  isGoalkeeper?: boolean | null;
   team: string | Team;
   updatedAt: string;
   createdAt: string;
@@ -393,6 +394,7 @@ export interface MatchesSelect<T extends boolean = true> {
 export interface PlayersSelect<T extends boolean = true> {
   name?: T;
   avatar?: T;
+  isGoalkeeper?: T;
   team?: T;
   updatedAt?: T;
   createdAt?: T;
