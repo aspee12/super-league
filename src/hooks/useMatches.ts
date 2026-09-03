@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getMatches, type PayloadMatch, type PayloadTeam } from '@/lib/matches-api'
 import { computeMatchStatus } from '@/lib/match-status'
+import { useSeasons } from './useSeasons'
 import type { Match, Team } from '@app-types/matchTypes'
 
 function toTeam(val: string | PayloadTeam): Team {
@@ -29,9 +30,15 @@ function toMatch(doc: PayloadMatch): Match {
 }
 
 export function useMatches() {
+  const { viewingSeasonId, isReady } = useSeasons()
+
   const query = useQuery({
-    queryKey: ['matches'],
-    queryFn: getMatches,
+    // Season is part of the key so switching seasons refetches rather than
+    // showing the previous season's fixtures.
+    queryKey: ['matches', viewingSeasonId ?? null],
+    queryFn: () => getMatches(viewingSeasonId),
+    // Wait for the season list, otherwise the first fetch would be unscoped.
+    enabled: isReady,
     // Adaptive polling: 15s when live matches exist, 2min otherwise.
     // TanStack Query v5 supports a function for refetchInterval that
     // receives the current query state — we inspect the cached data to decide.

@@ -19,11 +19,18 @@ export type PayloadPlayerStat = {
   card?: 'none' | 'yellow' | 'red'
 }
 
+export type PayloadSeasonRef = {
+  id: string
+  name: string
+  isActive?: boolean
+}
+
 export type PayloadMatch = {
   id: string
 
   teamA: string | PayloadTeam
   teamB: string | PayloadTeam
+  season?: string | PayloadSeasonRef | null
   date: string
   time: string
   status: 'live' | 'upcoming' | 'finished'
@@ -37,6 +44,7 @@ export type CreateMatchBody = {
 
   teamA: string
   teamB: string
+  season: string
   date: string
   time: string
   status?: 'live' | 'upcoming' | 'finished'
@@ -56,12 +64,16 @@ export async function getTeams(): Promise<PayloadTeam[]> {
   return data.docs ?? []
 }
 
-/** Fetch all matches from Payload. */
-export async function getMatches(): Promise<PayloadMatch[]> {
-  const res = await fetch(
-    `${API_BASE}/matches?limit=500&depth=1&sort=-date`,
-    { credentials: 'include' },
-  )
+/**
+ * Fetch matches from Payload, optionally scoped to one season.
+ * Filtering server-side keeps the payload small as seasons accumulate.
+ */
+export async function getMatches(seasonId?: string): Promise<PayloadMatch[]> {
+  const params = new URLSearchParams({ limit: '500', depth: '1', sort: '-date' })
+  if (seasonId) {
+    params.set('where[season][equals]', seasonId)
+  }
+  const res = await fetch(`${API_BASE}/matches?${params}`, { credentials: 'include' })
   if (!res.ok) throw new Error('Failed to fetch matches')
   const data = await res.json()
   return data.docs ?? []

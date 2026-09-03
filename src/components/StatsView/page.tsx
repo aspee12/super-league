@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useStats, type AggregatedPlayerStat } from '@/hooks/useStats';
 import { CATEGORY_CONFIG, StatCategory } from '@constants/stats';
+import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilter';
 
 export function StatsView() {
   const [activeCategory, setActiveCategory] = useState<StatCategory>('goals');
@@ -50,6 +51,17 @@ export function StatsView() {
 
   return (
     <div className="flex-1 min-h-0 flex flex-col px-4 py-4 md:px-8 md:py-6 md:block">
+      <div className="mb-4">
+        <h1
+          className="hidden md:block font-bold text-[20px] leading-[30px] text-[#201f1e] mb-3"
+          style={{ letterSpacing: '0.25px' }}
+        >
+          Player Statistics
+        </h1>
+        <SeasonFilter showReset={false} />
+      </div>
+      <ArchiveSeasonNotice />
+
       {/* Mobile: Horizontal tabs */}
       <div className="flex gap-2 mb-4 md:hidden">
         {categories.map((categoryId) => {
@@ -74,12 +86,9 @@ export function StatsView() {
 
       <div className="flex flex-col md:flex-row gap-4 md:gap-6 flex-1 min-h-0">
         {/* Desktop: Player Statistics sidebar */}
-        <div className="hidden md:block w-64 shrink-0">
-          <div className="bg-white rounded-lg shadow-sm p-4 border border-[#e7e6e6]">
-            <h2 className="font-bold text-[20px] leading-[30px] tracking-[0.25px] text-[#201f1e] mb-4">
-              Player Statistics
-            </h2>
-            <div className="space-y-2">
+        <div className="hidden md:block shrink-0">
+          <div className="bg-white rounded-[8px] p-6 border border-[#e7e6e6]">
+            <div className="flex flex-col gap-4 w-[194px]">
               {categories.map((categoryId) => {
                 const config = CATEGORY_CONFIG[categoryId];
                 const Icon = config.icon;
@@ -89,14 +98,24 @@ export function StatsView() {
                     key={categoryId}
                     type="button"
                     onClick={() => setActiveCategory(categoryId)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[16px] leading-[28px] transition-colors ${
+                    className={`w-full h-[62px] flex items-center gap-3 px-6 py-3 rounded-[8px] transition-colors ${
                       isActive
-                        ? 'bg-[#267c93] text-white'
-                        : 'bg-[#f5f5f5] text-[#605e5c] border border-[#e7e6e6] hover:bg-[#e7e6e6]'
+                        ? 'bg-[#267c93]'
+                        : 'bg-white border border-[#e7e6e6] hover:bg-[#f5f5f5]'
                     }`}
                   >
-                    <Icon size={20} className={config.iconClassName} />
-                    <span>{config.label}</span>
+                    <Icon
+                      size={28}
+                      className={isActive ? 'text-white' : config.iconClassName}
+                    />
+                    <span
+                      className={`font-bold text-[16px] leading-[28px] ${
+                        isActive ? 'text-white' : 'text-black'
+                      }`}
+                      style={{ letterSpacing: '0.5px' }}
+                    >
+                      {config.label}
+                    </span>
                   </button>
                 );
               })}

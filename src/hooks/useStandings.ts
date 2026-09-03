@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getMatches, getTeams, type PayloadMatch, type PayloadTeam } from '@/lib/matches-api'
 import { computeMatchStatus } from '@/lib/match-status'
 import { computeStandings, type StandingEntry } from '@/lib/compute-standings'
+import { useSeasons } from './useSeasons'
 import type { Match, Team } from '@app-types/matchTypes'
 
 function toTeam(val: string | PayloadTeam): Team {
@@ -27,9 +28,12 @@ function toMatch(doc: PayloadMatch): Match {
 }
 
 export function useStandings() {
+  const { viewingSeasonId, isReady } = useSeasons()
+
   const matchesQuery = useQuery({
-    queryKey: ['matches'],
-    queryFn: getMatches,
+    queryKey: ['matches', viewingSeasonId ?? null],
+    queryFn: () => getMatches(viewingSeasonId),
+    enabled: isReady,
     // Standings page: poll every 15s when a live match exists, else 2min.
     refetchInterval: (query) => {
       const docs = query.state.data as PayloadMatch[] | undefined

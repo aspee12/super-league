@@ -7,6 +7,8 @@ import { AllResultsView } from "@components/ResultsView/AllResultsView";
 import { MobileMatchesView } from '@components/MobileViews/MobileMatchesView';
 import { MobileTableView } from '@components/MobileViews/MobileTabelView';
 import { MobileAllResultsView } from '@components/MobileViews/MobileAllResultsView';
+import NewsView from "@components/NewsView/page";
+import MobileNewsView from '@components/MobileViews/MobileNewsView';
 import Teams from "@components/Teams/teams";
 import Header from "@shared-component/Header";
 import SideBar from "@shared-component/SideBar";
@@ -78,6 +80,8 @@ export default function DynamicPage() {
         return <StatsView />;
       case "teams":
         return <Teams />;
+      case "news":
+        return <NewsView />;
       default:
         return <LeagueTable />;
     }
@@ -96,6 +100,8 @@ export default function DynamicPage() {
         return <StatsView />;
       case "teams":
         return <Teams />;
+      case "news":
+        return <MobileNewsView />;
       default:
         return <MobileTableView />;
     }
@@ -105,7 +111,7 @@ export default function DynamicPage() {
     <main className="flex flex-col h-screen">
       <Header />
       <SideBar />
-      <div className="flex-1 overflow-auto md:ml-44.5 md:mt-30 md:pb-0 pb-20">
+      <div className="flex-1 overflow-auto md:ml-44.5 md:mt-[86px] md:pb-0 pb-20">
         {isMobile ? renderMobileContent() : renderDesktopContent()}
       </div>
     </main>

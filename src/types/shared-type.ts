@@ -8,6 +8,16 @@ export interface AddMatchModalProps {
   isEditMode?: boolean
 }
 
+export interface AddNewsModalProps {
+  isOpen: boolean
+  onClose: () => void
+  /** Present when editing an existing article. */
+  initialData?: import('@/lib/news-api').PayloadNews | null
+  onSubmit?: () => void
+  title?: string
+  submitText?: string
+}
+
 export interface ConfirmModalProps {
   isOpen: boolean
   onClose: () => void

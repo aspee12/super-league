@@ -72,6 +72,8 @@ export interface Config {
     matches: Match;
     players: Player;
     media: Media;
+    news: News;
+    seasons: Season;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -84,6 +86,8 @@ export interface Config {
     matches: MatchesSelect<false> | MatchesSelect<true>;
     players: PlayersSelect<false> | PlayersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    news: NewsSelect<false> | NewsSelect<true>;
+    seasons: SeasonsSelect<false> | SeasonsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -168,6 +172,10 @@ export interface Match {
   id: string;
   teamA: string | Team;
   teamB: string | Team;
+  /**
+   * Which season this fixture belongs to.
+   */
+  season: string | Season;
   date: string;
   time: string;
   status: 'live' | 'upcoming' | 'finished';
@@ -184,6 +192,29 @@ export interface Match {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "seasons".
+ */
+export interface Season {
+  id: string;
+  /**
+   * Display name, e.g. "Season 3".
+   */
+  name: string;
+  /**
+   * Sort order; the newest season should have the highest number.
+   */
+  order: number;
+  startDate?: string | null;
+  endDate?: string | null;
+  /**
+   * The season shown by default across Table, Matches, Stats and News. Turning this on turns it off everywhere else.
+   */
+  isActive?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -239,6 +270,40 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news".
+ */
+export interface News {
+  id: string;
+  title: string;
+  /**
+   * Short summary shown on the news card.
+   */
+  excerpt?: string | null;
+  content: string;
+  /**
+   * Cover image URL, set by uploading through the app.
+   */
+  image?: string | null;
+  category: 'match_report' | 'transfer' | 'club_news' | 'announcement' | 'interview';
+  /**
+   * Optional — the team this article relates to.
+   */
+  team?: (string | null) | Team;
+  /**
+   * Season the article belongs to.
+   */
+  season: string | Season;
+  publishedDate: string;
+  /**
+   * Featured articles surface at the top of the news page.
+   */
+  featured?: boolean | null;
+  author?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -280,6 +345,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'news';
+        value: string | News;
+      } | null)
+    | ({
+        relationTo: 'seasons';
+        value: string | Season;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -368,6 +441,7 @@ export interface TeamsSelect<T extends boolean = true> {
 export interface MatchesSelect<T extends boolean = true> {
   teamA?: T;
   teamB?: T;
+  season?: T;
   date?: T;
   time?: T;
   status?: T;
@@ -440,6 +514,37 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news_select".
+ */
+export interface NewsSelect<T extends boolean = true> {
+  title?: T;
+  excerpt?: T;
+  content?: T;
+  image?: T;
+  category?: T;
+  team?: T;
+  season?: T;
+  publishedDate?: T;
+  featured?: T;
+  author?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "seasons_select".
+ */
+export interface SeasonsSelect<T extends boolean = true> {
+  name?: T;
+  order?: T;
+  startDate?: T;
+  endDate?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
