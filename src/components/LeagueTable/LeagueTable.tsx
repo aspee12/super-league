@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useStandings } from '@/hooks/useStandings'
 import { TeamLogo } from '@shared-component/TeamLogo'
 import { FullPageLoader } from '@shared-component/FullPageLoader'
+import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilter'
 
 type MobileTab = 'short' | 'full' | 'form'
 
@@ -51,7 +52,11 @@ export default function LeagueTable() {
   if (standings.length === 0) {
     return (
       <div className="w-full pt-4 px-4 md:px-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">League Table</h1>
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">League Table</h1>
+          <SeasonFilter />
+        </div>
+        <ArchiveSeasonNotice />
         <div className="flex items-center justify-center py-20 text-gray-500">
           No teams or matches yet.
         </div>
@@ -63,7 +68,11 @@ export default function LeagueTable() {
     <div className="w-full from-blue-100 via-blue-50 to-cyan-100 pt-4 px-4 md:px-6">
       {/* Desktop View */}
       <div className="hidden md:block">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">League Table</h1>
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">League Table</h1>
+          <SeasonFilter />
+        </div>
+        <ArchiveSeasonNotice />
 
         <div className="overflow-x-auto rounded-lg shadow-lg bg-white">
           <table className="w-full border-collapse">

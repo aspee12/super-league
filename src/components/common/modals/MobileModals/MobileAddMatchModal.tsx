@@ -9,6 +9,7 @@ import { AddMatchModalProps, MatchProps } from '@app-types/shared-type'
 import { DatePicker } from '@ui/DatePicker'
 import { TimePicker } from '@ui/TimePicker'
 import { getTeams, createMatch, updateMatch } from '@/lib/matches-api'
+import { useSeasons } from '@/hooks/useSeasons'
 
 type FormValues = MatchProps
 
@@ -22,6 +23,7 @@ export function MobileAddMatchModal({
 }: AddMatchModalProps) {
   const queryClient = useQueryClient()
   const isEditMode = !!initialData
+  const { viewingSeasonId } = useSeasons()
 
   const { data: teams = [], isLoading: teamsLoading } = useQuery({
     queryKey: ['teams'],
@@ -147,6 +149,10 @@ export function MobileAddMatchModal({
       setError('time', { type: 'required', message: 'Time is required' })
       return
     }
+    if (!isEditMode && !viewingSeasonId) {
+      toast.error('No season is configured yet. Create a season before adding matches.')
+      return
+    }
     if (isEditMode && initialData?.id) {
       updateMutation.mutate({
         id: initialData.id,
@@ -162,6 +168,7 @@ export function MobileAddMatchModal({
       createMutation.mutate({
         teamA: data.teamA,
         teamB: data.teamB,
+        season: viewingSeasonId as string,
         date: data.date,
         time: data.time,
         status: 'upcoming',

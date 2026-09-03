@@ -14,6 +14,7 @@ import { endMatch, deleteMatch } from '@/lib/matches-api'
 import Link from 'next/link'
 import type { Match } from '@app-types/matchTypes'
 import { FullPageLoader } from '@shared-component/FullPageLoader'
+import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilter'
 
 export function MatchesView() {
   const queryClient = useQueryClient()
@@ -65,6 +66,12 @@ export function MatchesView() {
 
   return (
     <div className="min-h-screen flex-1 p-6">
+      <div className="hidden md:flex flex-wrap items-center justify-between gap-4 mb-4">
+        <h1 className="text-2xl font-bold text-gray-800">Matches</h1>
+        <SeasonFilter />
+      </div>
+      <ArchiveSeasonNotice />
+
       {/* Live Now Section */}
       <div className="hidden md:block mb-4">
         <div className="bg-white rounded-lg p-3 shadow-sm">

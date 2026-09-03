@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useStandings } from '@/hooks/useStandings'
 import { TeamLogo } from '@shared-component/TeamLogo'
 import { FullPageLoader } from '@shared-component/FullPageLoader'
+import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilter'
 
 type MobileTab = 'short' | 'full' | 'form'
 
@@ -49,7 +50,13 @@ export function MobileTableView() {
 
   return (
     <div className="min-h-screen from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4] pb-20 mt-10">
-      <div className="px-4 -mt-4">
+      <div className="px-4 -mt-4 mb-3">
+        <SeasonFilter showReset={false} />
+        <div className="mt-3">
+          <ArchiveSeasonNotice />
+        </div>
+      </div>
+      <div className="px-4">
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           <div className="px-4 py-3 bg-white">
             <h2 className="font-semibold text-gray-800">League Table</h2>

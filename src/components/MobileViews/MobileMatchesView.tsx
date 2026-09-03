@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import {
   MoreVertical,
   RefreshCcw,
@@ -22,6 +23,7 @@ import type { Match, PlayerStat } from '@app-types/matchTypes'
 import { formatTime12h } from '@/lib/format-time'
 import { TeamLogo } from '@shared-component/TeamLogo'
 import { FullPageLoader } from '@shared-component/FullPageLoader'
+import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilter'
 
 export function MobileMatchesView() {
   const queryClient = useQueryClient()
@@ -79,8 +81,15 @@ export function MobileMatchesView() {
 
   return (
     <div className="min-h-screen pb-20">
+      <div className="px-4 mt-4 mb-3">
+        <SeasonFilter showReset={false} />
+        <div className="mt-3">
+          <ArchiveSeasonNotice />
+        </div>
+      </div>
+
       {/* Live Now Section */}
-      <div className="px-4 mt-4 mb-6">
+      <div className="px-4 mb-6">
         <div className="bg-white rounded-lg p-3 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -300,13 +309,13 @@ export function MobileMatchesView() {
           <p className="text-center text-gray-500 text-sm py-4">No recent results</p>
         )}
 
-        <a
+        <Link
           href="/results"
           className="w-full mt-4 bg-white rounded-xl shadow-sm p-4 flex items-center justify-center gap-2 text-gray-800 hover:bg-gray-50 active:bg-gray-100 transition-colors"
         >
           <span className="text-sm font-medium">View all results</span>
           <ChevronRight size={16} className="text-gray-600" />
-        </a>
+        </Link>
       </div>
 
       {/* Modals */}

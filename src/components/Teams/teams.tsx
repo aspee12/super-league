@@ -8,6 +8,7 @@ import { useTeams } from "@/hooks/useTeams"
 import { useMatches } from "@/hooks/useMatches"
 import { useAuthStore } from "@/store/authStore"
 import { FullPageLoader } from "@shared-component/FullPageLoader"
+import { ArchiveSeasonNotice, SeasonFilter } from "@shared-component/SeasonFilter"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
@@ -144,7 +145,18 @@ export default function Teams() {
 
   const goalkeeperNames = new Set(players.filter((p) => p.isGoalkeeper).map((p) => p.name))
   const statsMap = buildPlayerStatsMap(matches, goalkeeperNames)
-  const teams = rawTeams.map((t) => toTeamView(t, players, statsMap))
+  const allTeams = rawTeams.map((t) => toTeamView(t, players, statsMap))
+
+  // Teams aren't tagged with a season, so participation is derived from that
+  // season's fixtures. A season with no fixtures yet (e.g. one just started)
+  // falls back to every club, so newly-added teams stay visible.
+  const seasonTeamIds = new Set<string>()
+  for (const match of matches) {
+    seasonTeamIds.add(match.teamA.id)
+    seasonTeamIds.add(match.teamB.id)
+  }
+  const teams =
+    seasonTeamIds.size > 0 ? allTeams.filter((t) => seasonTeamIds.has(t.id)) : allTeams
 
   // Auto-select first team if none selected
   const effectiveSelectedId = selectedTeamId || teams[0]?.id || ""
@@ -378,9 +390,11 @@ function DesktopTeamsView({
 
   return (
     <div className="p-6 min-h-screen from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4]">
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-gray-900">Futsal Club</h1>
+        <SeasonFilter showReset={false} />
       </div>
+      <ArchiveSeasonNotice />
 
       <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
         <TeamsSidebar
@@ -644,6 +658,12 @@ function MobileTeamsView({
     <div className="min-h-screen pb-20">
       {/* Team Management Section */}
       <div className="px-4">
+        <div className="pt-4 mb-3">
+          <SeasonFilter showReset={false} />
+          <div className="mt-3">
+            <ArchiveSeasonNotice />
+          </div>
+        </div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">Team Management</h2>
           {hasTeamPermission && (

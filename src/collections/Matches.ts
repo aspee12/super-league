@@ -4,7 +4,7 @@ export const Matches: CollectionConfig = {
   slug: 'matches',
   admin: {
     useAsTitle: 'id',
-    defaultColumns: ['teamA', 'teamB', 'date', 'time', 'status', 'updatedAt'],
+    defaultColumns: ['teamA', 'teamB', 'season', 'date', 'time', 'status', 'updatedAt'],
   },
   access: {
     read: () => true,
@@ -26,6 +26,14 @@ export const Matches: CollectionConfig = {
       relationTo: 'teams',
       required: true,
       hasMany: false,
+    },
+    {
+      name: 'season',
+      type: 'relationship',
+      relationTo: 'seasons',
+      required: true,
+      hasMany: false,
+      admin: { description: 'Which season this fixture belongs to.' },
     },
     {
       name: 'date',

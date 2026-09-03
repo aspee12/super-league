@@ -30,12 +30,36 @@ export default function SideBar() {
     router.replace('/login');
   };
 
+  const renderNavLink = (item: (typeof navItems)[number]) => {
+    const Icon = item.icon;
+    const active = isActive(item.path);
+    return (
+      <Link
+        key={item.path}
+        href={item.path}
+        className="flex flex-col items-center justify-center py-1 px-2"
+      >
+        <Icon className={`w-5 h-5 mb-1 ${active ? 'text-[#267c93]' : 'text-[#605e5c]'}`} />
+        <span className={`text-[12px] ${active ? 'text-[#267c93]' : 'text-[#605e5c]'}`}>
+          {item.label}
+        </span>
+        {active && <span className="mt-1 w-9 h-0.75 bg-[#267c93] rounded" />}
+      </Link>
+    );
+  };
+
   return (
     <>
       <div className="flex">
          {/* Desktop Sidebar */}
-         <aside className="p-3 hidden md:flex md:flex-col md:w-44.5 bg-linear-to-br from-blue-50 to-teal-50 border-r border-gray-200 md:fixed md:left-0 md:top-[120px] md:z-30"
-           style={{ height: 'calc(100vh - 120px)' }}>
+         <aside
+           className="p-3 hidden md:flex md:flex-col md:w-44.5 border-r border-gray-200 md:fixed md:left-0 md:top-[86px] md:z-30"
+           style={{
+             height: 'calc(100vh - 86px)',
+             backgroundImage:
+               'linear-gradient(169deg, rgb(226,237,240) 1.04%, rgb(232,248,252) 31.97%, rgb(179,219,229) 99.98%)',
+           }}
+         >
           <nav className="flex-1 flex flex-col pt-2 pb-4 gap-3">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -87,20 +111,12 @@ export default function SideBar() {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#ecf9ff] border-t border-[#a6dfe6] shadow-[0_-6px_16px_rgba(0,0,0,0.08)] z-1000">
         <div className="relative">
-          <div className="flex items-center justify-between px-2 pt-2 pb-6">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const active = isActive(item.path);
-              return (
-                <div key={item.path} className="flex-1 flex justify-center">
-                  <Link href={item.path} className="flex flex-col items-center justify-center py-1 px-2">
-                    <Icon className={`w-5 h-5 mb-1 ${active ? 'text-[#267c93]' : 'text-[#605e5c]'}`} />
-                    <span className={`text-[12px] ${active ? 'text-[#267c93]' : 'text-[#605e5c]'}`}>{item.label}</span>
-                    {active && <span className="mt-1 w-9 h-0.75 bg-[#267c93] rounded" />}
-                  </Link>
-                </div>
-              );
-            })}
+          {/* Two equal-width halves flanking a fixed centre gap, so the floating
+              button never lands on top of a nav item. */}
+          <div className="flex items-center px-2 pt-2 pb-6">
+            <div className="flex-1 flex justify-around">{navItems.slice(0, 3).map(renderNavLink)}</div>
+            {user && <div className="w-14 shrink-0" aria-hidden />}
+            <div className="flex-1 flex justify-around">{navItems.slice(3).map(renderNavLink)}</div>
 
             {/* Floating Add Match - only when logged in */}
             {user && (
