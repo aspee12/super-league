@@ -18,30 +18,25 @@ function formatLongDate(value: string): string {
   return `${String(d).padStart(2, '0')} ${months[m - 1]} ${y}`
 }
 
-function LatestNewsRail({ articles }: { readonly articles: PayloadNews[] }) {
-  if (articles.length === 0) return null
-
+function RelatedContentRail({ articles }: { readonly articles: PayloadNews[] }) {
   return (
-    <aside className="w-full lg:w-[320px] shrink-0">
-      <div className="bg-white rounded-[8px] border border-[#e7e6e6] p-4">
+    <aside className="w-full lg:w-[360px] shrink-0 lg:sticky lg:top-2">
+      <div className="bg-white rounded-[8px] border border-[#e7e6e6] p-5">
         <h2
-          className="font-bold text-[16px] text-[#004556] mb-3"
+          className="font-bold text-[20px] text-[#004556] mb-4"
           style={{ letterSpacing: '0.15px' }}
         >
-          Latest News
+          Related Content
         </h2>
         <ul className="flex flex-col divide-y divide-[#e7e6e6]">
           {articles.map((item) => (
             <li key={item.id}>
-              <Link
-                href={`/news/${item.id}`}
-                className="flex gap-3 items-start py-3 group"
-              >
+              <Link href={`/news/${item.id}`} className="flex gap-3 items-start py-3 group">
                 <span className="flex-1 min-w-0">
-                  <span className="block text-[14px] font-medium text-[#201f1e] leading-[20px] group-hover:text-[#0e7490] line-clamp-3">
+                  <span className="block text-[15px] font-bold text-[#201f1e] leading-[21px] group-hover:text-[#0e7490] line-clamp-3">
                     {item.title}
                   </span>
-                  <span className="block text-[12px] text-[#605e5c] mt-1">
+                  <span className="block text-[13px] text-[#605e5c] mt-1">
                     {NEWS_CATEGORY_CONFIG[item.category].label}
                   </span>
                 </span>
@@ -50,7 +45,7 @@ function LatestNewsRail({ articles }: { readonly articles: PayloadNews[] }) {
                     src={item.image}
                     alt=""
                     aria-hidden
-                    className="w-[72px] h-[48px] rounded-[4px] object-cover shrink-0"
+                    className="w-[104px] h-[68px] rounded-[4px] object-cover shrink-0"
                   />
                 )}
               </Link>
@@ -86,6 +81,7 @@ export function NewsArticleView({ articleId }: { readonly articleId: string }) {
 
   const category = NEWS_CATEGORY_CONFIG[article.category]
   const teamName = typeof article.team === 'object' && article.team ? article.team.name : null
+  const hasRail = latest.length > 0
   // Body copy is plain text; blank lines separate paragraphs.
   const paragraphs = article.content
     .split(/\n\s*\n/)
@@ -106,7 +102,9 @@ export function NewsArticleView({ articleId }: { readonly articleId: string }) {
       </Link>
 
       <div className="flex flex-col lg:flex-row gap-6 items-start">
-        <article className="flex-1 min-w-0 max-w-[760px]">
+        {/* Without a rail the article takes the extra width, rather than
+            leaving an empty column beside it. */}
+        <article className={`flex-1 min-w-0 ${hasRail ? 'max-w-[760px]' : 'max-w-[1040px]'}`}>
           {/* Meta above the headline */}
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <span
@@ -172,7 +170,7 @@ export function NewsArticleView({ articleId }: { readonly articleId: string }) {
           )}
         </article>
 
-        <LatestNewsRail articles={latest} />
+        {hasRail && <RelatedContentRail articles={latest} />}
       </div>
     </div>
   )
