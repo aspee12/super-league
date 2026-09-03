@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getNews, type NewsCategory, type PayloadNews } from '@/lib/news-api'
+import { getNews, getNewsById, type NewsCategory, type PayloadNews } from '@/lib/news-api'
 import { useSeasons } from './useSeasons'
 
 export type NewsFilters = {
@@ -10,9 +10,6 @@ export type NewsFilters = {
   category?: NewsCategory | null
   /** Team IDs — empty means no team restriction. */
   teamIds?: string[]
-  /** Inclusive 'YYYY-MM-DD' bounds. */
-  dateFrom?: string | null
-  dateTo?: string | null
   search?: string
 }
 
@@ -31,7 +28,7 @@ export function newsSeasonId(article: PayloadNews): string | undefined {
 }
 
 function matchesFilters(article: PayloadNews, filters: NewsFilters): boolean {
-  const { category, teamIds, dateFrom, dateTo, search } = filters
+  const { category, teamIds, search } = filters
 
   if (category && article.category !== category) return false
 
@@ -39,10 +36,6 @@ function matchesFilters(article: PayloadNews, filters: NewsFilters): boolean {
     const id = newsTeamId(article)
     if (!id || !teamIds.includes(id)) return false
   }
-
-  // Dates are 'YYYY-MM-DD' text, so lexicographic comparison is chronological.
-  if (dateFrom && article.publishedDate < dateFrom) return false
-  if (dateTo && article.publishedDate > dateTo) return false
 
   const term = search?.trim().toLowerCase()
   if (term) {
@@ -54,6 +47,37 @@ function matchesFilters(article: PayloadNews, filters: NewsFilters): boolean {
   }
 
   return true
+}
+
+/**
+ * A single article plus the most recent others, for the "Latest News" rail on
+ * the article page. Not season-scoped: a shared link must resolve regardless
+ * of which season the reader is currently browsing.
+ */
+export function useNewsArticle(id: string | undefined) {
+  const articleQuery = useQuery({
+    queryKey: ['news', 'article', id],
+    queryFn: () => getNewsById(id as string),
+    enabled: Boolean(id),
+  })
+
+  const latestQuery = useQuery({
+    queryKey: ['news', 'latest'],
+    queryFn: () => getNews(),
+    staleTime: 60_000,
+  })
+
+  const latest = useMemo(
+    () => (latestQuery.data ?? []).filter((a) => a.id !== id).slice(0, 5),
+    [latestQuery.data, id],
+  )
+
+  return {
+    article: articleQuery.data ?? null,
+    latest,
+    isLoading: articleQuery.isLoading,
+    isError: articleQuery.isError,
+  }
 }
 
 export function useNews(filters: NewsFilters = {}) {
@@ -75,7 +99,7 @@ export function useNews(filters: NewsFilters = {}) {
     // Depend on the filter values rather than the object identity, so callers
     // can pass an inline object literal without re-filtering on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [news, filters.category, teamIdsKey, filters.dateFrom, filters.dateTo, filters.search],
+    [news, filters.category, teamIdsKey, filters.search],
   )
 
   const featuredNews = useMemo(

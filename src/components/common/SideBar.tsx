@@ -41,7 +41,7 @@ export default function SideBar() {
       >
         <Icon className={`w-5 h-5 mb-1 ${active ? 'text-[#267c93]' : 'text-[#605e5c]'}`} />
         <span className={`text-[12px] ${active ? 'text-[#267c93]' : 'text-[#605e5c]'}`}>
-          {item.shortLabel ?? item.label}
+          {item.label}
         </span>
         {active && <span className="mt-1 w-9 h-0.75 bg-[#267c93] rounded" />}
       </Link>

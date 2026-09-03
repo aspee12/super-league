@@ -18,8 +18,6 @@ export function hasActiveFilters(filters: NewsFilters): boolean {
   return Boolean(
     filters.category ||
       (filters.teamIds && filters.teamIds.length > 0) ||
-      filters.dateFrom ||
-      filters.dateTo ||
       filters.search?.trim(),
   )
 }
@@ -119,21 +117,6 @@ export function NewsFilterBar({
           </option>
         ))}
       </SelectField>
-
-      <input
-        type="date"
-        aria-label="Published from"
-        value={filters.dateFrom ?? ''}
-        onChange={(e) => set({ dateFrom: e.target.value || null })}
-        className={`${FIELD_CLASS} px-3 shrink-0 ${compact ? 'flex-1 min-w-[140px]' : 'w-[160px]'}`}
-      />
-      <input
-        type="date"
-        aria-label="Published to"
-        value={filters.dateTo ?? ''}
-        onChange={(e) => set({ dateTo: e.target.value || null })}
-        className={`${FIELD_CLASS} px-3 shrink-0 ${compact ? 'flex-1 min-w-[140px]' : 'w-[160px]'}`}
-      />
 
       <button
         type="button"

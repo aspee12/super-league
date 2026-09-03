@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Pencil, Trash2 } from 'lucide-react'
 import { NEWS_CATEGORY_CONFIG } from '@constants/news'
 import type { PayloadNews } from '@/lib/news-api'
@@ -22,6 +23,7 @@ export function NewsCard({ article, onEdit, onDelete }: NewsCardProps) {
   const category = NEWS_CATEGORY_CONFIG[article.category]
   const teamName = typeof article.team === 'object' && article.team ? article.team.name : null
   const canManage = Boolean(onEdit || onDelete)
+  const href = `/news/${article.id}`
 
   return (
     <article
@@ -30,20 +32,22 @@ export function NewsCard({ article, onEdit, onDelete }: NewsCardProps) {
     >
       <div className="flex flex-col gap-2 px-4 h-full">
         <div className="relative w-full aspect-[318/182] rounded-[8px] overflow-hidden bg-[#f3f3f5] shrink-0">
-          {article.image ? (
-            <img
-              src={article.image}
-              alt={article.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-[#605e5c] text-sm">
-              No image
-            </div>
-          )}
+          <Link href={href} className="block w-full h-full" aria-label={article.title}>
+            {article.image ? (
+              <img
+                src={article.image}
+                alt={article.title}
+                className="w-full h-full object-cover transition-transform hover:scale-[1.02]"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-[#605e5c] text-sm">
+                No image
+              </div>
+            )}
+          </Link>
 
           {canManage && (
-            <div className="absolute top-2 right-2 flex gap-2">
+            <div className="absolute top-2 right-2 z-10 flex gap-2">
               {onEdit && (
                 <button
                   type="button"
@@ -86,7 +90,9 @@ export function NewsCard({ article, onEdit, onDelete }: NewsCardProps) {
           className="font-bold text-[24px] text-black"
           style={{ lineHeight: '36px', letterSpacing: '0.25px' }}
         >
-          {article.title}
+          <Link href={href} className="hover:text-[#0e7490] transition-colors">
+            {article.title}
+          </Link>
         </h3>
 
         {article.excerpt && (

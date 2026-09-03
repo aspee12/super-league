@@ -10,8 +10,7 @@ import { MobileAllResultsView } from '@components/MobileViews/MobileAllResultsVi
 import NewsView from "@components/NewsView/page";
 import MobileNewsView from '@components/MobileViews/MobileNewsView';
 import Teams from "@components/Teams/teams";
-import Header from "@shared-component/Header";
-import SideBar from "@shared-component/SideBar";
+import { AppShell } from "@shared-component/AppShell";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuthStore } from '@/store/authStore';
@@ -107,13 +106,5 @@ export default function DynamicPage() {
     }
   };
 
-  return (
-    <main className="flex flex-col h-screen">
-      <Header />
-      <SideBar />
-      <div className="flex-1 overflow-auto md:ml-44.5 md:mt-[86px] md:pb-0 pb-20">
-        {isMobile ? renderMobileContent() : renderDesktopContent()}
-      </div>
-    </main>
-  );
+  return <AppShell>{isMobile ? renderMobileContent() : renderDesktopContent()}</AppShell>;
 }

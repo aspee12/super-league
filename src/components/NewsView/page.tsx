@@ -60,7 +60,7 @@ export default function NewsView() {
           className="font-bold text-[20px] text-[#201f1e]"
           style={{ lineHeight: '30px', letterSpacing: '0.25px' }}
         >
-          News &amp; Features
+          News
         </h1>
 
         <div className="flex items-center gap-4">

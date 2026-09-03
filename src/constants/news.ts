@@ -3,8 +3,6 @@ import type { NewsCategory } from '@/lib/news-api'
 export interface NewsCategoryConfig {
   /** Full label, used in dropdowns and desktop filters. */
   label: string
-  /** Condensed label for narrow mobile tabs. */
-  shortLabel: string
   /** Badge colours applied to the category pill on a news card. */
   badgeClassName: string
 }
@@ -12,27 +10,22 @@ export interface NewsCategoryConfig {
 export const NEWS_CATEGORY_CONFIG: Record<NewsCategory, NewsCategoryConfig> = {
   match_report: {
     label: 'Match Report',
-    shortLabel: 'Reports',
     badgeClassName: 'bg-[#c5e6d4] text-[#0c5273]',
   },
   transfer: {
     label: 'Transfer',
-    shortLabel: 'Transfers',
     badgeClassName: 'bg-[#c5dce6] text-[#0c5273]',
   },
   club_news: {
     label: 'Club News',
-    shortLabel: 'Club',
     badgeClassName: 'bg-[#e0f2f7] text-[#0e7490]',
   },
   announcement: {
     label: 'Announcement',
-    shortLabel: 'Notices',
     badgeClassName: 'bg-[#ecf9ff] text-[#004556]',
   },
   interview: {
     label: 'Interview',
-    shortLabel: 'Interviews',
     badgeClassName: 'bg-[#f3f3f5] text-[#605e5c]',
   },
 }

@@ -50,7 +50,7 @@ export default function MobileNewsView() {
     <div className="min-h-screen pb-20" style={{ fontFamily: 'Roboto, sans-serif' }}>
       <div className="px-4 pt-4 mb-4">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="font-semibold text-gray-800 text-[18px]">News &amp; Features</h1>
+          <h1 className="font-semibold text-gray-800 text-[18px]">News</h1>
 
           <div className="flex items-center gap-2">
             <button

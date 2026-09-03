@@ -31,7 +31,13 @@ type FormValues = {
 /** Card summaries are a trimmed version of the body copy. */
 const EXCERPT_MAX = 160
 function deriveExcerpt(content: string): string {
-  const clean = content.trim().replace(/\s+/g, ' ')
+  const clean = content
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    // Skip '## ' subheadings so a card summary never opens with a section label.
+    .filter((p) => p && !p.startsWith('## '))
+    .join(' ')
+    .replace(/\s+/g, ' ')
   if (clean.length <= EXCERPT_MAX) return clean
   return `${clean.slice(0, EXCERPT_MAX).trimEnd()}…`
 }

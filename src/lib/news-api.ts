@@ -56,6 +56,14 @@ export async function getNews(seasonId?: string): Promise<PayloadNews[]> {
   return data.docs ?? []
 }
 
+/** Fetch a single news article by id. Returns null when it doesn't exist. */
+export async function getNewsById(id: string): Promise<PayloadNews | null> {
+  const res = await fetch(`${API_BASE}/news/${id}?depth=1`, { credentials: 'include' })
+  if (res.status === 404) return null
+  if (!res.ok) throw new Error('Failed to fetch article')
+  return res.json()
+}
+
 /** Create a news article. */
 export async function createNews(body: CreateNewsBody): Promise<PayloadNews> {
   const res = await fetch(`${API_BASE}/news`, {

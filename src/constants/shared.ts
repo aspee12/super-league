@@ -2,7 +2,7 @@ import { BarChart3, LayoutGrid, Newspaper, Trophy, Users } from 'lucide-react';
 import { NavItem } from '../types/sidenav';
 
 export const navItems: NavItem[] = [
-    { path: "/news", label: "News & Features", shortLabel: "News", icon: Newspaper },
+    { path: "/news", label: "News", icon: Newspaper },
     { path: "/table", label: "Table", icon: LayoutGrid },
     { path: "/matches", label: "Matches", icon: Trophy },
     { path: "/stats", label: "Stats", icon: BarChart3 },
