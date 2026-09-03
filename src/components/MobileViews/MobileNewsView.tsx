@@ -15,8 +15,12 @@ import { deleteNews, type PayloadNews } from '@/lib/news-api'
 import { useNews, type NewsFilters } from '@/hooks/useNews'
 import { useAuthStore } from '@/store/authStore'
 
+/** Cards shown before "View More". */
+const PAGE_SIZE = 3
+
 export default function MobileNewsView() {
   const [filters, setFilters] = useState<NewsFilters>({})
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<PayloadNews | null>(null)
@@ -43,6 +47,14 @@ export default function MobileNewsView() {
   })
 
   const activeCount = hasActiveFilters(filters)
+  const visibleNews = filteredNews.slice(0, visibleCount)
+  const hasMore = filteredNews.length > visibleCount
+
+  /** Narrowing the list should collapse it back to the first page. */
+  const handleFiltersChange = (next: NewsFilters) => {
+    setFilters(next)
+    setVisibleCount(PAGE_SIZE)
+  }
 
   if (isLoading) return <FullPageLoader message="Loading news..." />
 
@@ -94,7 +106,7 @@ export default function MobileNewsView() {
             <NewsFilterBar
               compact
               filters={filters}
-              onChange={setFilters}
+              onChange={handleFiltersChange}
               teams={teamsQuery.data ?? []}
             />
           </div>
@@ -107,10 +119,11 @@ export default function MobileNewsView() {
             No news articles match these filters
           </p>
         ) : (
-          <div className="space-y-3">
-            {filteredNews.map((article) => (
-              <div key={article.id} className="bg-white rounded-xl shadow-sm">
+          <section className="rounded-2xl border border-[#a6dfe6]/60 bg-[#ecf9ff]/75 p-3">
+            <div className="flex flex-col gap-6">
+              {visibleNews.map((article) => (
                 <NewsCard
+                  key={article.id}
                   article={article}
                   onEdit={
                     isSuperAdmin
@@ -122,9 +135,22 @@ export default function MobileNewsView() {
                   }
                   onDelete={isSuperAdmin ? setPendingDelete : undefined}
                 />
+              ))}
+            </div>
+
+            {hasMore && (
+              <div className="flex justify-center mt-4">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+                  className="rounded-full bg-white px-6 py-2.5 text-[15px] font-bold text-[#004556]
+                             shadow-sm border border-[#e7e6e6] active:bg-[#f5f5f5]"
+                >
+                  View More
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </section>
         )}
       </div>
 
