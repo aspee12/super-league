@@ -53,7 +53,7 @@ export function ConfirmModal({
             onClick={handleConfirm}
             className={`w-full sm:w-auto px-4 py-2.5 text-sm text-white rounded-md transition-colors ${
               confirmVariant === 'danger'
-                ? 'bg-[#0e7490] hover:bg-[#0c6380]'
+                ? 'bg-red-600 hover:bg-red-700'
                 : 'bg-[#0e7490] hover:bg-[#0c6380]'
             }`}
           >

@@ -5,8 +5,7 @@ import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { MatchCard } from '@shared-component/MatchCard'
-import AddMatchModal from '@shared-component/modals/WebModals/AddMatchModal'
-import { UpdateScoreModal } from '@shared-component/modals/WebModals/UpdateScoreModal'
+import dynamic from 'next/dynamic'
 import { ConfirmModal } from '@shared-component/modals/ConfirmationModal/ConfirmModal'
 import { useAuthStore } from '@/store/authStore'
 import { useMatches } from '@/hooks/useMatches'
@@ -15,6 +14,16 @@ import Link from 'next/link'
 import type { Match } from '@app-types/matchTypes'
 import { FullPageLoader } from '@shared-component/FullPageLoader'
 import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilter'
+
+// Both pull in react-day-picker + date-fns through DatePicker — load on demand.
+const AddMatchModal = dynamic(
+  () => import('@shared-component/modals/WebModals/AddMatchModal'),
+  { ssr: false },
+)
+const UpdateScoreModal = dynamic(
+  () => import('@shared-component/modals/WebModals/UpdateScoreModal').then((m) => m.UpdateScoreModal),
+  { ssr: false },
+)
 
 export function MatchesView() {
   const queryClient = useQueryClient()

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -24,6 +24,7 @@ import {
   SquarePen,
   Trash2,
 } from "lucide-react"
+import { ConfirmModal } from "@shared-component/modals/ConfirmationModal/ConfirmModal"
 import { TeamFormDialog } from "./modals/TeamFormDialog"
 import { DeleteTeamDialog } from "./modals/DeleteTeamDialog"
 import { AddMemberDialog } from "./modals/AddMemberDialog"
@@ -107,16 +108,17 @@ function buildPlayerStatsMap(matches: Match[], goalkeeperNames: Set<string>) {
   return map
 }
 
-/** Convert API data to component types */
+/**
+ * Convert API data to component types.
+ *
+ * Takes the team's players directly rather than filtering the league-wide list
+ * per team, which made the caller O(teams × players).
+ */
 function toTeamView(
   team: PayloadTeam,
-  players: PayloadPlayer[],
+  teamPlayers: PayloadPlayer[],
   statsMap: Map<string, { goals: number; assists: number; cleanSheets: number }>,
 ): Team {
-  const teamPlayers = players.filter((p) => {
-    const pTeamId = typeof p.team === "string" ? p.team : p.team?.id
-    return pTeamId === team.id
-  })
   return {
     id: team.id,
     name: team.name,
@@ -143,20 +145,51 @@ export default function Teams() {
   const { matches } = useMatches()
   const [selectedTeamId, setSelectedTeamId] = useState<string>("")
 
-  const goalkeeperNames = new Set(players.filter((p) => p.isGoalkeeper).map((p) => p.name))
-  const statsMap = buildPlayerStatsMap(matches, goalkeeperNames)
-  const allTeams = rawTeams.map((t) => toTeamView(t, players, statsMap))
+  // This component holds a dozen useState hooks, and the aggregation below
+  // walks every match × every player stat. Unmemoized it re-ran on every
+  // keystroke and every dropdown toggle — and again on each 15s live-match
+  // poll — which is what made the Teams page feel sluggish.
+  const goalkeeperNames = useMemo(
+    () => new Set(players.filter((p) => p.isGoalkeeper).map((p) => p.name)),
+    [players],
+  )
+
+  const statsMap = useMemo(
+    () => buildPlayerStatsMap(matches, goalkeeperNames),
+    [matches, goalkeeperNames],
+  )
+
+  // Group players by team once instead of rescanning the full list per team.
+  const playersByTeamId = useMemo(() => {
+    const map = new Map<string, PayloadPlayer[]>()
+    for (const p of players) {
+      const id = typeof p.team === "string" ? p.team : p.team?.id
+      if (!id) continue
+      const list = map.get(id)
+      if (list) list.push(p)
+      else map.set(id, [p])
+    }
+    return map
+  }, [players])
+
+  const allTeams = useMemo(
+    () => rawTeams.map((t) => toTeamView(t, playersByTeamId.get(t.id) ?? [], statsMap)),
+    [rawTeams, playersByTeamId, statsMap],
+  )
 
   // Teams aren't tagged with a season, so participation is derived from that
   // season's fixtures. A season with no fixtures yet (e.g. one just started)
   // falls back to every club, so newly-added teams stay visible.
-  const seasonTeamIds = new Set<string>()
-  for (const match of matches) {
-    seasonTeamIds.add(match.teamA.id)
-    seasonTeamIds.add(match.teamB.id)
-  }
-  const teams =
-    seasonTeamIds.size > 0 ? allTeams.filter((t) => seasonTeamIds.has(t.id)) : allTeams
+  const teams = useMemo(() => {
+    const seasonTeamIds = new Set<string>()
+    for (const match of matches) {
+      seasonTeamIds.add(match.teamA.id)
+      seasonTeamIds.add(match.teamB.id)
+    }
+    return seasonTeamIds.size > 0
+      ? allTeams.filter((t) => seasonTeamIds.has(t.id))
+      : allTeams
+  }, [matches, allTeams])
 
   // Auto-select first team if none selected
   const effectiveSelectedId = selectedTeamId || teams[0]?.id || ""
@@ -208,6 +241,7 @@ function DesktopTeamsView({
   const [editMemberDialogOpen, setEditMemberDialogOpen] = useState(false)
   const [memberToEdit, setMemberToEdit] = useState<TeamMember | null>(null)
   const [memberToTransfer, setMemberToTransfer] = useState<TeamMember | null>(null)
+  const [memberToDelete, setMemberToDelete] = useState<TeamMember | null>(null)
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["teams"] })
@@ -301,8 +335,12 @@ function DesktopTeamsView({
     onSuccess: () => {
       invalidate()
       toast.success("Member removed.")
+      setMemberToDelete(null)
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      toast.error(err.message)
+      setMemberToDelete(null)
+    },
   })
 
   const transferMutation = useMutation({
@@ -385,7 +423,13 @@ function DesktopTeamsView({
   }
 
   const handleDeleteMember = (memberId: string) => {
-    deleteMemberMutation.mutate(memberId)
+    const member = selectedTeam.members.find((m) => m.id === memberId)
+    if (member) setMemberToDelete(member)
+  }
+
+  const handleDeleteMemberConfirm = () => {
+    if (!memberToDelete) return
+    deleteMemberMutation.mutate(memberToDelete.id)
   }
 
   return (
@@ -437,6 +481,16 @@ function DesktopTeamsView({
         }}
         onConfirm={handleDeleteConfirm}
         teamName={teamToDelete?.name}
+      />
+
+      <ConfirmModal
+        isOpen={!!memberToDelete}
+        onClose={() => setMemberToDelete(null)}
+        onConfirm={handleDeleteMemberConfirm}
+        title="Remove member"
+        message={`Are you sure you want to remove ${memberToDelete?.name ?? "this member"} from ${selectedTeam?.name ?? "the team"}? This will also delete their photo and cannot be undone.`}
+        confirmText="Remove"
+        confirmVariant="danger"
       />
 
       <TeamFormDialog
@@ -503,6 +557,7 @@ function MobileTeamsView({
   const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
   const [editMemberDialogOpen, setEditMemberDialogOpen] = useState(false)
   const [memberToEdit, setMemberToEdit] = useState<TeamMember | null>(null)
+  const [memberToDelete, setMemberToDelete] = useState<TeamMember | null>(null)
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["teams"] })
@@ -596,8 +651,12 @@ function MobileTeamsView({
     onSuccess: () => {
       invalidate()
       toast.success("Member removed.")
+      setMemberToDelete(null)
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      toast.error(err.message)
+      setMemberToDelete(null)
+    },
   })
 
   const handleAddTeam = () => setAddTeamDialogOpen(true)
@@ -650,8 +709,13 @@ function MobileTeamsView({
     }
   }
 
-  const handleDeleteMember = (memberId: string) => {
-    deleteMemberMutation.mutate(memberId)
+  const handleDeleteMember = (member: TeamMember) => {
+    setMemberToDelete(member)
+  }
+
+  const handleDeleteMemberConfirm = () => {
+    if (!memberToDelete) return
+    deleteMemberMutation.mutate(memberToDelete.id)
   }
 
   return (
@@ -807,7 +871,7 @@ function MobileTeamsView({
                                   className="h-7 w-7 text-red-500 hover:text-red-700"
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    handleDeleteMember(member.id)
+                                    handleDeleteMember(member)
                                   }}
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
@@ -874,6 +938,16 @@ function MobileTeamsView({
         }}
         onConfirm={handleDeleteConfirm}
         teamName={teamToDelete?.name}
+      />
+
+      <ConfirmModal
+        isOpen={!!memberToDelete}
+        onClose={() => setMemberToDelete(null)}
+        onConfirm={handleDeleteMemberConfirm}
+        title="Remove member"
+        message={`Are you sure you want to remove ${memberToDelete?.name ?? "this member"}? This will also delete their photo and cannot be undone.`}
+        confirmText="Remove"
+        confirmVariant="danger"
       />
 
       <TeamFormDialog

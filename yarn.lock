@@ -824,13 +824,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fortawesome/fontawesome-free@npm:^7.1.0":
-  version: 7.2.0
-  resolution: "@fortawesome/fontawesome-free@npm:7.2.0"
-  checksum: 10c0/fc95989739857a2622c993929c6748c8c7eac3b490b0de6beb843b0b6a5de99f1e99c92901706c73e4da6be9413853a7382dfe82d2313c217489210a5b9965ed
-  languageName: node
-  linkType: hard
-
 "@gar/promise-retry@npm:^1.0.0":
   version: 1.0.3
   resolution: "@gar/promise-retry@npm:1.0.3"
@@ -7912,7 +7905,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "super-league@workspace:."
   dependencies:
-    "@fortawesome/fontawesome-free": "npm:^7.1.0"
     "@hookform/resolvers": "npm:^5.2.2"
     "@payloadcms/db-mongodb": "npm:^3.76.1"
     "@payloadcms/next": "npm:^3.76.1"
@@ -7947,6 +7939,7 @@ __metadata:
     "@types/node": "npm:^20"
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"
+    "@vercel/blob": "npm:^0.22.3"
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"
     cmdk: "npm:^1.1.1"

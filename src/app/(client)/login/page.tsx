@@ -1,8 +1,9 @@
 'use client'
 
 import { useForm } from 'react-hook-form'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { toast } from 'sonner'
 import { login } from '@/lib/auth-api'
 import { useAuthStore } from '@/store/authStore'
@@ -14,6 +15,7 @@ type LoginForm = {
 
 export default function LoginPage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const setUser = useAuthStore((s) => s.setUser)
   const {
     register,
@@ -33,6 +35,10 @@ export default function LoginPage() {
           role: u.role as 'super_admin' | 'admin' | 'user',
           permissions: u.permissions ?? undefined,
         })
+        // SessionRestore already ran on /login and cached a 401 as `null`
+        // under ['auth','me'] with a 5-minute staleTime. Overwrite it, or
+        // anything mounting that query post-login reads the stale null.
+        queryClient.setQueryData(['auth', 'me'], u)
         toast.success('Signed in successfully')
         router.replace('/table')
       }
@@ -50,9 +56,12 @@ export default function LoginPage() {
         style={{ fontFamily: 'Roboto, sans-serif' }}
       >
         <div className="mb-8 flex items-center gap-3">
-          <img
+          <Image
             alt="Selise Super League"
             src="/assets/ssl-logo.png"
+            width={48}
+            height={48}
+            priority
             className="h-12 w-12 rounded-lg object-cover"
           />
           <div>

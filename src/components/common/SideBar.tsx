@@ -4,14 +4,26 @@ import { LogOut, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { navItems } from '@constants/shared';
-import { MobileAddMatchModal } from './modals/MobileModals/MobileAddMatchModal';
+import dynamic from 'next/dynamic';
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/authStore';
 import { logout as logoutApi } from '@/lib/auth-api';
+
+/**
+ * The sidebar renders on every authenticated page, and this modal pulls in
+ * react-day-picker + date-fns via DatePicker. Loading it on demand keeps that
+ * stack out of the initial bundle for users who never open it.
+ */
+const MobileAddMatchModal = dynamic(
+  () => import('./modals/MobileModals/MobileAddMatchModal').then((m) => m.MobileAddMatchModal),
+  { ssr: false },
+);
 
 export default function SideBar() {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const logoutStore = useAuthStore((s) => s.logout);
 
@@ -27,6 +39,9 @@ export default function SideBar() {
   const handleLogout = async () => {
     await logoutApi();
     logoutStore();
+    // Drop every cached query — otherwise the next user to sign in on this
+    // browser sees the previous user's matches, teams, players and news.
+    queryClient.clear();
     router.replace('/login');
   };
 

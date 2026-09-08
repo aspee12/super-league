@@ -1,15 +1,5 @@
-import type { CollectionConfig, CollectionAfterDeleteHook } from 'payload'
-import { deleteMediaByUrl } from '../lib/delete-media'
-
-/**
- * When a news article is deleted, delete its cover image from the Media
- * collection (which in turn triggers blob cleanup via Media's afterDelete hook).
- */
-const cleanupNewsImage: CollectionAfterDeleteHook = async ({ doc, req }) => {
-  if (doc.image) {
-    await deleteMediaByUrl(req.payload, doc.image)
-  }
-}
+import type { CollectionConfig } from 'payload'
+import { cleanupMediaOnDelete, cleanupReplacedMedia } from '../lib/media-hooks'
 
 export const News: CollectionConfig = {
   slug: 'news',
@@ -17,8 +7,14 @@ export const News: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'category', 'publishedDate', 'featured', 'updatedAt'],
   },
+  // The news list always filters by season and sorts by publishedDate desc;
+  // one compound index serves both and avoids a blocking in-memory sort.
+  // Mongo can walk an ascending index backwards, so this also serves the
+  // publishedDate-descending sort.
+  indexes: [{ fields: ['season', 'publishedDate'] }],
   hooks: {
-    afterDelete: [cleanupNewsImage],
+    afterChange: [cleanupReplacedMedia('image')],
+    afterDelete: [cleanupMediaOnDelete('image')],
   },
   access: {
     read: () => true,
@@ -78,6 +74,7 @@ export const News: CollectionConfig = {
       relationTo: 'seasons',
       required: true,
       hasMany: false,
+      index: true,
       admin: { description: 'Season the article belongs to.' },
     },
     {
@@ -85,6 +82,7 @@ export const News: CollectionConfig = {
       name: 'publishedDate',
       type: 'text',
       required: true,
+      index: true,
     },
     {
       name: 'featured',
