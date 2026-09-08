@@ -20,7 +20,6 @@ export interface AggregatedPlayerStat {
   cleanSheets: number
 }
 
-const TOP_N = 10
 
 export function useStats() {
   const { matches } = useMatches()
@@ -181,27 +180,27 @@ export function useStats() {
   }, [matches, teams, playerAvatarMap, goalkeepersByTeamId])
 
   const topScorers = useMemo(
-    () => [...stats].filter((s) => s.goals > 0).sort((a, b) => b.goals - a.goals).slice(0, TOP_N),
+    () => [...stats].filter((s) => s.goals > 0).sort((a, b) => b.goals - a.goals),
     [stats],
   )
 
   const topAssists = useMemo(
-    () => [...stats].filter((s) => s.assists > 0).sort((a, b) => b.assists - a.assists).slice(0, TOP_N),
+    () => [...stats].filter((s) => s.assists > 0).sort((a, b) => b.assists - a.assists),
     [stats],
   )
 
   const topYellowCards = useMemo(
-    () => [...stats].filter((s) => s.yellowCards > 0).sort((a, b) => b.yellowCards - a.yellowCards).slice(0, TOP_N),
+    () => [...stats].filter((s) => s.yellowCards > 0).sort((a, b) => b.yellowCards - a.yellowCards),
     [stats],
   )
 
   const topRedCards = useMemo(
-    () => [...stats].filter((s) => s.redCards > 0).sort((a, b) => b.redCards - a.redCards).slice(0, TOP_N),
+    () => [...stats].filter((s) => s.redCards > 0).sort((a, b) => b.redCards - a.redCards),
     [stats],
   )
 
   const topCleanSheets = useMemo(
-    () => [...stats].filter((s) => s.cleanSheets > 0).sort((a, b) => b.cleanSheets - a.cleanSheets).slice(0, TOP_N),
+    () => [...stats].filter((s) => s.cleanSheets > 0).sort((a, b) => b.cleanSheets - a.cleanSheets),
     [stats],
   )
 

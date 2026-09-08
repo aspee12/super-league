@@ -5,8 +5,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { TeamLogo } from '@shared-component/TeamLogo'
 import { FullPageLoader } from '@shared-component/FullPageLoader'
+import { ListPagination, paginate } from '@shared-component/ListPagination'
 import { useMatches } from '@/hooks/useMatches'
 import type { PlayerStat } from '@app-types/matchTypes'
+
+/** A full season can run to 100+ fixtures — page them rather than one long scroll. */
+const PAGE_SIZE = 10
 
 function CardIcon({ card }: { card?: 'none' | 'yellow' | 'red' }) {
   if (card === 'yellow') return <span className="inline-block w-2 h-3 bg-yellow-400 rounded-sm" />
@@ -79,6 +83,8 @@ function ExpandedMatchStats({ stats }: { stats: PlayerStat[] }) {
 export function MobileAllResultsView() {
   const { allResults, isLoading } = useMatches()
   const [expandedStats, setExpandedStats] = useState<Record<string, boolean>>({})
+  const [page, setPage] = useState(1)
+  const { pageCount, safePage, visible, summary } = paginate(allResults, page, PAGE_SIZE)
 
   const toggleStats = (matchId: string) => {
     setExpandedStats((prev) => ({ ...prev, [matchId]: !prev[matchId] }))
@@ -105,7 +111,7 @@ export function MobileAllResultsView() {
 
         {allResults.length > 0 ? (
           <div className="space-y-3">
-            {allResults.map((match) => {
+            {visible.map((match) => {
               const isExpanded = expandedStats[match.id]
 
               return (
@@ -172,6 +178,12 @@ export function MobileAllResultsView() {
                 </div>
               )
             })}
+            <ListPagination
+              page={safePage}
+              pageCount={pageCount}
+              onPageChange={setPage}
+              summary={summary}
+            />
           </div>
         ) : (
           <p className="text-center text-gray-500 text-sm py-8">No results yet</p>

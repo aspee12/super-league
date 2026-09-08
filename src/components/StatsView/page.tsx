@@ -4,9 +4,14 @@ import { useState } from 'react';
 import { useStats, type AggregatedPlayerStat } from '@/hooks/useStats';
 import { CATEGORY_CONFIG, StatCategory } from '@constants/stats';
 import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilter';
+import { ListPagination, paginate } from '@shared-component/ListPagination';
+
+/** Leaderboard rows per page. */
+const PAGE_SIZE = 10;
 
 export function StatsView() {
   const [activeCategory, setActiveCategory] = useState<StatCategory>('goals');
+  const [page, setPage] = useState(1);
   const { topScorers, topAssists, topYellowCards, topRedCards, topCleanSheets } = useStats();
   const activeConfig = CATEGORY_CONFIG[activeCategory];
   const IconComponent = activeConfig.icon;
@@ -48,6 +53,17 @@ export function StatsView() {
   };
 
   const currentStats = getStatsForCategory();
+  const { pageCount, safePage, offset, visible, summary } = paginate(
+    currentStats,
+    page,
+    PAGE_SIZE,
+  );
+
+  /** Switching leaderboards should start back at the top of the ranking. */
+  const handleCategoryChange = (categoryId: StatCategory) => {
+    setActiveCategory(categoryId);
+    setPage(1);
+  };
 
   return (
     <div className="flex-1 min-h-0 flex flex-col px-4 py-4 md:px-8 md:py-6 md:block">
@@ -71,7 +87,7 @@ export function StatsView() {
             <button
               key={categoryId}
               type="button"
-              onClick={() => setActiveCategory(categoryId)}
+              onClick={() => handleCategoryChange(categoryId)}
               className={`flex-1 min-w-0 py-3 px-3 rounded-lg text-[14px] font-medium leading-[20px] transition-colors ${
                 isActive
                   ? 'bg-[#267c93] text-white shadow-sm'
@@ -97,7 +113,7 @@ export function StatsView() {
                   <button
                     key={categoryId}
                     type="button"
-                    onClick={() => setActiveCategory(categoryId)}
+                    onClick={() => handleCategoryChange(categoryId)}
                     className={`w-full h-[62px] flex items-center gap-3 px-6 py-3 rounded-[8px] transition-colors ${
                       isActive
                         ? 'bg-[#267c93]'
@@ -139,7 +155,7 @@ export function StatsView() {
           <div className="flex-1 overflow-auto">
             {currentStats.length > 0 ? (
               <div className="divide-y divide-[#e7e6e6]">
-                {currentStats.map((stat, index) => (
+                {visible.map((stat, index) => (
                   <div
                     key={stat.id}
                     className="flex items-center justify-between gap-3 px-4 py-4 md:px-6 md:py-4 min-h-[72px]"
@@ -149,7 +165,7 @@ export function StatsView() {
                         className="text-[20px] md:text-[24px] font-bold leading-[30px] md:leading-[36px] text-[#bebbb8] shrink-0 w-6 md:w-8 tabular-nums text-left"
                         aria-hidden
                       >
-                        {index + 1}
+                        {offset + index + 1}
                       </span>
                       <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#e7e6e6] flex items-center justify-center text-xl md:text-2xl shrink-0 overflow-hidden">
                         {stat.player.avatar && (stat.player.avatar.startsWith('/') || stat.player.avatar.startsWith('http')) ? (
@@ -186,6 +202,14 @@ export function StatsView() {
               </div>
             )}
           </div>
+
+          <ListPagination
+            page={safePage}
+            pageCount={pageCount}
+            onPageChange={setPage}
+            summary={summary}
+            className="shrink-0"
+          />
         </div>
       </div>
     </div>

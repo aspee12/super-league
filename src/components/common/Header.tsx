@@ -2,13 +2,16 @@
 
 import { LogOut } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/authStore';
 import { logout as logoutApi } from '@/lib/auth-api';
 import { useSeasons } from '@/hooks/useSeasons';
 
 export default function Header() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const logoutStore = useAuthStore((s) => s.logout);
   const { activeSeason, viewingSeason, isViewingActiveSeason } = useSeasons();
@@ -21,6 +24,9 @@ export default function Header() {
   const handleLogout = async () => {
     await logoutApi();
     logoutStore();
+    // Drop every cached query — otherwise the next user to sign in on this
+    // browser sees the previous user's matches, teams, players and news.
+    queryClient.clear();
     router.replace('/login');
   };
 
@@ -34,18 +40,23 @@ export default function Header() {
       className="fixed top-0 left-0 right-0 z-40 w-full border-b border-[#e7e6e6] bg-white overflow-hidden md:h-[86px]"
     >
       {/* Decorative crest watermark bleeding off the right edge */}
-      <img
+      <Image
         alt=""
         aria-hidden
         src="/assets/header-watermark.png"
+        width={175}
+        height={175}
         className="pointer-events-none absolute hidden md:block opacity-10 w-[175px] h-[175px] object-cover -right-[30px] top-[56px]"
       />
 
       <div className="relative flex items-center gap-3 px-4 py-4 md:gap-3 md:h-[86px] md:pl-[42px] md:pr-6 md:py-6">
         <div className="shrink-0 w-10 h-10 md:w-[52px] md:h-[52px]">
-          <img
+          <Image
             alt="Selise Super League Logo"
             src="/assets/ssl-logo.png"
+            width={52}
+            height={52}
+            priority
             className="w-full h-full object-contain"
           />
         </div>

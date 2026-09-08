@@ -46,6 +46,8 @@ export const Seasons: CollectionConfig = {
       // Drives ordering in the season dropdown — highest first.
       name: 'order',
       type: 'number',
+      // Seasons are always fetched sorted by order.
+      index: true,
       required: true,
       defaultValue: 1,
       admin: { description: 'Sort order; the newest season should have the highest number.' },

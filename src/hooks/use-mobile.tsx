@@ -2,7 +2,15 @@ import * as React from "react"
 
 const MOBILE_BREAKPOINT = 768
 
-export function useIsMobile() {
+/**
+ * Viewport size, or `undefined` before the first measurement lands.
+ *
+ * Callers that swap between two different component trees should wait for a
+ * defined value: treating the initial `undefined` as "desktop" mounts the
+ * desktop tree, runs its queries, then throws it away when the effect resolves
+ * to mobile — a full double mount on every page load.
+ */
+export function useIsMobileResolved() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
 
   React.useEffect(() => {
@@ -15,5 +23,9 @@ export function useIsMobile() {
     return () => mql.removeEventListener("change", onChange)
   }, [])
 
-  return !!isMobile
+  return isMobile
+}
+
+export function useIsMobile() {
+  return !!useIsMobileResolved()
 }

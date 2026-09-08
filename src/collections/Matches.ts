@@ -6,6 +6,12 @@ export const Matches: CollectionConfig = {
     useAsTitle: 'id',
     defaultColumns: ['teamA', 'teamB', 'season', 'date', 'time', 'status', 'updatedAt'],
   },
+  // Every list query filters by season and sorts by date descending. Without a
+  // compound index Mongo does a collection scan plus a blocking in-memory sort,
+  // which degrades as seasons accumulate (and hard-fails past the 32 MB sort
+  // limit). This one index serves both the filter and the sort.
+  // Mongo can walk an ascending index backwards, so this also serves sort=-date.
+  indexes: [{ fields: ['season', 'date'] }],
   access: {
     read: () => true,
     create: () => true,
@@ -33,12 +39,14 @@ export const Matches: CollectionConfig = {
       relationTo: 'seasons',
       required: true,
       hasMany: false,
+      index: true,
       admin: { description: 'Which season this fixture belongs to.' },
     },
     {
       name: 'date',
       type: 'text',
       required: true,
+      index: true,
     },
     {
       name: 'time',
@@ -50,6 +58,7 @@ export const Matches: CollectionConfig = {
       type: 'select',
       required: true,
       defaultValue: 'upcoming',
+      index: true,
       options: [
         { label: 'Live', value: 'live' },
         { label: 'Upcoming', value: 'upcoming' },

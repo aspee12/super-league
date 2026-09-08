@@ -46,8 +46,13 @@ export function useSeasons() {
     viewingSeason,
     viewingSeasonId: viewingSeason?.id,
     isViewingActiveSeason,
-    /** True once the season list has resolved — guards dependent queries. */
-    isReady: !query.isLoading,
+    /**
+     * True once the season list has loaded successfully — guards dependent
+     * queries. Must be `isSuccess`, not `!isLoading`: on error there is no
+     * `viewingSeasonId`, and the dependent fetches drop their season filter
+     * and pull every match across every season instead.
+     */
+    isReady: query.isSuccess,
     isLoading: query.isLoading,
     setSelectedSeasonId,
     resetSeason,
