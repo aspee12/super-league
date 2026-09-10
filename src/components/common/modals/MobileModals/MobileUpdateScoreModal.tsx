@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { updateScore } from '@/lib/matches-api'
 import { TeamLogo } from '@shared-component/TeamLogo'
 import { getPlayers, type PayloadPlayer } from '@/lib/teams-api'
+import { useSeasons } from '@/hooks/useSeasons'
 import type { Match } from '@app-types/matchTypes'
 
 export interface MobileUpdateScoreModalProps {
@@ -21,10 +22,14 @@ export function MobileUpdateScoreModal({
   match,
 }: MobileUpdateScoreModalProps) {
   const queryClient = useQueryClient()
+  const { viewingSeasonId } = useSeasons()
 
+  // This season's squads only — otherwise the scorer list carries every player
+  // who has ever been registered, including duplicates of the same name from
+  // earlier seasons.
   const { data: allPlayers = [] } = useQuery({
-    queryKey: ['players'],
-    queryFn: () => getPlayers(),
+    queryKey: ['players', viewingSeasonId ?? null],
+    queryFn: () => getPlayers(undefined, viewingSeasonId),
     enabled: isOpen,
   })
 

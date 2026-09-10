@@ -18,6 +18,7 @@ import { ConfirmModal } from '@shared-component/modals/ConfirmationModal/Confirm
 import { MobileAddMatchModal } from '@shared-component/modals/MobileModals/MobileAddMatchModal'
 import { useAuthStore } from '@/store/authStore'
 import { useMatches } from '@/hooks/useMatches'
+import { useSeasons } from '@/hooks/useSeasons'
 import { endMatch, deleteMatch } from '@/lib/matches-api'
 import type { Match, PlayerStat } from '@app-types/matchTypes'
 import { formatTime12h } from '@/lib/format-time'
@@ -33,7 +34,9 @@ export function MobileMatchesView() {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null)
   const [expandedStats, setExpandedStats] = useState<Record<string, boolean>>({})
   const user = useAuthStore((response) => response.user)
-  const isSuperAdmin = user?.role === 'super_admin'
+  const { isViewingActiveSeason } = useSeasons()
+  // Archived seasons are read-only — see the note in MatchesView.
+  const isSuperAdmin = user?.role === 'super_admin' && isViewingActiveSeason
 
   const { liveMatches, upcomingMatches, recentMatches, isLoading } = useMatches()
 

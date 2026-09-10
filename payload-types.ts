@@ -161,6 +161,33 @@ export interface Team {
   id: string;
   name: string;
   logo?: string | null;
+  /**
+   * Seasons this club competes in. It appears in the table, fixtures and squad list only for these seasons.
+   */
+  seasons?: (string | Season)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "seasons".
+ */
+export interface Season {
+  id: string;
+  /**
+   * Display name, e.g. "Season 3".
+   */
+  name: string;
+  /**
+   * Sort order; the newest season should have the highest number.
+   */
+  order: number;
+  startDate?: string | null;
+  endDate?: string | null;
+  /**
+   * The season shown by default across Table, Matches, Stats and News. Turning this on turns it off everywhere else.
+   */
+  isActive?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -197,29 +224,6 @@ export interface Match {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "seasons".
- */
-export interface Season {
-  id: string;
-  /**
-   * Display name, e.g. "Season 3".
-   */
-  name: string;
-  /**
-   * Sort order; the newest season should have the highest number.
-   */
-  order: number;
-  startDate?: string | null;
-  endDate?: string | null;
-  /**
-   * The season shown by default across Table, Matches, Stats and News. Turning this on turns it off everywhere else.
-   */
-  isActive?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "players".
  */
 export interface Player {
@@ -228,6 +232,10 @@ export interface Player {
   avatar?: string | null;
   isGoalkeeper?: boolean | null;
   team: string | Team;
+  /**
+   * The season this squad place belongs to. A player who features in two seasons has one record per season.
+   */
+  season: string | Season;
   updatedAt: string;
   createdAt: string;
 }
@@ -411,6 +419,7 @@ export interface UsersSelect<T extends boolean = true> {
 export interface TeamsSelect<T extends boolean = true> {
   name?: T;
   logo?: T;
+  seasons?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -450,6 +459,7 @@ export interface PlayersSelect<T extends boolean = true> {
   avatar?: T;
   isGoalkeeper?: T;
   team?: T;
+  season?: T;
   updatedAt?: T;
   createdAt?: T;
 }

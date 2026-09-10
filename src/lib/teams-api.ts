@@ -31,14 +31,26 @@ export type PayloadPlayer = {
   avatar?: string
   isGoalkeeper?: boolean
   team: string | { id: string; name: string; logo?: string }
+  season?: string | { id: string; name: string } | null
   updatedAt: string
 }
 
-/** Fetch all players, optionally filtered by team ID. */
-export async function getPlayers(teamId?: string): Promise<PayloadPlayer[]> {
+/**
+ * Fetch players, optionally narrowed to one team and one season.
+ *
+ * Squads are stored one record per player per season, so the season filter is
+ * what makes an archived page show that season's squad rather than today's.
+ */
+export async function getPlayers(
+  teamId?: string,
+  seasonId?: string,
+): Promise<PayloadPlayer[]> {
   const params = new URLSearchParams({ limit: '500', depth: '1' })
   if (teamId) {
     params.set('where[team][equals]', teamId)
+  }
+  if (seasonId) {
+    params.set('where[season][equals]', seasonId)
   }
   const res = await fetch(`${API_BASE}/players?${params}`, { credentials: 'include' })
   if (!res.ok) throw new Error('Failed to fetch players')
@@ -47,7 +59,7 @@ export async function getPlayers(teamId?: string): Promise<PayloadPlayer[]> {
 }
 
 /** Create a new team. */
-export async function createTeam(body: { name: string; logo?: string }): Promise<{ id: string; name: string; logo?: string }> {
+export async function createTeam(body: { name: string; logo?: string; seasons?: string[] }): Promise<{ id: string; name: string; logo?: string }> {
   const res = await fetch(`${API_BASE}/teams`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -79,8 +91,8 @@ export async function deleteTeam(id: string): Promise<void> {
   if (!res.ok) throw new Error(await extractErr(res, 'Failed to delete team'))
 }
 
-/** Create a player. */
-export async function createPlayer(body: { name: string; avatar?: string; team: string }): Promise<PayloadPlayer> {
+/** Create a player. `season` scopes the record to one campaign's squad. */
+export async function createPlayer(body: { name: string; avatar?: string; team: string; season?: string }): Promise<PayloadPlayer> {
   const res = await fetch(`${API_BASE}/players`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -112,7 +124,12 @@ export async function deletePlayer(id: string): Promise<void> {
   if (!res.ok) throw new Error(await extractErr(res, 'Failed to delete player'))
 }
 
-/** Transfer a player to another team. */
+/**
+ * Transfer a player to another club.
+ *
+ * This moves one season's squad record, not the player's whole history — the
+ * records for previous seasons are separate documents and stay where they are.
+ */
 export async function transferPlayer(id: string, toTeamId: string): Promise<PayloadPlayer> {
   return updatePlayer(id, { team: toTeamId })
 }

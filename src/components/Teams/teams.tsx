@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useTeams } from "@/hooks/useTeams"
 import { useMatches } from "@/hooks/useMatches"
+import { useSeasons } from "@/hooks/useSeasons"
 import { useAuthStore } from "@/store/authStore"
 import { FullPageLoader } from "@shared-component/FullPageLoader"
 import { ArchiveSeasonNotice, SeasonFilter } from "@shared-component/SeasonFilter"
@@ -172,24 +173,12 @@ export default function Teams() {
     return map
   }, [players])
 
-  const allTeams = useMemo(
+  // `useTeams` already scopes both clubs and squads to the season on show, so
+  // this is that season's league, not the all-time list.
+  const teams = useMemo(
     () => rawTeams.map((t) => toTeamView(t, playersByTeamId.get(t.id) ?? [], statsMap)),
     [rawTeams, playersByTeamId, statsMap],
   )
-
-  // Teams aren't tagged with a season, so participation is derived from that
-  // season's fixtures. A season with no fixtures yet (e.g. one just started)
-  // falls back to every club, so newly-added teams stay visible.
-  const teams = useMemo(() => {
-    const seasonTeamIds = new Set<string>()
-    for (const match of matches) {
-      seasonTeamIds.add(match.teamA.id)
-      seasonTeamIds.add(match.teamB.id)
-    }
-    return seasonTeamIds.size > 0
-      ? allTeams.filter((t) => seasonTeamIds.has(t.id))
-      : allTeams
-  }, [matches, allTeams])
 
   // Auto-select first team if none selected
   const effectiveSelectedId = selectedTeamId || teams[0]?.id || ""
@@ -228,8 +217,12 @@ function DesktopTeamsView({
   const queryClient = useQueryClient()
   const user = useAuthStore((s) => s.user)
   const canAddTeam = useAuthStore((s) => s.canAddTeam)
-  const isSuperAdmin = user?.role === "super_admin"
-  const hasTeamPermission = canAddTeam()
+  const { viewingSeasonId, isViewingActiveSeason } = useSeasons()
+  // A finished season is a record, not a working document. Editing it would
+  // rewrite history — which is how last season's squads were lost in the first
+  // place — so the write actions are withheld unless the live season is on show.
+  const isSuperAdmin = user?.role === "super_admin" && isViewingActiveSeason
+  const hasTeamPermission = canAddTeam() && isViewingActiveSeason
 
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -276,7 +269,7 @@ function DesktopTeamsView({
       if (data.file) {
         logo = await uploadMedia(data.file)
       }
-      return createTeam({ name: data.name, logo })
+      return createTeam({ name: data.name, logo, seasons: viewingSeasonId ? [viewingSeasonId] : undefined })
     },
     onSuccess: () => {
       invalidate()
@@ -320,7 +313,7 @@ function DesktopTeamsView({
       if (data.file) {
         avatar = await uploadMedia(data.file)
       }
-      return createPlayer({ name: data.name, avatar, team: data.teamId })
+      return createPlayer({ name: data.name, avatar, team: data.teamId, season: viewingSeasonId })
     },
     onSuccess: () => {
       invalidate()
@@ -544,8 +537,10 @@ function MobileTeamsView({
   const queryClient = useQueryClient()
   const user = useAuthStore((s) => s.user)
   const canAddTeam = useAuthStore((s) => s.canAddTeam)
-  const isSuperAdmin = user?.role === "super_admin"
-  const hasTeamPermission = canAddTeam()
+  const { viewingSeasonId, isViewingActiveSeason } = useSeasons()
+  // Archived seasons are read-only — see the note in DesktopTeamsView.
+  const isSuperAdmin = user?.role === "super_admin" && isViewingActiveSeason
+  const hasTeamPermission = canAddTeam() && isViewingActiveSeason
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -592,7 +587,7 @@ function MobileTeamsView({
       if (data.file) {
         logo = await uploadMedia(data.file)
       }
-      return createTeam({ name: data.name, logo })
+      return createTeam({ name: data.name, logo, seasons: viewingSeasonId ? [viewingSeasonId] : undefined })
     },
     onSuccess: () => {
       invalidate()
@@ -636,7 +631,7 @@ function MobileTeamsView({
       if (data.file) {
         avatar = await uploadMedia(data.file)
       }
-      return createPlayer({ name: data.name, avatar, team: data.teamId })
+      return createPlayer({ name: data.name, avatar, team: data.teamId, season: viewingSeasonId })
     },
     onSuccess: () => {
       invalidate()

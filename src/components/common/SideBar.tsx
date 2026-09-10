@@ -8,7 +8,16 @@ import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/authStore';
+import { useSeasons } from '@/hooks/useSeasons';
 import { logout as logoutApi } from '@/lib/auth-api';
+
+/**
+ * Nav items to the left of the floating add button; the rest sit to its right.
+ * The two sides must stay equal in width even though they hold different
+ * numbers of items: the button is centred on the bar, so it only lands in the
+ * gap between them while that gap is centred too.
+ */
+const MOBILE_NAV_SPLIT = 3;
 
 /**
  * The sidebar renders on every authenticated page, and this modal pulls in
@@ -26,6 +35,10 @@ export default function SideBar() {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const logoutStore = useAuthStore((s) => s.logout);
+  const { isViewingActiveSeason } = useSeasons();
+  // Fixtures can only be added to the season in progress, so the button that
+  // opens the form goes away while an archived season is on show.
+  const canAddMatch = Boolean(user) && isViewingActiveSeason;
 
   const isActive = (path: string) => {
     if (path === "/") {
@@ -45,6 +58,9 @@ export default function SideBar() {
     router.replace('/login');
   };
 
+  // Each link claims an equal share of its half and is allowed to shrink, so a
+  // narrow phone squeezes the labels instead of pushing the last item off the
+  // edge of the screen.
   const renderNavLink = (item: (typeof navItems)[number]) => {
     const Icon = item.icon;
     const active = isActive(item.path);
@@ -52,13 +68,17 @@ export default function SideBar() {
       <Link
         key={item.path}
         href={item.path}
-        className="flex flex-col items-center justify-center py-1 px-2"
+        className="flex flex-1 min-w-0 flex-col items-center justify-center py-1 px-0.5"
       >
-        <Icon className={`w-5 h-5 mb-1 ${active ? 'text-[#267c93]' : 'text-[#605e5c]'}`} />
-        <span className={`text-[12px] ${active ? 'text-[#267c93]' : 'text-[#605e5c]'}`}>
+        <Icon className={`w-5 h-5 mb-1 shrink-0 ${active ? 'text-[#267c93]' : 'text-[#605e5c]'}`} />
+        <span
+          className={`w-full truncate text-center text-[11px] leading-[14px] ${
+            active ? 'text-[#267c93]' : 'text-[#605e5c]'
+          }`}
+        >
           {item.label}
         </span>
-        {active && <span className="mt-1 w-9 h-0.75 bg-[#267c93] rounded" />}
+        {active && <span className="mt-1 h-0.75 w-9 max-w-full bg-[#267c93] rounded" />}
       </Link>
     );
   };
@@ -126,15 +146,19 @@ export default function SideBar() {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#ecf9ff] border-t border-[#a6dfe6] shadow-[0_-6px_16px_rgba(0,0,0,0.08)] z-1000">
         <div className="relative">
-          {/* Two equal-width halves flanking a fixed centre gap, so the floating
+          {/* Two equal halves flanking a fixed centre gap, so the floating
               button never lands on top of a nav item. */}
-          <div className="flex items-center px-2 pt-2 pb-6">
-            <div className="flex-1 flex justify-around">{navItems.slice(0, 3).map(renderNavLink)}</div>
-            {user && <div className="w-14 shrink-0" aria-hidden />}
-            <div className="flex-1 flex justify-around">{navItems.slice(3).map(renderNavLink)}</div>
+          <div className="flex items-start px-1 pt-2 pb-6">
+            <div className="flex flex-1 min-w-0">
+              {navItems.slice(0, MOBILE_NAV_SPLIT).map(renderNavLink)}
+            </div>
+            {canAddMatch && <div className="w-14 shrink-0" aria-hidden />}
+            <div className="flex flex-1 min-w-0">
+              {navItems.slice(MOBILE_NAV_SPLIT).map(renderNavLink)}
+            </div>
 
-            {/* Floating Add Match - only when logged in */}
-            {user && (
+            {/* Floating Add Match — signed in, current season only */}
+            {canAddMatch && (
               <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-6">
                 <button
                   type="button"

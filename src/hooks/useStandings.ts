@@ -45,9 +45,13 @@ export function useStandings() {
     },
   })
 
+  // Scoped to the season on show. The table seeds a row for every club it is
+  // handed so that clubs yet to play still appear, which means an unscoped
+  // list would drop a newly-founded club into every past season's table.
   const teamsQuery = useQuery({
-    queryKey: ['teams'],
-    queryFn: getTeams,
+    queryKey: ['teams', viewingSeasonId ?? null],
+    queryFn: () => getTeams(viewingSeasonId),
+    enabled: isReady,
     refetchInterval: 120_000,
   })
 

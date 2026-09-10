@@ -4,17 +4,30 @@ import { useMemo, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getTeams } from '@/lib/matches-api'
 import { getPlayers, type PayloadPlayer } from '@/lib/teams-api'
+import { useSeasons } from './useSeasons'
 
+/**
+ * The clubs and squads of the season currently being viewed.
+ *
+ * Both sides are season-scoped: a club appears only in the seasons it is
+ * entered in, and squads are stored one record per player per season, so
+ * looking at an old season shows the squad as it was then rather than as it is
+ * now.
+ */
 export function useTeams() {
+  const { viewingSeasonId, isReady } = useSeasons()
+
   const teamsQuery = useQuery({
-    queryKey: ['teams'],
-    queryFn: getTeams,
+    queryKey: ['teams', viewingSeasonId ?? null],
+    queryFn: () => getTeams(viewingSeasonId),
+    enabled: isReady,
     refetchInterval: 120_000,
   })
 
   const playersQuery = useQuery({
-    queryKey: ['players'],
-    queryFn: () => getPlayers(),
+    queryKey: ['players', viewingSeasonId ?? null],
+    queryFn: () => getPlayers(undefined, viewingSeasonId),
+    enabled: isReady,
     refetchInterval: 120_000,
   })
 
