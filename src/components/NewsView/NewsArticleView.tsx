@@ -101,10 +101,15 @@ export function NewsArticleView({ articleId }: { readonly articleId: string }) {
         Back to News
       </Link>
 
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
-        {/* Without a rail the article takes the extra width, rather than
-            leaving an empty column beside it. */}
-        <article className={`flex-1 min-w-0 ${hasRail ? 'max-w-[760px]' : 'max-w-[1040px]'}`}>
+      {/* Body copy is capped for readability, which on a wide monitor used to
+          strand the whole layout against the left edge with a void beside the
+          rail. Capping and centring the pair keeps the measure while spreading
+          the leftover space evenly. */}
+      <div className="mx-auto w-full max-w-[1180px] flex flex-col lg:flex-row gap-6 items-start">
+        {/* Alongside the rail the article simply takes what is left of the
+            capped row. Without one it keeps its own cap and centres, rather
+            than running the full width of the screen. */}
+        <article className={`flex-1 min-w-0 ${hasRail ? '' : 'max-w-[860px] mx-auto'}`}>
           {/* Meta above the headline */}
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <span

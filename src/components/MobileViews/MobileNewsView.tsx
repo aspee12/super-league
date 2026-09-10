@@ -13,6 +13,7 @@ import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilte
 import { getTeams } from '@/lib/matches-api'
 import { deleteNews, type PayloadNews } from '@/lib/news-api'
 import { useNews, type NewsFilters } from '@/hooks/useNews'
+import { useSeasons } from '@/hooks/useSeasons'
 import { useAuthStore } from '@/store/authStore'
 
 /** Cards shown before "View More". */
@@ -28,10 +29,13 @@ export default function MobileNewsView() {
 
   const queryClient = useQueryClient()
   const user = useAuthStore((response) => response.user)
-  const isSuperAdmin = user?.role === 'super_admin'
+  const { isViewingActiveSeason } = useSeasons()
+  // Archived seasons are read-only — see the note in MatchesView.
+  const isSuperAdmin = user?.role === 'super_admin' && isViewingActiveSeason
 
   const { filteredNews, isLoading } = useNews(filters)
-  const teamsQuery = useQuery({ queryKey: ['teams'], queryFn: getTeams })
+  // Every club, not just this season's — an article can be about any of them.
+  const teamsQuery = useQuery({ queryKey: ['teams', null], queryFn: () => getTeams() })
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteNews(id),

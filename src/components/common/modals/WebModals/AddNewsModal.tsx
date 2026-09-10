@@ -107,7 +107,8 @@ function AddNewsModalContent({
         },
   })
 
-  const teamsQuery = useQuery({ queryKey: ['teams'], queryFn: getTeams })
+  // Every club, not just this season's — an article can be about any of them.
+  const teamsQuery = useQuery({ queryKey: ['teams', null], queryFn: () => getTeams() })
   const teams = teamsQuery.data ?? []
 
   // Lock background scroll for as long as the modal is mounted.

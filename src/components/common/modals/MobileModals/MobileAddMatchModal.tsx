@@ -25,9 +25,10 @@ export function MobileAddMatchModal({
   const isEditMode = !!initialData
   const { viewingSeasonId } = useSeasons()
 
+  // Only clubs entered in this season can be fixtured against each other.
   const { data: teams = [], isLoading: teamsLoading } = useQuery({
-    queryKey: ['teams'],
-    queryFn: getTeams,
+    queryKey: ['teams', viewingSeasonId ?? null],
+    queryFn: () => getTeams(viewingSeasonId),
     enabled: isOpen,
   })
 

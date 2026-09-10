@@ -6,6 +6,7 @@ export type PayloadTeam = {
   id: string
   name: string
   logo?: string
+  seasons?: Array<string | PayloadSeasonRef>
   updatedAt: string
 }
 
@@ -56,9 +57,19 @@ export type UpdateMatchBody = Partial<CreateMatchBody> & {
   playerStats?: PayloadPlayerStat[]
 }
 
-/** Fetch all teams from Payload (for select options). */
-export async function getTeams(): Promise<PayloadTeam[]> {
-  const res = await fetch(`${API_BASE}/teams?limit=500`, { credentials: 'include' })
+/**
+ * Fetch teams from Payload, optionally only those entered in one season.
+ *
+ * Scoping by season is what keeps a club founded this year off last year's
+ * table: the standings seed a row for every club they are given, so a club that
+ * never played in that season would otherwise sit there on zero points.
+ */
+export async function getTeams(seasonId?: string): Promise<PayloadTeam[]> {
+  const params = new URLSearchParams({ limit: '500' })
+  if (seasonId) {
+    params.set('where[seasons][in]', seasonId)
+  }
+  const res = await fetch(`${API_BASE}/teams?${params}`, { credentials: 'include' })
   if (!res.ok) throw new Error('Failed to fetch teams')
   const data = await res.json()
   return data.docs ?? []

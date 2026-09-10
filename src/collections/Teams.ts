@@ -4,14 +4,16 @@ import {
   cleanupMediaOnDelete,
   cleanupReplacedMedia,
 } from '../lib/media-hooks'
+import { defaultTeamSeasons } from '../lib/season-hooks'
 
 export const Teams: CollectionConfig = {
   slug: 'teams',
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'logo', 'updatedAt'],
+    defaultColumns: ['name', 'logo', 'seasons', 'updatedAt'],
   },
   hooks: {
+    beforeChange: [defaultTeamSeasons],
     // Drop the old logo when it's swapped out, so replaced images
     // don't accumulate in blob storage.
     afterChange: [cleanupReplacedMedia('logo')],
@@ -46,6 +48,21 @@ export const Teams: CollectionConfig = {
       type: 'text',
       required: false,
       defaultValue: '',
+    },
+    {
+      // Which competitions the club is entered in. Without this a club founded
+      // for the current season is seeded into every past season's table too,
+      // showing up on nine-match-old standings with a row of zeroes.
+      name: 'seasons',
+      type: 'relationship',
+      relationTo: 'seasons',
+      hasMany: true,
+      required: false,
+      index: true,
+      admin: {
+        description:
+          'Seasons this club competes in. It appears in the table, fixtures and squad list only for these seasons.',
+      },
     },
   ],
 }

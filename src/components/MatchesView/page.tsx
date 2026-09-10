@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic'
 import { ConfirmModal } from '@shared-component/modals/ConfirmationModal/ConfirmModal'
 import { useAuthStore } from '@/store/authStore'
 import { useMatches } from '@/hooks/useMatches'
+import { useSeasons } from '@/hooks/useSeasons'
 import { endMatch, deleteMatch } from '@/lib/matches-api'
 import Link from 'next/link'
 import type { Match } from '@app-types/matchTypes'
@@ -31,7 +32,10 @@ export function MatchesView() {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null)
   const [showUpdateScoreModal, setShowUpdateScoreModal] = useState(false)
   const user = useAuthStore((response) => response.user)
-  const isSuperAdmin = user?.role === 'super_admin'
+  const { isViewingActiveSeason } = useSeasons()
+  // A completed season is an archive: no adding fixtures, editing scores or
+  // deleting results once the campaign it belongs to is over.
+  const isSuperAdmin = user?.role === 'super_admin' && isViewingActiveSeason
 
   const [confirmState, setConfirmState] = useState<{
     type: 'end' | 'delete' | null

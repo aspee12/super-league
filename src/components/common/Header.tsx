@@ -49,7 +49,7 @@ export default function Header() {
         className="pointer-events-none absolute hidden md:block opacity-10 w-[175px] h-[175px] object-cover -right-[30px] top-[56px]"
       />
 
-      <div className="relative flex items-center gap-3 px-4 py-4 md:gap-3 md:h-[86px] md:pl-[42px] md:pr-6 md:py-6">
+      <div className="relative flex items-center gap-2 px-3 py-4 md:gap-3 md:px-0 md:h-[86px] md:pl-[42px] md:pr-6 md:py-6">
         <div className="shrink-0 w-10 h-10 md:w-[52px] md:h-[52px]">
           <Image
             alt="Selise Super League Logo"
@@ -81,14 +81,17 @@ export default function Header() {
         </div>
 
         {user ? (
+          /* Below `sm` the word is dropped and the icon carries the button, so
+             the league name has room to read in full instead of truncating. */
           <button
             type="button"
             onClick={handleLogout}
-            className="shrink-0 flex items-center gap-2 rounded-[80px] border-[1.5px] border-[#00586b] bg-white px-4 py-1.5 text-[#00586b] transition-colors hover:bg-[#00586b]/5"
+            aria-label="Logout"
+            className="shrink-0 flex items-center gap-2 rounded-[80px] border-[1.5px] border-[#00586b] bg-white px-3 py-1.5 sm:px-4 text-[#00586b] transition-colors hover:bg-[#00586b]/5"
           >
             <LogOut className="w-4 h-4" />
             <span
-              className="font-bold text-[14px] leading-6"
+              className="hidden sm:inline font-bold text-[14px] leading-6"
               style={{ letterSpacing: '0.15px', fontFamily: 'Roboto, sans-serif' }}
             >
               Logout
