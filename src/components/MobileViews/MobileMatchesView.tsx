@@ -92,7 +92,7 @@ export function MobileMatchesView() {
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen">
       <div className="px-4 mt-4 mb-3">
         <SeasonFilter showReset={false} />
         <div className="mt-3">
@@ -108,12 +108,29 @@ export function MobileMatchesView() {
               <div className="w-2 h-2 bg-red-600 rounded-full"></div>
               <h2 className="font-semibold text-gray-800">Live Now</h2>
             </div>
-            {liveMatches.length > 0 && (
-              <div className="bg-red-600 text-white text-xs px-3 py-1 rounded-full font-semibold flex items-center gap-1">
-                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                LIVE
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              {liveMatches.length > 0 && (
+                <div className="bg-red-600 text-white text-xs px-3 py-1 rounded-full font-semibold flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                  LIVE
+                </div>
+              )}
+              {/* Adding a fixture is a Matches action, so it lives on this
+                  screen rather than in the global tab bar. */}
+              {isSuperAdmin && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedMatch(null)
+                    setShowEditModal(true)
+                  }}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-[#0e7490] text-white rounded-md active:bg-[#0c6380] transition-colors text-xs font-medium"
+                >
+                  <Plus size={14} />
+                  <span>Add Match</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {liveMatches.length > 0 ? (

@@ -722,7 +722,7 @@ function MobileTeamsView({
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen">
       {/* Team Management Section */}
       <div className="px-4">
         <div className="pt-4 mb-3">

@@ -63,7 +63,7 @@ export default function MobileNewsView() {
   if (isLoading) return <FullPageLoader message="Loading news..." />
 
   return (
-    <div className="min-h-screen pb-20" style={{ fontFamily: 'Roboto, sans-serif' }}>
+    <div className="min-h-screen" style={{ fontFamily: 'Roboto, sans-serif' }}>
       <div className="px-4 pt-4 mb-4">
         <div className="flex items-center justify-between mb-3">
           <h1 className="font-semibold text-gray-800 text-[18px]">News</h1>

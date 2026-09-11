@@ -14,7 +14,10 @@ export function AppShell({ children }: { readonly children: ReactNode }) {
     <main className="flex flex-col h-screen">
       <Header />
       <SideBar />
-      <div className="flex-1 overflow-auto md:ml-44.5 md:mt-[86px] md:pb-0 pb-20">
+      {/* The mobile tab bar is fixed, so the scroll area has to reserve its
+          height plus the home-indicator inset or the last row of content sits
+          underneath it. */}
+      <div className="flex-1 overflow-auto md:ml-44.5 md:mt-[86px] pb-[calc(4.5rem_+_env(safe-area-inset-bottom))] md:pb-0">
         {children}
       </div>
     </main>
