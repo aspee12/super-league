@@ -2,7 +2,9 @@ name: PR Preview
 
 on:
   pull_request:
-    branches: [main]
+    # release-development is the repo's default branch and real trunk; `main`
+    # is stale (79 commits behind). Targeting main here means PRs get no CI.
+    branches: [release-development]
     types: [opened, synchronize, reopened]
 
 # One preview per PR — a new push cancels the in-flight run.
