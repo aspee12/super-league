@@ -74,6 +74,7 @@ export interface Config {
     media: Media;
     news: News;
     seasons: Season;
+    'budget-entries': BudgetEntry;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -88,6 +89,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     news: NewsSelect<false> | NewsSelect<true>;
     seasons: SeasonsSelect<false> | SeasonsSelect<true>;
+    'budget-entries': BudgetEntriesSelect<false> | BudgetEntriesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -292,6 +294,33 @@ export interface News {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "budget-entries".
+ */
+export interface BudgetEntry {
+  id: string;
+  team: string | Team;
+  /**
+   * The season this entry belongs to. Carry-forward is recorded against the season the money is carried into.
+   */
+  season: string | Season;
+  type: 'purchase' | 'sale' | 'carry_forward' | 'credit' | 'debit';
+  /**
+   * Always a positive figure in Seltrum. The type decides whether it is added or subtracted — never enter a minus.
+   */
+  amount: number;
+  /**
+   * Shown in the ledger, e.g. "Won auction for Dorji".
+   */
+  description?: string | null;
+  /**
+   * YYYY-MM-DD. Used to order the ledger, newest first.
+   */
+  date?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -341,6 +370,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'seasons';
         value: string | Season;
+      } | null)
+    | ({
+        relationTo: 'budget-entries';
+        value: string | BudgetEntry;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -507,6 +540,20 @@ export interface SeasonsSelect<T extends boolean = true> {
   startDate?: T;
   endDate?: T;
   isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "budget-entries_select".
+ */
+export interface BudgetEntriesSelect<T extends boolean = true> {
+  team?: T;
+  season?: T;
+  type?: T;
+  amount?: T;
+  description?: T;
+  date?: T;
   updatedAt?: T;
   createdAt?: T;
 }

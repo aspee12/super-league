@@ -33,6 +33,23 @@ export const defaultPlayerSeason: CollectionBeforeChangeHook = async ({
 }
 
 /**
+ * Default a budget entry's missing `season` to the active one.
+ *
+ * The ledger is read one season at a time, so an entry created without a season
+ * would be counted against no club's balance while still sitting in the
+ * database — money that has silently left the league.
+ */
+export const defaultBudgetEntrySeason: CollectionBeforeChangeHook = async ({
+  data,
+  req,
+  operation,
+}) => {
+  if (operation !== 'create' || data.season) return data
+  const season = await findActiveSeasonId(req)
+  return season ? { ...data, season } : data
+}
+
+/**
  * Default a team's missing `seasons` to the active one.
  *
  * A club with no seasons listed is in no competition at all, so it would drop

@@ -1,4 +1,4 @@
-import { BarChart3, LayoutGrid, Newspaper, Trophy, Users } from 'lucide-react';
+import { BarChart3, LayoutGrid, Newspaper, Trophy, Users, Wallet } from 'lucide-react';
 import { NavItem } from '../types/sidenav';
 
 export const navItems: NavItem[] = [
@@ -7,4 +7,5 @@ export const navItems: NavItem[] = [
     { path: "/matches", label: "Matches", icon: Trophy },
     { path: "/stats", label: "Stats", icon: BarChart3 },
     { path: "/teams", label: "Teams", icon: Users },
+    { path: "/budget", label: "Budget", icon: Wallet },
   ];

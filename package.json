@@ -11,6 +11,7 @@
     "lint": "eslint",
     "seed:super-admin": "node scripts/seed-super-admin.mjs",
     "seed:teams": "node scripts/seed-teams.mjs",
+    "seed:budgets": "node scripts/seed-budgets.mjs",
     "blobs:prune": "node scripts/prune-orphan-blobs.mjs"
   },
   "dependencies": {
