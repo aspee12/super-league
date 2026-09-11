@@ -1,7 +1,11 @@
+'use client'
+
 import type { Match, PlayerStat } from '@app-types/matchTypes'
 import { Pencil, Trash2 } from 'lucide-react'
 import { formatTime12h } from '@/lib/format-time'
 import { TeamLogo } from '@shared-component/TeamLogo'
+import { GoalkeeperBadge } from '@shared-component/GoalkeeperBadge'
+import { useGoalkeepers } from '@/hooks/useGoalkeepers'
 
 interface MatchCardProps {
   match: Match
@@ -17,10 +21,27 @@ function CardIcon({ card }: { card?: 'none' | 'yellow' | 'red' }) {
   return null
 }
 
-function StatLine({ stat, side }: { stat: PlayerStat; side: 'left' | 'right' }) {
+function StatLine({
+  stat,
+  side,
+  scorerIsGk,
+  assisterIsGk,
+}: {
+  stat: PlayerStat
+  side: 'left' | 'right'
+  scorerIsGk: boolean
+  assisterIsGk: boolean
+}) {
   const hasGoals = stat.goals > 0
   const hasCard = stat.card === 'yellow' || stat.card === 'red'
-  const assistText = stat.assistName ? `${stat.assistName} (Assist)` : ''
+
+  const assistLine = stat.assistName && (
+    <div className="flex items-center gap-1 text-gray-400">
+      {side === 'right' && assisterIsGk && <GoalkeeperBadge size="sm" />}
+      <span>{stat.assistName} (Assist)</span>
+      {side === 'left' && assisterIsGk && <GoalkeeperBadge size="sm" />}
+    </div>
+  )
 
   if (side === 'left') {
     return (
@@ -28,18 +49,18 @@ function StatLine({ stat, side }: { stat: PlayerStat; side: 'left' | 'right' }) 
         {hasGoals && (
           <div className="flex items-center gap-1">
             <span>{stat.playerName} {stat.goals}&apos;</span>
+            {scorerIsGk && <GoalkeeperBadge size="sm" />}
             {hasCard && <CardIcon card={stat.card} />}
           </div>
         )}
         {!hasGoals && hasCard && (
           <div className="flex items-center gap-1">
             <span>{stat.playerName}</span>
+            {scorerIsGk && <GoalkeeperBadge size="sm" />}
             <CardIcon card={stat.card} />
           </div>
         )}
-        {assistText && (
-          <div className="text-gray-400">{assistText}</div>
-        )}
+        {assistLine}
       </div>
     )
   }
@@ -49,18 +70,18 @@ function StatLine({ stat, side }: { stat: PlayerStat; side: 'left' | 'right' }) 
       {hasGoals && (
         <div className="flex items-center justify-end gap-1">
           {hasCard && <CardIcon card={stat.card} />}
+          {scorerIsGk && <GoalkeeperBadge size="sm" />}
           <span>{stat.goals}&apos; {stat.playerName}</span>
         </div>
       )}
       {!hasGoals && hasCard && (
         <div className="flex items-center justify-end gap-1">
           <CardIcon card={stat.card} />
+          {scorerIsGk && <GoalkeeperBadge size="sm" />}
           <span>{stat.playerName}</span>
         </div>
       )}
-      {assistText && (
-        <div className="text-gray-400">{assistText}</div>
-      )}
+      {assistLine}
     </div>
   )
 }
@@ -71,6 +92,9 @@ export function MatchCard({ match, showActions = false, onEdit, onDelete, varian
 
   const teamAStats = (match.playerStats ?? []).filter((s) => s.team === 'teamA')
   const teamBStats = (match.playerStats ?? []).filter((s) => s.team === 'teamB')
+
+  // `playerStats` stores names only, so keepers are resolved against the squad.
+  const { isGoalkeeper } = useGoalkeepers()
 
   return (
     <div className="bg-white rounded-lg shadow-sm relative">
@@ -108,12 +132,24 @@ export function MatchCard({ match, showActions = false, onEdit, onDelete, varian
           <div className="flex justify-between text-xs text-gray-600 mb-4">
             <div className="space-y-1">
               {teamAStats.map((stat, i) => (
-                <StatLine key={i} stat={stat} side="left" />
+                <StatLine
+                  key={i}
+                  stat={stat}
+                  side="left"
+                  scorerIsGk={isGoalkeeper(stat.playerName, match.teamA.id)}
+                  assisterIsGk={isGoalkeeper(stat.assistName, match.teamA.id)}
+                />
               ))}
             </div>
             <div className="space-y-1">
               {teamBStats.map((stat, i) => (
-                <StatLine key={i} stat={stat} side="right" />
+                <StatLine
+                  key={i}
+                  stat={stat}
+                  side="right"
+                  scorerIsGk={isGoalkeeper(stat.playerName, match.teamB.id)}
+                  assisterIsGk={isGoalkeeper(stat.assistName, match.teamB.id)}
+                />
               ))}
             </div>
           </div>

@@ -92,13 +92,19 @@ export function MobileUpdateScoreModal({
       : formData.team === 'teamB'
         ? match.teamB.id
         : ''
+  // Keeps `isGoalkeeper` alongside the name so the dropdown can mark keepers,
+  // while the stored value stays the plain name. A native <option> can't hold
+  // markup, so mobile suffixes the label instead of rendering a badge.
   const playersForTeam = selectedTeamId
     ? allPlayers
         .filter((p: PayloadPlayer) => {
           const pTeamId = typeof p.team === 'string' ? p.team : p.team?.id
           return pTeamId === selectedTeamId
         })
-        .map((p: PayloadPlayer) => p.name)
+        .map((p: PayloadPlayer) => ({ name: p.name, isGoalkeeper: !!p.isGoalkeeper }))
+        .sort((a, b) =>
+          a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true }),
+        )
     : []
 
   const handleClose = () => {
@@ -200,8 +206,8 @@ export function MobileUpdateScoreModal({
                   {formData.team ? 'Select Player' : 'Select team first'}
                 </option>
                 {playersForTeam.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
+                  <option key={p.name} value={p.name}>
+                    {p.isGoalkeeper ? `${p.name} (GK)` : p.name}
                   </option>
                 ))}
               </select>
@@ -237,10 +243,10 @@ export function MobileUpdateScoreModal({
               >
                 <option value="">Assist (optional)</option>
                 {playersForTeam
-                  .filter((p) => p !== formData.player)
+                  .filter((p) => p.name !== formData.player)
                   .map((p) => (
-                    <option key={p} value={p}>
-                      {p}
+                    <option key={p.name} value={p.name}>
+                      {p.isGoalkeeper ? `${p.name} (GK)` : p.name}
                     </option>
                   ))}
               </select>

@@ -1,5 +1,7 @@
 import { computeMatchStatus } from './match-status'
 
+import { apiFetch } from './api-client'
+
 const API_BASE = '/api'
 
 export type PayloadTeam = {
@@ -69,7 +71,7 @@ export async function getTeams(seasonId?: string): Promise<PayloadTeam[]> {
   if (seasonId) {
     params.set('where[seasons][in]', seasonId)
   }
-  const res = await fetch(`${API_BASE}/teams?${params}`, { credentials: 'include' })
+  const res = await apiFetch(`${API_BASE}/teams?${params}`, { credentials: 'include' })
   if (!res.ok) throw new Error('Failed to fetch teams')
   const data = await res.json()
   return data.docs ?? []
@@ -84,7 +86,7 @@ export async function getMatches(seasonId?: string): Promise<PayloadMatch[]> {
   if (seasonId) {
     params.set('where[season][equals]', seasonId)
   }
-  const res = await fetch(`${API_BASE}/matches?${params}`, { credentials: 'include' })
+  const res = await apiFetch(`${API_BASE}/matches?${params}`, { credentials: 'include' })
   if (!res.ok) throw new Error('Failed to fetch matches')
   const data = await res.json()
   return data.docs ?? []
@@ -92,7 +94,7 @@ export async function getMatches(seasonId?: string): Promise<PayloadMatch[]> {
 
 /** Create a match in Payload. */
 export async function createMatch(body: CreateMatchBody): Promise<PayloadMatch> {
-  const res = await fetch(`${API_BASE}/matches`, {
+  const res = await apiFetch(`${API_BASE}/matches`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -120,7 +122,7 @@ export async function updateMatch(
     body.status = computeMatchStatus(currentStatus, date, time)
   }
 
-  const res = await fetch(`${API_BASE}/matches/${id}`, {
+  const res = await apiFetch(`${API_BASE}/matches/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -134,7 +136,7 @@ export async function updateMatch(
 
 /** End a match — just set status to finished. */
 export async function endMatch(id: string): Promise<PayloadMatch> {
-  const res = await fetch(`${API_BASE}/matches/${id}`, {
+  const res = await apiFetch(`${API_BASE}/matches/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ status: 'finished' }),
@@ -178,7 +180,7 @@ export async function updateScore(
       ? currentMatch.scoreB + stat.goals
       : currentMatch.scoreB
 
-  const res = await fetch(`${API_BASE}/matches/${id}`, {
+  const res = await apiFetch(`${API_BASE}/matches/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ scoreA, scoreB, playerStats: newStats }),
@@ -192,7 +194,7 @@ export async function updateScore(
 
 /** Delete a match from Payload. */
 export async function deleteMatch(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/matches/${id}`, {
+  const res = await apiFetch(`${API_BASE}/matches/${id}`, {
     method: 'DELETE',
     credentials: 'include',
   })

@@ -15,6 +15,11 @@ import Link from 'next/link'
 import type { Match } from '@app-types/matchTypes'
 import { FullPageLoader } from '@shared-component/FullPageLoader'
 import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilter'
+import { FixturePager, fixtureDateRange } from '@shared-component/FixturePager'
+import { paginate } from '@shared-component/ListPagination'
+
+/** A matchweek is two fixtures, so the pager steps a matchweek at a time. */
+const MATCHES_PER_MATCHWEEK = 2
 
 // Both pull in react-day-picker + date-fns through DatePicker — load on demand.
 const AddMatchModal = dynamic(
@@ -42,7 +47,10 @@ export function MatchesView() {
     match: Match | null
   }>({ type: null, match: null })
 
-  const { liveMatches, upcomingMatches, recentMatches, isLoading } = useMatches()
+  const { liveMatches, upcomingMatches, recentMatches, allResults, isLoading } = useMatches()
+
+  const [upcomingPage, setUpcomingPage] = useState(1)
+  const upcoming = paginate(upcomingMatches, upcomingPage, MATCHES_PER_MATCHWEEK)
 
   const endMatchMutation = useMutation({
     mutationFn: (id: string) => endMatch(id),
@@ -78,7 +86,7 @@ export function MatchesView() {
   }
 
   return (
-    <div className="min-h-screen flex-1 p-6">
+    <div className="min-h-full flex-1 p-6">
       <div className="hidden md:flex flex-wrap items-center justify-between gap-4 mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Matches</h1>
         <SeasonFilter />
@@ -161,21 +169,31 @@ export function MatchesView() {
           <h2 className="font-semibold text-[#0c5273]">Upcoming</h2>
         </div>
         {upcomingMatches.length > 0 ? (
-          <div className="space-y-4 mt-4">
-            {upcomingMatches.map((match) => (
-              <MatchCard
-                key={match.id}
-                match={match}
-                variant="upcoming"
-                showActions={isSuperAdmin}
-                onEdit={() => {
-                  setSelectedMatch(match)
-                  setIsMatchModalOpen(true)
-                }}
-                onDelete={() => setConfirmState({ type: 'delete', match })}
-              />
-            ))}
-          </div>
+          <>
+            <FixturePager
+              page={upcoming.safePage}
+              pageCount={upcoming.pageCount}
+              onPageChange={setUpcomingPage}
+              label={`Matchweek ${upcoming.safePage}`}
+              subLabel={fixtureDateRange(upcoming.visible)}
+              className="mt-4"
+            />
+            <div className="space-y-4 mt-4">
+              {upcoming.visible.map((match) => (
+                <MatchCard
+                  key={match.id}
+                  match={match}
+                  variant="upcoming"
+                  showActions={isSuperAdmin}
+                  onEdit={() => {
+                    setSelectedMatch(match)
+                    setIsMatchModalOpen(true)
+                  }}
+                  onDelete={() => setConfirmState({ type: 'delete', match })}
+                />
+              ))}
+            </div>
+          </>
         ) : (
           <div className="text-center py-8 text-gray-500">No upcoming matches</div>
         )}
@@ -195,13 +213,17 @@ export function MatchesView() {
         ) : (
           <div className="text-center py-8 text-gray-500">No recent results</div>
         )}
-        <Link
-          href="/results"
-          className="w-full mt-4 bg-white rounded-lg shadow-sm p-4 flex items-center justify-center gap-2 text-gray-800 hover:bg-gray-50 transition-colors"
-        >
-          <span className="text-sm font-medium">View all results</span>
-          <ChevronRight size={16} className="text-gray-600" />
-        </Link>
+        {/* Only worth a link when there are results the list above doesn't
+            already show — with 3 or fewer, "Recent Results" is all of them. */}
+        {allResults.length > recentMatches.length && (
+          <Link
+            href="/results"
+            className="w-full mt-4 bg-white rounded-lg shadow-sm p-4 flex items-center justify-center gap-2 text-gray-800 hover:bg-gray-50 transition-colors"
+          >
+            <span className="text-sm font-medium">View all results</span>
+            <ChevronRight size={16} className="text-gray-600" />
+          </Link>
+        )}
       </div>
 
       {/* Modals */}

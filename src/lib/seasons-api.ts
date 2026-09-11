@@ -1,3 +1,5 @@
+import { apiFetch } from './api-client'
+
 const API_BASE = '/api'
 
 export type PayloadSeason = {
@@ -13,7 +15,7 @@ export type PayloadSeason = {
 
 /** Fetch all seasons, newest first. */
 export async function getSeasons(): Promise<PayloadSeason[]> {
-  const res = await fetch(`${API_BASE}/seasons?limit=100&sort=-order`, {
+  const res = await apiFetch(`${API_BASE}/seasons?limit=100&sort=-order`, {
     credentials: 'include',
   })
   if (!res.ok) throw new Error('Failed to fetch seasons')

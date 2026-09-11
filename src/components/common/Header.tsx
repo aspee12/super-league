@@ -72,8 +72,16 @@ export default function Header() {
             <span className="text-[16px] md:text-[24px] md:leading-9"> Super League</span>
           </p>
 
+          {/* Every mobile screen already carries a SeasonFilter showing the
+              same value, so repeating it here just spent a line of permanent
+              chrome on a fact stated directly below. Kept on mobile only when
+              an archive is on show, where it's a warning rather than an echo. */}
           <p
-            className="font-bold text-[#605e5c] text-[12px] leading-[24px] md:text-[14px]"
+            className={`font-bold text-[12px] leading-[24px] md:text-[14px] ${
+              isViewingActiveSeason
+                ? 'hidden md:block text-[#605e5c]'
+                : 'text-[#a4262c]'
+            }`}
             style={{ letterSpacing: '0.5px', fontFamily: 'Roboto, sans-serif' }}
           >
             {seasonLabel}

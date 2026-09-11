@@ -1,3 +1,5 @@
+import { apiFetch } from './api-client'
+
 const API_BASE = '/api'
 
 export type NewsCategory =
@@ -50,7 +52,7 @@ export async function getNews(seasonId?: string): Promise<PayloadNews[]> {
   if (seasonId) {
     params.set('where[season][equals]', seasonId)
   }
-  const res = await fetch(`${API_BASE}/news?${params}`, { credentials: 'include' })
+  const res = await apiFetch(`${API_BASE}/news?${params}`, { credentials: 'include' })
   if (!res.ok) throw new Error('Failed to fetch news')
   const data = await res.json()
   return data.docs ?? []
@@ -58,7 +60,7 @@ export async function getNews(seasonId?: string): Promise<PayloadNews[]> {
 
 /** Fetch a single news article by id. Returns null when it doesn't exist. */
 export async function getNewsById(id: string): Promise<PayloadNews | null> {
-  const res = await fetch(`${API_BASE}/news/${id}?depth=1`, { credentials: 'include' })
+  const res = await apiFetch(`${API_BASE}/news/${id}?depth=1`, { credentials: 'include' })
   if (res.status === 404) return null
   if (!res.ok) throw new Error('Failed to fetch article')
   return res.json()
@@ -66,7 +68,7 @@ export async function getNewsById(id: string): Promise<PayloadNews | null> {
 
 /** Create a news article. */
 export async function createNews(body: CreateNewsBody): Promise<PayloadNews> {
-  const res = await fetch(`${API_BASE}/news`, {
+  const res = await apiFetch(`${API_BASE}/news`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -78,7 +80,7 @@ export async function createNews(body: CreateNewsBody): Promise<PayloadNews> {
 
 /** Update a news article. */
 export async function updateNews(id: string, body: UpdateNewsBody): Promise<PayloadNews> {
-  const res = await fetch(`${API_BASE}/news/${id}`, {
+  const res = await apiFetch(`${API_BASE}/news/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -90,7 +92,7 @@ export async function updateNews(id: string, body: UpdateNewsBody): Promise<Payl
 
 /** Delete a news article. */
 export async function deleteNews(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/news/${id}`, {
+  const res = await apiFetch(`${API_BASE}/news/${id}`, {
     method: 'DELETE',
     credentials: 'include',
   })

@@ -64,7 +64,7 @@ export function NewsArticleView({ articleId }: { readonly articleId: string }) {
 
   if (isError || !article) {
     return (
-      <div className="min-h-screen flex-1 p-6" style={{ fontFamily: 'Roboto, sans-serif' }}>
+      <div className="min-h-full flex-1 p-6" style={{ fontFamily: 'Roboto, sans-serif' }}>
         <Link
           href="/news"
           className="inline-flex items-center gap-1 text-[#0e7490] hover:underline text-sm"
@@ -90,7 +90,7 @@ export function NewsArticleView({ articleId }: { readonly articleId: string }) {
 
   return (
     <div
-      className="min-h-screen flex-1 p-4 md:p-6"
+      className="min-h-full flex-1 p-4 md:p-6"
       style={{ fontFamily: 'Roboto, sans-serif' }}
     >
       <Link

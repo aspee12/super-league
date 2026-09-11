@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { GoalkeeperBadge } from "@shared-component/GoalkeeperBadge"
 
 interface Team {
   id: string
@@ -39,6 +40,7 @@ interface TransferDialogProps {
     id: string
     name: string
     avatar?: string
+    isGoalkeeper?: boolean
     goals: number
     assists: number
   } | null
@@ -99,7 +101,10 @@ export function TransferDialog({
         </DialogHeader>
         <div className="space-y-6 py-4">
           <div className="space-y-2">
-            <Label htmlFor="transfer-player-name">Player Name</Label>
+            <Label htmlFor="transfer-player-name" className="flex items-center gap-2">
+              Player Name
+              {player?.isGoalkeeper && <GoalkeeperBadge />}
+            </Label>
             <Input
               id="transfer-player-name"
               value={playerName}

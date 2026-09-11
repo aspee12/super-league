@@ -33,6 +33,7 @@ import { EditMemberDialog } from "./modals/EditMemberDialog"
 import { TransferDialog } from "./modals/TransferDialog"
 import { TeamsSidebar } from "./TeamsSidebar"
 import { TeamMembersPanel } from "./TeamMembersPanel"
+import { GoalkeeperBadge } from "@shared-component/GoalkeeperBadge"
 import {
   createTeam,
   updateTeam,
@@ -125,18 +126,25 @@ function toTeamView(
     name: team.name,
     icon: team.logo || "",
     playerCount: teamPlayers.length,
-    members: teamPlayers.map((p) => {
-      const stats = statsMap.get(`${p.name}-${team.name}`) || { goals: 0, assists: 0, cleanSheets: 0 }
-      return {
-        id: p.id,
-        name: p.name,
-        avatar: p.avatar || undefined,
-        isGoalkeeper: p.isGoalkeeper || false,
-        goals: stats.goals,
-        assists: stats.assists,
-        cleanSheets: stats.cleanSheets,
-      }
-    }),
+    members: teamPlayers
+      .map((p) => {
+        const stats = statsMap.get(`${p.name}-${team.name}`) || { goals: 0, assists: 0, cleanSheets: 0 }
+        return {
+          id: p.id,
+          name: p.name,
+          avatar: p.avatar || undefined,
+          isGoalkeeper: p.isGoalkeeper || false,
+          goals: stats.goals,
+          assists: stats.assists,
+          cleanSheets: stats.cleanSheets,
+        }
+      })
+      // A–Z by name so the roster is scannable regardless of the order the API
+      // returns. Sorting here covers every consumer of `Team.members`.
+      // `sensitivity: 'base'` keeps casing from splitting the alphabet.
+      .sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true }),
+      ),
   }
 }
 
@@ -426,7 +434,7 @@ function DesktopTeamsView({
   }
 
   return (
-    <div className="p-6 min-h-screen from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4]">
+    <div className="p-6 min-h-full from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4]">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-gray-900">Futsal Club</h1>
         <SeasonFilter showReset={false} />
@@ -714,7 +722,7 @@ function MobileTeamsView({
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-full">
       {/* Team Management Section */}
       <div className="px-4">
         <div className="pt-4 mb-3">
@@ -833,7 +841,7 @@ function MobileTeamsView({
                                       {member.name}
                                     </span>
                                     {member.isGoalkeeper && (
-                                      <span className="text-[9px] font-semibold bg-green-100 text-green-700 px-1 py-0.5 rounded shrink-0">GK</span>
+                                      <GoalkeeperBadge size="sm" />
                                     )}
                                   </div>
                                   <div className="flex gap-3 text-[11px] text-gray-500">

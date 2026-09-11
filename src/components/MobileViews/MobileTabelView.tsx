@@ -48,8 +48,18 @@ export function MobileTableView() {
     return <FullPageLoader message="Loading standings..." />
   }
 
+  // The `full` tab is the only one wide enough to scroll sideways. There, pin
+  // Pos + Team to the left edge so every row stays identifiable while the stat
+  // columns slide underneath. Sticky cells paint their own background, so each
+  // one repeats the row's stripe colour.
+  const isFullTab = activeTab === 'full'
+  const stickyPos = isFullTab ? 'sticky left-0 z-20 w-[52px] min-w-[52px]' : ''
+  const stickyTeam = isFullTab
+    ? 'sticky left-[52px] z-20 w-[132px] min-w-[132px] shadow-[4px_0_6px_-4px_rgba(0,0,0,0.3)]'
+    : ''
+
   return (
-    <div className="min-h-screen from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4] pb-20 mt-10">
+    <div className="min-h-full from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4] mt-10">
       <div className="px-4 -mt-4 mb-3">
         <SeasonFilter showReset={false} />
         <div className="mt-3">
@@ -84,8 +94,8 @@ export function MobileTableView() {
             <table className={`text-sm ${activeTab === 'full' ? 'min-w-[600px] w-full' : 'w-full'}`}>
               <thead>
                 <tr className="bg-[#0e7490] text-white">
-                  <th className="px-3 py-3 text-left text-xs font-semibold">Pos</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold">Team</th>
+                  <th className={`px-3 py-3 text-left text-xs font-semibold bg-[#0e7490] ${stickyPos}`}>Pos</th>
+                  <th className={`px-3 py-3 text-left text-xs font-semibold bg-[#0e7490] ${stickyTeam}`}>Team</th>
 
                   {activeTab === 'short' && (
                     <>
@@ -124,7 +134,9 @@ export function MobileTableView() {
                       index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                     }`}
                   >
-                    <td className="px-3 py-3">
+                    <td
+                      className={`px-3 py-3 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${stickyPos}`}
+                    >
                       <div className="flex items-center gap-1">
                         <span className="text-xs font-medium w-5">
                           {String(entry.position).padStart(2, '0')}
@@ -132,8 +144,10 @@ export function MobileTableView() {
                         <PositionIndicator change={entry.positionChange} />
                       </div>
                     </td>
-                    <td className="px-3 py-3">
-                      <div className="flex items-center gap-2">
+                    <td
+                      className={`px-3 py-3 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${stickyTeam}`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
                         <TeamLogo logo={entry.team.logo} name={entry.team.name} className="w-5 h-5" textClassName="text-base" />
                         <span className="text-xs font-medium truncate text-black">
                           {entry.team.name}
@@ -148,11 +162,13 @@ export function MobileTableView() {
                         <td className="px-2 py-3 text-center text-xs font-semibold text-black">{entry.goalDifference}</td>
                         <td className="px-2 py-3 text-center text-xs font-bold text-black">{entry.points}</td>
                         <td className="px-2 py-3 text-center">
-                          {entry.nextOpponent ? (
-                            <TeamLogo logo={entry.nextOpponent.logo} name={entry.nextOpponent.name} className="w-5 h-5" textClassName="text-base" />
-                          ) : (
-                            <span className="text-gray-400 text-xs">-</span>
-                          )}
+                          <div className="flex justify-center items-center">
+                            {entry.nextOpponent ? (
+                              <TeamLogo logo={entry.nextOpponent.logo} name={entry.nextOpponent.name} className="w-5 h-5" textClassName="text-base" />
+                            ) : (
+                              <span className="text-gray-400 text-xs">-</span>
+                            )}
+                          </div>
                         </td>
                       </>
                     )}
@@ -168,11 +184,13 @@ export function MobileTableView() {
                         <td className="px-2 py-3 text-center text-xs font-semibold text-black">{entry.goalDifference}</td>
                         <td className="px-2 py-3 text-center text-xs font-bold text-black">{entry.points}</td>
                         <td className="px-2 py-3 text-center">
-                          {entry.nextOpponent ? (
-                            <TeamLogo logo={entry.nextOpponent.logo} name={entry.nextOpponent.name} className="w-5 h-5" textClassName="text-base" />
-                          ) : (
-                            <span className="text-gray-400 text-xs">-</span>
-                          )}
+                          <div className="flex justify-center items-center">
+                            {entry.nextOpponent ? (
+                              <TeamLogo logo={entry.nextOpponent.logo} name={entry.nextOpponent.name} className="w-5 h-5" textClassName="text-base" />
+                            ) : (
+                              <span className="text-gray-400 text-xs">-</span>
+                            )}
+                          </div>
                         </td>
                       </>
                     )}
