@@ -1,0 +1,36 @@
+# The generated `ios/` and `android/` projects ARE committed — they hold the
+# icons, manifest, signing config and native tweaks you edit by hand. Only
+# their build output and local tool state are ignored.
+
+node_modules/
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+
+# Android build output / local tool state
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+android/captures/
+android/local.properties
+android/app/release/
+*.apk
+*.aab
+*.keystore
+!android/app/debug.keystore
+
+# iOS build output / CocoaPods
+ios/App/build/
+ios/App/Pods/
+ios/App/output/
+ios/App/App/public/
+ios/DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# Copied into the native projects by `cap sync` from ../../ — never edited here
+android/app/src/main/assets/public/
+
+.DS_Store

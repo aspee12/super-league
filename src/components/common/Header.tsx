@@ -30,6 +30,9 @@ export default function Header() {
     router.replace('/login');
   };
 
+  // The native wrapper draws the WebView under the status bar, so the header
+  // reserves that inset itself. In a desktop browser the inset resolves to 0
+  // and the fixed 86px height is unchanged.
   return (
     <header
       data-node-id="10100:7684"
@@ -37,7 +40,7 @@ export default function Header() {
         backgroundImage:
           'linear-gradient(176.57deg, rgba(255,255,255,0.5) 25.972%, rgba(236,249,255,0.1) 48.58%, rgba(38,124,147,0.12) 74.614%)',
       }}
-      className="fixed top-0 left-0 right-0 z-40 w-full border-b border-[#e7e6e6] bg-white overflow-hidden md:h-[86px]"
+      className="fixed top-0 left-0 right-0 z-40 w-full border-b border-[#e7e6e6] bg-white overflow-hidden pt-[env(safe-area-inset-top)] md:h-[calc(86px_+_env(safe-area-inset-top))]"
     >
       {/* Decorative crest watermark bleeding off the right edge */}
       <Image

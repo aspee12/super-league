@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The Capacitor wrapper is a separate project with its own toolchain and
+    // dependency tree; linting it from here resolves against the web app's
+    // node_modules and fails on imports it cannot see.
+    "apps/**",
   ]),
 ]);
 

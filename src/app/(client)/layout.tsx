@@ -1,13 +1,24 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Image from "next/image";
 import "../../styles/globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "@ui/Toaster";
 import { SessionRestore } from "@components/auth/SessionRestore";
+import { CapacitorBridge } from "@components/native/CapacitorBridge";
 
 export const metadata: Metadata = {
   title: "ssl-portal",
   description: "Selise Super League Portal",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // The layout already reserves the home-indicator inset via
+  // `env(safe-area-inset-bottom)`, but those values stay 0 unless the viewport
+  // covers the whole screen — so inside the native shell (and on notched
+  // phones in the browser) the tab bar would sit under the indicator.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -19,6 +30,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-[100dvh]">
         <Providers>
+          <CapacitorBridge />
           <SessionRestore />
           <Toaster />
           {/* Background Wrapper */}

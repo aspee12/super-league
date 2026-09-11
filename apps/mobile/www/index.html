@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Selise Super League</title>
+  </head>
+  <body>
+    <!--
+      Capacitor requires webDir to contain an index.html, but `server.url` in
+      capacitor.config.ts means the WebView loads the hosted site and never
+      shows this file. It only appears if someone removes that setting, so it
+      forwards to the same origin rather than showing a blank screen.
+    -->
+    <script>
+      window.location.replace('https://selise-super-league.vercel.app')
+    </script>
+  </body>
+</html>

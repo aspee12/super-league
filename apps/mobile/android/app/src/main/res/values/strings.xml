@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Selise Super League</string>
+    <string name="title_activity_main">Selise Super League</string>
+    <string name="package_name">com.selisegroup.superleague</string>
+    <string name="custom_url_scheme">com.selisegroup.superleague</string>
+</resources>

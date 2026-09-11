@@ -1,0 +1,31 @@
+{
+  "name": "super-league-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Capacitor wrapper shipping the Selise Super League portal as iOS and Android apps.",
+  "packageManager": "yarn@4.10.3",
+  "scripts": {
+    "sync": "cap sync",
+    "sync:ios": "cap sync ios",
+    "sync:android": "cap sync android",
+    "open:ios": "cap open ios",
+    "open:android": "cap open android",
+    "run:ios": "cap run ios",
+    "run:android": "cap run android",
+    "doctor": "cap doctor"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.1",
+    "@capacitor/app": "8.1.1",
+    "@capacitor/browser": "8.0.4",
+    "@capacitor/core": "8.5.1",
+    "@capacitor/ios": "8.5.1",
+    "@capacitor/network": "8.0.1",
+    "@capacitor/splash-screen": "8.0.2",
+    "@capacitor/status-bar": "8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.1",
+    "typescript": "^5.9.3"
+  }
+}

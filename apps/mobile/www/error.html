@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>No connection</title>
+    <style>
+      /* Everything here is inline on purpose: this page is what the user sees
+         when the network is gone, so it cannot reference a hosted asset. */
+      :root {
+        color-scheme: light dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: calc(env(safe-area-inset-top) + 1.5rem) 1.5rem
+          calc(env(safe-area-inset-bottom) + 1.5rem);
+        font-family: Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #ecf9ff;
+        color: #030213;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #0b1620;
+          color: #f4f8fb;
+        }
+        .card {
+          background: #142330 !important;
+          border-color: #24384a !important;
+        }
+        .hint {
+          color: #9fb3c4 !important;
+        }
+      }
+      .card {
+        width: 100%;
+        max-width: 22rem;
+        text-align: center;
+        background: #ffffff;
+        border: 1px solid #a6dfe6;
+        border-radius: 1rem;
+        padding: 2rem 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      }
+      h1 {
+        margin: 1rem 0 0.5rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+      .hint {
+        margin: 0 0 1.5rem;
+        font-size: 0.9375rem;
+        line-height: 1.5;
+        color: #717182;
+      }
+      button {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+        font-weight: 500;
+        font-family: inherit;
+        color: #ffffff;
+        background: #030213;
+        border: 0;
+        border-radius: 0.625rem;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.6;
+      }
+      svg {
+        color: #717182;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M1 1l22 22" />
+        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55" />
+        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39" />
+        <path d="M10.71 5.05A16 16 0 0 1 22.58 9" />
+        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88" />
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+        <path d="M12 20h.01" />
+      </svg>
+      <h1>You're offline</h1>
+      <p class="hint">
+        Selise Super League needs an internet connection. Check your Wi-Fi or mobile data and try
+        again.
+      </p>
+      <button id="retry" type="button">Try again</button>
+    </div>
+
+    <script>
+      // Keep in sync with `server.url` in ../capacitor.config.ts.
+      var SERVER_URL = 'https://selise-super-league.vercel.app'
+
+      var retry = document.getElementById('retry')
+
+      function reload() {
+        retry.disabled = true
+        retry.textContent = 'Reconnecting…'
+        window.location.replace(SERVER_URL)
+      }
+
+      retry.addEventListener('click', reload)
+
+      // The native bridge is injected into this page too, so the app can
+      // recover on its own the moment connectivity returns instead of waiting
+      // for the user to notice and tap.
+      var Network = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Network
+      if (Network) {
+        Network.addListener('networkStatusChange', function (status) {
+          if (status.connected) reload()
+        })
+      }
+    </script>
+  </body>
+</html>
