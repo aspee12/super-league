@@ -62,6 +62,8 @@ export function useMatches() {
     [matches],
   )
 
+  // Every upcoming fixture, soonest first. The views page through these with
+  // prev/next controls rather than the hook capping the list.
   const upcomingMatches = useMemo(
     () =>
       matches
@@ -70,8 +72,7 @@ export function useMatches() {
           const dateA = new Date(`${a.date}T${a.time}`)
           const dateB = new Date(`${b.date}T${b.time}`)
           return dateA.getTime() - dateB.getTime()
-        })
-        .slice(0, 2),
+        }),
     [matches],
   )
 

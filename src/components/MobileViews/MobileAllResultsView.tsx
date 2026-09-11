@@ -6,79 +6,12 @@ import Link from 'next/link'
 import { TeamLogo } from '@shared-component/TeamLogo'
 import { FullPageLoader } from '@shared-component/FullPageLoader'
 import { ListPagination, paginate } from '@shared-component/ListPagination'
+import { ExpandedMatchStats } from '@shared-component/ExpandedMatchStats'
 import { useMatches } from '@/hooks/useMatches'
-import type { PlayerStat } from '@app-types/matchTypes'
 
 /** A full season can run to 100+ fixtures — page them rather than one long scroll. */
 const PAGE_SIZE = 10
 
-function CardIcon({ card }: { card?: 'none' | 'yellow' | 'red' }) {
-  if (card === 'yellow') return <span className="inline-block w-2 h-3 bg-yellow-400 rounded-sm" />
-  if (card === 'red') return <span className="inline-block w-2 h-3 bg-red-600 rounded-sm" />
-  return null
-}
-
-function ExpandedMatchStats({ stats }: { stats: PlayerStat[] }) {
-  const teamAStats = stats.filter((s) => s.team === 'teamA')
-  const teamBStats = stats.filter((s) => s.team === 'teamB')
-
-  return (
-    <div className="flex justify-between text-xs text-gray-600 mt-2 px-1">
-      <div className="space-y-1.5">
-        {teamAStats.map((s, i) => {
-          const hasGoals = s.goals > 0
-          const hasCard = s.card === 'yellow' || s.card === 'red'
-          return (
-            <div key={i}>
-              {hasGoals && (
-                <div className="flex items-center gap-1">
-                  <span className="font-medium">{s.playerName}</span>
-                  <span>{s.goals}&apos;</span>
-                  {hasCard && <CardIcon card={s.card} />}
-                </div>
-              )}
-              {!hasGoals && hasCard && (
-                <div className="flex items-center gap-1">
-                  <span className="font-medium">{s.playerName}</span>
-                  <CardIcon card={s.card} />
-                </div>
-              )}
-              {s.assistName && (
-                <div className="text-gray-400 text-[10px]">{s.assistName} (Assist)</div>
-              )}
-            </div>
-          )
-        })}
-      </div>
-      <div className="space-y-1.5 text-right">
-        {teamBStats.map((s, i) => {
-          const hasGoals = s.goals > 0
-          const hasCard = s.card === 'yellow' || s.card === 'red'
-          return (
-            <div key={i}>
-              {hasGoals && (
-                <div className="flex items-center justify-end gap-1">
-                  {hasCard && <CardIcon card={s.card} />}
-                  <span>{s.goals}&apos;</span>
-                  <span className="font-medium">{s.playerName}</span>
-                </div>
-              )}
-              {!hasGoals && hasCard && (
-                <div className="flex items-center justify-end gap-1">
-                  <CardIcon card={s.card} />
-                  <span className="font-medium">{s.playerName}</span>
-                </div>
-              )}
-              {s.assistName && (
-                <div className="text-gray-400 text-[10px]">{s.assistName} (Assist)</div>
-              )}
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
 
 export function MobileAllResultsView() {
   const { allResults, isLoading } = useMatches()
@@ -163,6 +96,8 @@ export function MobileAllResultsView() {
                             ? (match.playerStats ?? [])
                             : (match.playerStats ?? []).slice(0, 2)
                         }
+                        teamAId={match.teamA.id}
+                        teamBId={match.teamB.id}
                       />
                       {(match.playerStats ?? []).length > 2 && (
                         <button

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Plus, SquarePen, Trash2, ArrowLeftRight } from "lucide-react"
+import { GoalkeeperBadge } from "@shared-component/GoalkeeperBadge"
 import type { Team } from "./types"
 
 interface TeamMembersPanelProps {
@@ -87,7 +88,7 @@ export function TeamMembersPanel({
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-gray-900">{member.name}</span>
                           {member.isGoalkeeper && (
-                            <span className="text-[10px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">GK</span>
+                            <GoalkeeperBadge />
                           )}
                         </div>
                       </div>

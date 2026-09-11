@@ -133,11 +133,15 @@ export default function LeagueTable() {
                     </div>
                   </td>
                   <td className="px-4 py-4 text-sm text-center">
-                    {entry.nextOpponent ? (
-                      <TeamLogo logo={entry.nextOpponent.logo} name={entry.nextOpponent.name} className="w-6 h-6" />
-                    ) : (
-                      <span className="text-gray-400 text-xs">-</span>
-                    )}
+                    {/* Flex-centred: the logo is a replaced element, so text-center
+                        alone leaves it off-axis against the header label. */}
+                    <div className="flex justify-center items-center">
+                      {entry.nextOpponent ? (
+                        <TeamLogo logo={entry.nextOpponent.logo} name={entry.nextOpponent.name} className="w-6 h-6" />
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -220,7 +224,7 @@ export default function LeagueTable() {
                     </div>
                   </td>
                   <td className="px-3 py-3 text-xs font-semibold text-gray-900">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <TeamLogo logo={entry.team.logo} name={entry.team.name} className="w-5 h-5" textClassName="text-base" />
                       <span className="truncate">{entry.team.name}</span>
                     </div>
@@ -233,11 +237,13 @@ export default function LeagueTable() {
                       <td className="px-2 py-3 text-xs text-center text-gray-700 font-semibold">{entry.goalDifference}</td>
                       <td className="px-2 py-3 text-xs text-center font-bold text-gray-900">{entry.points}</td>
                       <td className="px-2 py-3 text-center">
-                        {entry.nextOpponent ? (
-                          <TeamLogo logo={entry.nextOpponent.logo} name={entry.nextOpponent.name} className="w-5 h-5" textClassName="text-base" />
-                        ) : (
-                          <span className="text-gray-400 text-xs">-</span>
-                        )}
+                        <div className="flex justify-center items-center">
+                          {entry.nextOpponent ? (
+                            <TeamLogo logo={entry.nextOpponent.logo} name={entry.nextOpponent.name} className="w-5 h-5" textClassName="text-base" />
+                          ) : (
+                            <span className="text-gray-400 text-xs">-</span>
+                          )}
+                        </div>
                       </td>
                     </>
                   )}
@@ -253,11 +259,13 @@ export default function LeagueTable() {
                       <td className="px-2 py-3 text-xs text-center text-gray-700 font-semibold">{entry.goalDifference}</td>
                       <td className="px-2 py-3 text-xs text-center font-bold text-gray-900">{entry.points}</td>
                       <td className="px-2 py-3 text-center">
-                        {entry.nextOpponent ? (
-                          <TeamLogo logo={entry.nextOpponent.logo} name={entry.nextOpponent.name} className="w-5 h-5" textClassName="text-base" />
-                        ) : (
-                          <span className="text-gray-400 text-xs">-</span>
-                        )}
+                        <div className="flex justify-center items-center">
+                          {entry.nextOpponent ? (
+                            <TeamLogo logo={entry.nextOpponent.logo} name={entry.nextOpponent.name} className="w-5 h-5" textClassName="text-base" />
+                          ) : (
+                            <span className="text-gray-400 text-xs">-</span>
+                          )}
+                        </div>
                       </td>
                     </>
                   )}

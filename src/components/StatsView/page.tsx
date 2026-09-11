@@ -5,6 +5,7 @@ import { useStats, type AggregatedPlayerStat } from '@/hooks/useStats';
 import { CATEGORY_CONFIG, StatCategory } from '@constants/stats';
 import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilter';
 import { ListPagination, paginate } from '@shared-component/ListPagination';
+import { GoalkeeperBadge } from '@shared-component/GoalkeeperBadge';
 
 /** Leaderboard rows per page. */
 const PAGE_SIZE = 10;
@@ -177,8 +178,11 @@ export function StatsView() {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <div className="font-semibold md:font-normal text-[14px] md:text-[16px] leading-[22px] md:leading-[28px] text-[#201f1e] truncate">
-                          {stat.player.name}
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="font-semibold md:font-normal text-[14px] md:text-[16px] leading-[22px] md:leading-[28px] text-[#201f1e] truncate">
+                            {stat.player.name}
+                          </span>
+                          {stat.player.isGoalkeeper && <GoalkeeperBadge />}
                         </div>
                         <div className="text-[12px] md:text-[14px] leading-[20px] md:leading-[24px] text-[#605e5c] truncate">
                           {stat.player.team}

@@ -12,6 +12,7 @@ export interface AggregatedPlayerStat {
     team: string
     teamLogo: string
     avatar: string
+    isGoalkeeper: boolean
   }
   goals: number
   assists: number
@@ -36,6 +37,20 @@ export function useStats() {
       }
     }
     return map
+  }, [players, teams])
+
+  // Keepers keyed the same way the stat rows are (`name-teamName`), so the
+  // leaderboards can badge them. Distinct from `goalkeepersByTeamId` below,
+  // which is keyed by id for the clean-sheet maths.
+  const goalkeeperKeys = useMemo(() => {
+    const keys = new Set<string>()
+    for (const p of players) {
+      if (!p.isGoalkeeper) continue
+      const teamId = typeof p.team === 'string' ? p.team : p.team?.id
+      const team = teams.find((t) => t.id === teamId)
+      if (team) keys.add(`${p.name}-${team.name}`)
+    }
+    return keys
   }, [players, teams])
 
   // Build a lookup: teamId -> goalkeeper names
@@ -80,6 +95,7 @@ export function useStats() {
               team: teamName,
               teamLogo: teamObj.logo || '',
               avatar: playerAvatarMap.get(key) || '',
+              isGoalkeeper: goalkeeperKeys.has(key),
             },
             goals: ps.goals,
             assists: 0,
@@ -104,6 +120,7 @@ export function useStats() {
                 team: teamName,
                 teamLogo: teamObj.logo || '',
                 avatar: playerAvatarMap.get(assistKey) || '',
+                isGoalkeeper: goalkeeperKeys.has(assistKey),
               },
               goals: 0,
               assists: ps.assists,
@@ -136,6 +153,8 @@ export function useStats() {
                 team: match.teamA.name,
                 teamLogo: match.teamA.logo || '',
                 avatar: playerAvatarMap.get(key) || '',
+                // Reached only via `goalkeepersByTeamId`, so this row is a keeper.
+                isGoalkeeper: true,
               },
               goals: 0,
               assists: 0,
@@ -164,6 +183,8 @@ export function useStats() {
                 team: match.teamB.name,
                 teamLogo: match.teamB.logo || '',
                 avatar: playerAvatarMap.get(key) || '',
+                // Reached only via `goalkeepersByTeamId`, so this row is a keeper.
+                isGoalkeeper: true,
               },
               goals: 0,
               assists: 0,
@@ -177,7 +198,7 @@ export function useStats() {
     }
 
     return Array.from(playerMap.values())
-  }, [matches, teams, playerAvatarMap, goalkeepersByTeamId])
+  }, [matches, teams, playerAvatarMap, goalkeeperKeys, goalkeepersByTeamId])
 
   const topScorers = useMemo(
     () => [...stats].filter((s) => s.goals > 0).sort((a, b) => b.goals - a.goals),

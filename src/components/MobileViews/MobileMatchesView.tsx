@@ -20,11 +20,17 @@ import { useAuthStore } from '@/store/authStore'
 import { useMatches } from '@/hooks/useMatches'
 import { useSeasons } from '@/hooks/useSeasons'
 import { endMatch, deleteMatch } from '@/lib/matches-api'
-import type { Match, PlayerStat } from '@app-types/matchTypes'
+import type { Match } from '@app-types/matchTypes'
 import { formatTime12h } from '@/lib/format-time'
 import { TeamLogo } from '@shared-component/TeamLogo'
 import { FullPageLoader } from '@shared-component/FullPageLoader'
 import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilter'
+import { ExpandedMatchStats } from '@shared-component/ExpandedMatchStats'
+import { FixturePager, fixtureDateRange } from '@shared-component/FixturePager'
+import { paginate } from '@shared-component/ListPagination'
+
+/** A matchweek is two fixtures, so the pager steps a matchweek at a time. */
+const MATCHES_PER_MATCHWEEK = 2
 
 export function MobileMatchesView() {
   const queryClient = useQueryClient()
@@ -38,7 +44,10 @@ export function MobileMatchesView() {
   // Archived seasons are read-only — see the note in MatchesView.
   const isSuperAdmin = user?.role === 'super_admin' && isViewingActiveSeason
 
-  const { liveMatches, upcomingMatches, recentMatches, isLoading } = useMatches()
+  const { liveMatches, upcomingMatches, recentMatches, allResults, isLoading } = useMatches()
+
+  const [upcomingPage, setUpcomingPage] = useState(1)
+  const upcoming = paginate(upcomingMatches, upcomingPage, MATCHES_PER_MATCHWEEK)
 
   const [confirmState, setConfirmState] = useState<{
     type: 'end' | 'delete' | null
@@ -151,6 +160,8 @@ export function MobileMatchesView() {
                         <div className="border-t border-gray-100 pt-2 mb-3">
                           <ExpandedMatchStats
                             stats={isExpanded ? (match.playerStats ?? []) : (match.playerStats ?? []).slice(0, 2)}
+                            teamAId={match.teamA.id}
+                            teamBId={match.teamB.id}
                           />
                           {(match.playerStats ?? []).length > 2 && (
                             <button
@@ -205,8 +216,17 @@ export function MobileMatchesView() {
       <div className="px-4 mb-6">
         <h2 className="font-semibold text-gray-800 mb-3">Upcoming</h2>
         {upcomingMatches.length > 0 ? (
+          <>
+          <FixturePager
+            page={upcoming.safePage}
+            pageCount={upcoming.pageCount}
+            onPageChange={setUpcomingPage}
+            label={`Matchweek ${upcoming.safePage}`}
+            subLabel={fixtureDateRange(upcoming.visible)}
+            className="mb-3"
+          />
           <div className="space-y-3">
-            {upcomingMatches.map((match) => (
+            {upcoming.visible.map((match) => (
               <div key={match.id} className="bg-white rounded-xl shadow-sm p-4 relative">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex flex-col items-center flex-1 min-w-0">
@@ -255,6 +275,7 @@ export function MobileMatchesView() {
               </div>
             ))}
           </div>
+          </>
         ) : (
           <p className="text-center text-gray-500 text-sm py-4">No upcoming matches</p>
         )}
@@ -292,6 +313,8 @@ export function MobileMatchesView() {
                     <div className="border-t border-gray-100 mt-3 pt-2">
                       <ExpandedMatchStats
                         stats={isExpanded ? (match.playerStats ?? []) : (match.playerStats ?? []).slice(0, 2)}
+                        teamAId={match.teamA.id}
+                        teamBId={match.teamB.id}
                       />
                       {(match.playerStats ?? []).length > 2 && (
                         <button
@@ -312,13 +335,17 @@ export function MobileMatchesView() {
           <p className="text-center text-gray-500 text-sm py-4">No recent results</p>
         )}
 
-        <Link
-          href="/results"
-          className="w-full mt-4 bg-white rounded-xl shadow-sm p-4 flex items-center justify-center gap-2 text-gray-800 hover:bg-gray-50 active:bg-gray-100 transition-colors"
-        >
-          <span className="text-sm font-medium">View all results</span>
-          <ChevronRight size={16} className="text-gray-600" />
-        </Link>
+        {/* Only worth a link when there are results the list above doesn't
+            already show — with 3 or fewer, "Recent Results" is all of them. */}
+        {allResults.length > recentMatches.length && (
+          <Link
+            href="/results"
+            className="w-full mt-4 bg-white rounded-xl shadow-sm p-4 flex items-center justify-center gap-2 text-gray-800 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+          >
+            <span className="text-sm font-medium">View all results</span>
+            <ChevronRight size={16} className="text-gray-600" />
+          </Link>
+        )}
       </div>
 
       {/* Modals */}
@@ -373,71 +400,3 @@ export function MobileMatchesView() {
   )
 }
 
-function CardIcon({ card }: { card?: 'none' | 'yellow' | 'red' }) {
-  if (card === 'yellow') return <span className="inline-block w-2 h-3 bg-yellow-400 rounded-sm" />
-  if (card === 'red') return <span className="inline-block w-2 h-3 bg-red-600 rounded-sm" />
-  return null
-}
-
-/** Expanded stats panel — PL-style with goals, assists & cards */
-function ExpandedMatchStats({ stats }: { stats: PlayerStat[] }) {
-  const teamAStats = stats.filter((s) => s.team === 'teamA')
-  const teamBStats = stats.filter((s) => s.team === 'teamB')
-
-  return (
-    <div className="flex justify-between text-xs text-gray-600 mt-2 px-1">
-      <div className="space-y-1.5">
-        {teamAStats.map((s, i) => {
-          const hasGoals = s.goals > 0
-          const hasCard = s.card === 'yellow' || s.card === 'red'
-          return (
-            <div key={i}>
-              {hasGoals && (
-                <div className="flex items-center gap-1">
-                  <span className="font-medium">{s.playerName}</span>
-                  <span>{s.goals}&apos;</span>
-                  {hasCard && <CardIcon card={s.card} />}
-                </div>
-              )}
-              {!hasGoals && hasCard && (
-                <div className="flex items-center gap-1">
-                  <span className="font-medium">{s.playerName}</span>
-                  <CardIcon card={s.card} />
-                </div>
-              )}
-              {s.assistName && (
-                <div className="text-gray-400 text-[10px]">{s.assistName} (Assist)</div>
-              )}
-            </div>
-          )
-        })}
-      </div>
-      <div className="space-y-1.5 text-right">
-        {teamBStats.map((s, i) => {
-          const hasGoals = s.goals > 0
-          const hasCard = s.card === 'yellow' || s.card === 'red'
-          return (
-            <div key={i}>
-              {hasGoals && (
-                <div className="flex items-center justify-end gap-1">
-                  {hasCard && <CardIcon card={s.card} />}
-                  <span>{s.goals}&apos;</span>
-                  <span className="font-medium">{s.playerName}</span>
-                </div>
-              )}
-              {!hasGoals && hasCard && (
-                <div className="flex items-center justify-end gap-1">
-                  <CardIcon card={s.card} />
-                  <span className="font-medium">{s.playerName}</span>
-                </div>
-              )}
-              {s.assistName && (
-                <div className="text-gray-400 text-[10px]">{s.assistName} (Assist)</div>
-              )}
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}

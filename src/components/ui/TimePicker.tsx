@@ -23,6 +23,15 @@ function to24h(hour12: number, minute: string, period: 'AM' | 'PM'): string {
   return `${String(h).padStart(2, '0')}:${minute}`
 }
 
+/** Split a stored 24h "HH:mm" into the 12h hour and minute shown in the inputs. */
+function to12hParts(value: string): { hour: string; minute: string } {
+  if (!value) return { hour: '', minute: '' }
+  const [hStr, m] = value.split(':')
+  const h = parseInt(hStr, 10)
+  if (isNaN(h)) return { hour: '', minute: '' }
+  return { hour: String(h % 12 === 0 ? 12 : h % 12), minute: m ?? '' }
+}
+
 export function TimePicker({
   value,
   onChange,
@@ -45,14 +54,48 @@ export function TimePicker({
 
   const current24 = value || ''
 
+  // The grid only offers quarter-hours, so kick-off times like 8:35 need a
+  // typed entry. These hold the in-progress custom value until it's applied.
+  const [customHour, setCustomHour] = React.useState('')
+  const [customMinute, setCustomMinute] = React.useState('')
+
+  const hourNum = parseInt(customHour, 10)
+  const minuteNum = parseInt(customMinute, 10)
+  const customValid =
+    customHour !== '' &&
+    customMinute !== '' &&
+    !isNaN(hourNum) &&
+    !isNaN(minuteNum) &&
+    hourNum >= 1 &&
+    hourNum <= 12 &&
+    minuteNum >= 0 &&
+    minuteNum <= 59
+
+  // Seed the inputs from the current value each time the popover opens, so
+  // editing starts from what's already selected rather than a blank field.
+  const handleOpenChange = (next: boolean) => {
+    if (next) {
+      const parts = to12hParts(value)
+      setCustomHour(parts.hour)
+      setCustomMinute(parts.minute)
+    }
+    setOpen(next)
+  }
+
   const handleSelect = (hour12: number, minute: string) => {
     const time24 = to24h(hour12, minute, activePeriod)
     onChange(time24)
     setOpen(false)
   }
 
+  const applyCustom = () => {
+    if (!customValid) return
+    onChange(to24h(hourNum, String(minuteNum).padStart(2, '0'), activePeriod))
+    setOpen(false)
+  }
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button
           type="button"
@@ -66,7 +109,7 @@ export function TimePicker({
           <Clock className="h-4 w-4 opacity-50" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-52 p-0" align="start">
+      <PopoverContent className="w-56 p-0" align="start">
         {/* AM / PM toggle */}
         <div className="flex border-b border-gray-200">
           {(['AM', 'PM'] as const).map((p) => (
@@ -84,6 +127,54 @@ export function TimePicker({
               {p}
             </button>
           ))}
+        </div>
+
+        {/* Custom entry — type any hour/minute the grid below doesn't offer. */}
+        <div className="border-b border-gray-200 p-2">
+          <div className="flex items-center gap-1.5">
+            <input
+              type="text"
+              inputMode="numeric"
+              aria-label="Hour"
+              placeholder="hh"
+              maxLength={2}
+              value={customHour}
+              onChange={(e) => setCustomHour(e.target.value.replace(/\D/g, ''))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  applyCustom()
+                }
+              }}
+              className="h-8 w-11 rounded-md border border-gray-300 text-center text-sm text-gray-800 focus:border-[#0e7490] focus:outline-none"
+            />
+            <span className="text-sm font-semibold text-gray-500">:</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              aria-label="Minute"
+              placeholder="mm"
+              maxLength={2}
+              value={customMinute}
+              onChange={(e) => setCustomMinute(e.target.value.replace(/\D/g, ''))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  applyCustom()
+                }
+              }}
+              className="h-8 w-11 rounded-md border border-gray-300 text-center text-sm text-gray-800 focus:border-[#0e7490] focus:outline-none"
+            />
+            <span className="text-xs font-medium text-gray-500">{activePeriod}</span>
+            <button
+              type="button"
+              onClick={applyCustom}
+              disabled={!customValid}
+              className="ml-auto rounded-md bg-[#0e7490] px-2.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#0c6380] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#0e7490]"
+            >
+              Set
+            </button>
+          </div>
         </div>
 
         {/* Time grid */}

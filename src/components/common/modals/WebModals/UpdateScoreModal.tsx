@@ -17,6 +17,7 @@ import { updateScore } from '@/lib/matches-api'
 import { getPlayers, type PayloadPlayer } from '@/lib/teams-api'
 import { useSeasons } from '@/hooks/useSeasons'
 import type { Match } from '@app-types/matchTypes'
+import { GoalkeeperBadge } from '@shared-component/GoalkeeperBadge'
 
 export interface UpdateScoreModalProps {
   isOpen: boolean
@@ -92,13 +93,18 @@ export function UpdateScoreModal({
       : formData.team === 'teamB'
         ? match.teamB.id
         : ''
+  // Keeps `isGoalkeeper` alongside the name so the dropdown can badge keepers,
+  // while the stored value stays the plain name.
   const playersForTeam = selectedTeamId
     ? allPlayers
         .filter((p: PayloadPlayer) => {
           const pTeamId = typeof p.team === 'string' ? p.team : p.team?.id
           return pTeamId === selectedTeamId
         })
-        .map((p: PayloadPlayer) => p.name)
+        .map((p: PayloadPlayer) => ({ name: p.name, isGoalkeeper: !!p.isGoalkeeper }))
+        .sort((a, b) =>
+          a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true }),
+        )
     : []
 
   const handleClose = () => {
@@ -178,8 +184,11 @@ export function UpdateScoreModal({
               </SelectTrigger>
               <SelectContent>
                 {playersForTeam.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {p}
+                  <SelectItem key={p.name} value={p.name}>
+                    <span className="flex items-center gap-2">
+                      {p.name}
+                      {p.isGoalkeeper && <GoalkeeperBadge />}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -210,10 +219,13 @@ export function UpdateScoreModal({
               </SelectTrigger>
               <SelectContent>
                 {playersForTeam
-                  .filter((p) => p !== formData.player)
+                  .filter((p) => p.name !== formData.player)
                   .map((p) => (
-                    <SelectItem key={p} value={p}>
-                      {p}
+                    <SelectItem key={p.name} value={p.name}>
+                      <span className="flex items-center gap-2">
+                        {p.name}
+                        {p.isGoalkeeper && <GoalkeeperBadge />}
+                      </span>
                     </SelectItem>
                   ))}
               </SelectContent>
