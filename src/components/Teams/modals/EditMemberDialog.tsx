@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useResetOnOpen } from "@/hooks/useResetOnOpen"
 import {
   Dialog,
   DialogContent,
@@ -36,14 +37,12 @@ export function EditMemberDialog({
   const [isGoalkeeper, setIsGoalkeeper] = useState(false)
   const [showExisting, setShowExisting] = useState(true)
 
-  useEffect(() => {
-    if (isOpen) {
-      setPlayerName(initialName)
-      setIsGoalkeeper(initialIsGoalkeeper)
-      setPlayerPicture(null)
-      setShowExisting(true)
-    }
-  }, [isOpen, initialName, initialIsGoalkeeper])
+  useResetOnOpen(isOpen, () => {
+    setPlayerName(initialName)
+    setIsGoalkeeper(initialIsGoalkeeper)
+    setPlayerPicture(null)
+    setShowExisting(true)
+  })
 
   const handleSubmit = () => {
     if (!playerName.trim()) return

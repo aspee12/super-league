@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useResetOnOpen } from "@/hooks/useResetOnOpen"
 import {
   Dialog,
   DialogContent,
@@ -27,12 +28,10 @@ export function AddMemberDialog({
   const [playerName, setPlayerName] = useState("")
   const [playerPicture, setPlayerPicture] = useState<File | null>(null)
 
-  useEffect(() => {
-    if (isOpen) {
-      setPlayerName("")
-      setPlayerPicture(null)
-    }
-  }, [isOpen])
+  useResetOnOpen(isOpen, () => {
+    setPlayerName("")
+    setPlayerPicture(null)
+  })
 
   const handleSubmit = () => {
     if (!playerName.trim()) return

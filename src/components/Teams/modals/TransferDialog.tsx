@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useResetOnOpen } from "@/hooks/useResetOnOpen"
 import {
   Dialog,
   DialogContent,
@@ -60,16 +61,15 @@ export function TransferDialog({
   })
   const [transferToTeam, setTransferToTeam] = useState<string>("")
 
-  useEffect(() => {
-    if (isOpen && player) {
-      setPlayerName(player.name)
-      setPlayerStats({
-        goals: player.goals,
-        assists: player.assists,
-      })
-      setTransferToTeam("")
-    }
-  }, [isOpen, player])
+  useResetOnOpen(isOpen, () => {
+    if (!player) return
+    setPlayerName(player.name)
+    setPlayerStats({
+      goals: player.goals,
+      assists: player.assists,
+    })
+    setTransferToTeam("")
+  })
 
   const handleSubmit = () => {
     if (!player || !transferToTeam) return

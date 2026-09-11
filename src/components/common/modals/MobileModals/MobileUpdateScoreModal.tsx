@@ -2,6 +2,7 @@
 
 import { ChevronDown } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useResetOnOpen } from '@/hooks/useResetOnOpen'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { updateScore } from '@/lib/matches-api'
@@ -76,11 +77,9 @@ export function MobileUpdateScoreModal({
     }
   }, [isOpen])
 
-  useEffect(() => {
-    if (isOpen) {
-      setFormData({ team: '', player: '', goals: '', assist: '', card: '' })
-    }
-  }, [isOpen, match?.id])
+  useResetOnOpen(isOpen, () => {
+    setFormData({ team: '', player: '', goals: '', assist: '', card: '' })
+  })
 
   if (!isOpen || !match) return null
 
