@@ -16,6 +16,11 @@ const eslintConfig = defineConfig([
     // dependency tree; linting it from here resolves against the web app's
     // node_modules and fails on imports it cannot see.
     "apps/**",
+    // `vercel build` writes minified bundles and generated launchers here.
+    // They are gitignored, but ESLint's flat config does not read .gitignore,
+    // so without this a local `vercel build` makes `yarn lint` fail with ~49
+    // errors in vendor code that nobody wrote.
+    ".vercel/**",
   ]),
 ]);
 
