@@ -92,7 +92,7 @@ export function MobileMatchesView() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-full">
       <div className="px-4 mt-4 mb-3">
         <SeasonFilter showReset={false} />
         <div className="mt-3">

@@ -21,7 +21,7 @@ export function AllResultsView() {
   }
 
   return (
-    <div className="min-h-screen flex-1 p-6">
+    <div className="min-h-full flex-1 p-6">
       <div className="mb-4">
         <Link
           href="/matches"

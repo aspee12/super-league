@@ -59,7 +59,7 @@ export function MobileTableView() {
     : ''
 
   return (
-    <div className="min-h-screen from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4] mt-10">
+    <div className="min-h-full from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4] mt-10">
       <div className="px-4 -mt-4 mb-3">
         <SeasonFilter showReset={false} />
         <div className="mt-3">

@@ -17,12 +17,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen">
+      <body className="min-h-[100dvh]">
         <Providers>
           <SessionRestore />
           <Toaster />
           {/* Background Wrapper */}
-          <div className="relative min-h-screen w-full bg-[lightgray]">
+          <div className="relative min-h-[100dvh] w-full bg-[lightgray]">
             {/* Rendered via next/image rather than a CSS background so it is
                 served resized and as WebP/AVIF — the raw PNG is 260 KB and
                 loads on every page, including login. */}
@@ -40,7 +40,7 @@ export default function RootLayout({
             <div className="absolute inset-0 bg-white/75 z-0" />
 
             {/* Page Content */}
-            <div className="relative z-10 min-h-screen">
+            <div className="relative z-10 min-h-[100dvh]">
               {children}
             </div>
           </div>

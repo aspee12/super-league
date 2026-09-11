@@ -79,26 +79,33 @@ export function StatsView() {
       </div>
       <ArchiveSeasonNotice />
 
-      {/* Mobile: Horizontal tabs */}
-      <div className="flex gap-2 mb-4 md:hidden">
-        {categories.map((categoryId) => {
-          const config = CATEGORY_CONFIG[categoryId];
-          const isActive = activeCategory === categoryId;
-          return (
-            <button
-              key={categoryId}
-              type="button"
-              onClick={() => handleCategoryChange(categoryId)}
-              className={`flex-1 min-w-0 py-3 px-3 rounded-lg text-[14px] font-medium leading-[20px] transition-colors ${
-                isActive
-                  ? 'bg-[#267c93] text-white shadow-sm'
-                  : 'bg-white text-[#605e5c] border border-[#e7e6e6]'
-              }`}
-            >
-              {config.shortLabel}
-            </button>
-          );
-        })}
+      {/* Mobile: horizontal tabs.
+          Sized to their labels rather than `flex-1`: equal widths starve
+          "Assists" while wasting space on "CS", and the text spilled out of
+          its chip on a narrow phone. The row scrolls — bleeding to the screen
+          edges so a chip never looks clipped by the page gutter — which only
+          kicks in below ~360px; on a normal phone all five still fit. */}
+      <div className="-mx-4 px-4 mb-4 md:hidden overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-2 w-max min-w-full">
+          {categories.map((categoryId) => {
+            const config = CATEGORY_CONFIG[categoryId];
+            const isActive = activeCategory === categoryId;
+            return (
+              <button
+                key={categoryId}
+                type="button"
+                onClick={() => handleCategoryChange(categoryId)}
+                className={`shrink-0 whitespace-nowrap py-3 px-3.5 rounded-lg text-[14px] font-medium leading-[20px] transition-colors ${
+                  isActive
+                    ? 'bg-[#267c93] text-white shadow-sm'
+                    : 'bg-white text-[#605e5c] border border-[#e7e6e6]'
+                }`}
+              >
+                {config.shortLabel}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 md:gap-6 flex-1 min-h-0">

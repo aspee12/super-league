@@ -434,7 +434,7 @@ function DesktopTeamsView({
   }
 
   return (
-    <div className="p-6 min-h-screen from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4]">
+    <div className="p-6 min-h-full from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4]">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-gray-900">Futsal Club</h1>
         <SeasonFilter showReset={false} />
@@ -722,7 +722,7 @@ function MobileTeamsView({
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-full">
       {/* Team Management Section */}
       <div className="px-4">
         <div className="pt-4 mb-3">

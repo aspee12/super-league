@@ -86,7 +86,7 @@ export function MatchesView() {
   }
 
   return (
-    <div className="min-h-screen flex-1 p-6">
+    <div className="min-h-full flex-1 p-6">
       <div className="hidden md:flex flex-wrap items-center justify-between gap-4 mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Matches</h1>
         <SeasonFilter />

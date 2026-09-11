@@ -71,7 +71,7 @@ export default function NewsView() {
   if (isLoading) return <FullPageLoader message="Loading news..." />
 
   return (
-    <div className="min-h-screen flex-1 p-6" style={{ fontFamily: 'Roboto, sans-serif' }}>
+    <div className="min-h-full flex-1 p-6" style={{ fontFamily: 'Roboto, sans-serif' }}>
       {/* Single tinted panel holding the whole section, so the white cards
           read as one group rather than floating on the page background. */}
       <section className="rounded-2xl border border-[#a6dfe6]/60 bg-[#ecf9ff]/75 p-5 md:p-6">

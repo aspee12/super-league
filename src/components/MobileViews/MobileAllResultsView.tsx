@@ -28,7 +28,7 @@ export function MobileAllResultsView() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-full">
       <div className="px-4 pt-4 mb-2">
         <Link
           href="/matches"
