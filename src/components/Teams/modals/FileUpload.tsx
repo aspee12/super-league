@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { Upload, X } from "lucide-react"
 
 interface FileUploadProps {
@@ -24,21 +24,23 @@ export function FileUpload({
   onClearExisting,
 }: FileUploadProps) {
   const [dragActive, setDragActive] = useState(false)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (file?.type.startsWith("image/")) {
-      const url = URL.createObjectURL(file)
-      setPreviewUrl(url)
+  // Derived rather than stored in state: setting it from an effect trips
+  // react-hooks/set-state-in-effect and shows one frame without the preview.
+  const previewUrl = useMemo(
+    () => (file?.type.startsWith("image/") ? URL.createObjectURL(file) : null),
+    [file],
+  )
 
-      return () => {
-        URL.revokeObjectURL(url)
-      }
-    } else {
-      setPreviewUrl(null)
+  // The memo may recompute; the dep on previewUrl means the cleanup always
+  // revokes the URL it was paired with, so nothing leaks.
+  useEffect(() => {
+    if (!previewUrl) return
+    return () => {
+      URL.revokeObjectURL(previewUrl)
     }
-  }, [file])
+  }, [previewUrl])
 
   const displayUrl = previewUrl || (existingImageUrl && !file ? existingImageUrl : null)
 

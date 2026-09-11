@@ -1,7 +1,8 @@
 'use client'
 
 import { X } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useResetOnOpen } from '@/hooks/useResetOnOpen'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Input } from '@ui/input'
@@ -76,11 +77,9 @@ export function UpdateScoreModal({
     onError: (err: Error) => toast.error(err.message),
   })
 
-  useEffect(() => {
-    if (isOpen) {
-      setFormData({ team: '', player: '', goals: '', assist: '', card: '' })
-    }
-  }, [isOpen, match?.id])
+  useResetOnOpen(isOpen, () => {
+    setFormData({ team: '', player: '', goals: '', assist: '', card: '' })
+  })
 
   if (!isOpen || !match) return null
 

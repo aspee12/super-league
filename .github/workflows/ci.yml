@@ -1,0 +1,25 @@
+name: CI
+
+# Reusable only — called by pr-preview.yml and production.yml so the same
+# checks gate both. Triggering it on `pull_request` here as well would make
+# every PR run it twice.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  quality:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-project
+
+      - name: ESLint
+        run: yarn lint
+
+      # No separate typecheck step: `next build` (run by `vercel build` in the
+      # deploy jobs) type-checks the whole project and fails on errors. Running
+      # `tsc --noEmit` here would need the gitignored next-env.d.ts to exist.

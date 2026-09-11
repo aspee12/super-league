@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useResetOnOpen } from "@/hooks/useResetOnOpen"
 import {
   Dialog,
   DialogContent,
@@ -37,13 +38,11 @@ export function TeamFormDialog({
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [showExisting, setShowExisting] = useState(true)
 
-  useEffect(() => {
-    if (isOpen) {
-      setTeamName(initialName)
-      setSelectedFile(initialFile)
-      setShowExisting(true)
-    }
-  }, [isOpen, initialName, initialFile])
+  useResetOnOpen(isOpen, () => {
+    setTeamName(initialName)
+    setSelectedFile(initialFile)
+    setShowExisting(true)
+  })
 
   const handleSubmit = () => {
     if (!teamName.trim()) return
