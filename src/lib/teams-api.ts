@@ -1,3 +1,5 @@
+import { apiFetch } from './api-client'
+
 const API_BASE = '/api'
 
 /** Upload a file to the media collection. Returns the URL path. */
@@ -10,7 +12,7 @@ export async function uploadMedia(file: File): Promise<string> {
     JSON.stringify({ alt: file.name }),
   )
 
-  const res = await fetch(`${API_BASE}/media`, {
+  const res = await apiFetch(`${API_BASE}/media`, {
     method: 'POST',
     body: formData,
     credentials: 'include',
@@ -52,7 +54,7 @@ export async function getPlayers(
   if (seasonId) {
     params.set('where[season][equals]', seasonId)
   }
-  const res = await fetch(`${API_BASE}/players?${params}`, { credentials: 'include' })
+  const res = await apiFetch(`${API_BASE}/players?${params}`, { credentials: 'include' })
   if (!res.ok) throw new Error('Failed to fetch players')
   const data = await res.json()
   return data.docs ?? []
@@ -60,7 +62,7 @@ export async function getPlayers(
 
 /** Create a new team. */
 export async function createTeam(body: { name: string; logo?: string; seasons?: string[] }): Promise<{ id: string; name: string; logo?: string }> {
-  const res = await fetch(`${API_BASE}/teams`, {
+  const res = await apiFetch(`${API_BASE}/teams`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -72,7 +74,7 @@ export async function createTeam(body: { name: string; logo?: string; seasons?: 
 
 /** Update a team. */
 export async function updateTeam(id: string, body: { name?: string; logo?: string }): Promise<{ id: string; name: string; logo?: string }> {
-  const res = await fetch(`${API_BASE}/teams/${id}`, {
+  const res = await apiFetch(`${API_BASE}/teams/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -84,7 +86,7 @@ export async function updateTeam(id: string, body: { name?: string; logo?: strin
 
 /** Delete a team. */
 export async function deleteTeam(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/teams/${id}`, {
+  const res = await apiFetch(`${API_BASE}/teams/${id}`, {
     method: 'DELETE',
     credentials: 'include',
   })
@@ -93,7 +95,7 @@ export async function deleteTeam(id: string): Promise<void> {
 
 /** Create a player. `season` scopes the record to one campaign's squad. */
 export async function createPlayer(body: { name: string; avatar?: string; team: string; season?: string }): Promise<PayloadPlayer> {
-  const res = await fetch(`${API_BASE}/players`, {
+  const res = await apiFetch(`${API_BASE}/players`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -105,7 +107,7 @@ export async function createPlayer(body: { name: string; avatar?: string; team: 
 
 /** Update a player. */
 export async function updatePlayer(id: string, body: { name?: string; avatar?: string; isGoalkeeper?: boolean; team?: string }): Promise<PayloadPlayer> {
-  const res = await fetch(`${API_BASE}/players/${id}`, {
+  const res = await apiFetch(`${API_BASE}/players/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -117,7 +119,7 @@ export async function updatePlayer(id: string, body: { name?: string; avatar?: s
 
 /** Delete a player. */
 export async function deletePlayer(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/players/${id}`, {
+  const res = await apiFetch(`${API_BASE}/players/${id}`, {
     method: 'DELETE',
     credentials: 'include',
   })
