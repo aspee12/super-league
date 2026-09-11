@@ -29,6 +29,10 @@ const AllResultsView = dynamic(
 );
 const NewsView = dynamic(() => import("@components/NewsView/page"), { loading });
 const Teams = dynamic(() => import("@components/Teams/teams"), { loading });
+const BudgetView = dynamic(
+  () => import("@components/BudgetView/page").then((m) => m.BudgetView),
+  { loading },
+);
 
 const MobileTableView = dynamic(
   () => import("@components/MobileViews/MobileTabelView").then((m) => m.MobileTableView),
@@ -61,6 +65,8 @@ export default function DynamicPage() {
         return <Teams />;
       case "news":
         return <NewsView />;
+      case "budget":
+        return <BudgetView />;
       case "table":
       default:
         return <LeagueTable />;
@@ -73,11 +79,13 @@ export default function DynamicPage() {
         return <MobileMatchesView />;
       case "results":
         return <MobileAllResultsView />;
-      // StatsView and Teams handle their own responsive layout.
+      // StatsView, Teams and BudgetView handle their own responsive layout.
       case "stats":
         return <StatsView />;
       case "teams":
         return <Teams />;
+      case "budget":
+        return <BudgetView />;
       case "news":
         return <MobileNewsView />;
       case "table":
