@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
   MoreVertical,
@@ -27,10 +27,7 @@ import { FullPageLoader } from '@shared-component/FullPageLoader'
 import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilter'
 import { ExpandedMatchStats } from '@shared-component/ExpandedMatchStats'
 import { FixturePager, fixtureDateRange } from '@shared-component/FixturePager'
-import { paginate } from '@shared-component/ListPagination'
-
-/** A matchweek is two fixtures, so the pager steps a matchweek at a time. */
-const MATCHES_PER_MATCHWEEK = 2
+import { upcomingMatchweeks } from '@/lib/matchweeks'
 
 export function MobileMatchesView() {
   const queryClient = useQueryClient()
@@ -44,10 +41,13 @@ export function MobileMatchesView() {
   // Archived seasons are read-only — see the note in MatchesView.
   const isSuperAdmin = user?.role === 'super_admin' && isViewingActiveSeason
 
-  const { liveMatches, upcomingMatches, recentMatches, allResults, isLoading } = useMatches()
+  const { matches, liveMatches, recentMatches, allResults, isLoading } = useMatches()
 
   const [upcomingPage, setUpcomingPage] = useState(1)
-  const upcoming = paginate(upcomingMatches, upcomingPage, MATCHES_PER_MATCHWEEK)
+  // Numbered off every fixture in the season — see the note in MatchesView.
+  const matchweeks = useMemo(() => upcomingMatchweeks(matches), [matches])
+  const safePage = Math.min(Math.max(upcomingPage, 1), Math.max(matchweeks.length, 1))
+  const currentWeek = matchweeks[safePage - 1]
 
   const [confirmState, setConfirmState] = useState<{
     type: 'end' | 'delete' | null
@@ -232,18 +232,18 @@ export function MobileMatchesView() {
       {/* Upcoming Section */}
       <div className="px-4 mb-6">
         <h2 className="font-semibold text-gray-800 mb-3">Upcoming</h2>
-        {upcomingMatches.length > 0 ? (
+        {currentWeek ? (
           <>
           <FixturePager
-            page={upcoming.safePage}
-            pageCount={upcoming.pageCount}
+            page={safePage}
+            pageCount={matchweeks.length}
             onPageChange={setUpcomingPage}
-            label={`Matchweek ${upcoming.safePage}`}
-            subLabel={fixtureDateRange(upcoming.visible)}
+            label={`Matchweek ${currentWeek.number}`}
+            subLabel={fixtureDateRange(currentWeek.matches)}
             className="mb-3"
           />
           <div className="space-y-3">
-            {upcoming.visible.map((match) => (
+            {currentWeek.matches.map((match) => (
               <div key={match.id} className="bg-white rounded-xl shadow-sm p-4 relative">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex flex-col items-center flex-1 min-w-0">

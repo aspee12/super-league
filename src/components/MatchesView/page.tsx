@@ -1,7 +1,7 @@
 'use client'
 
 import { ChevronRight, Pause, Pencil, Plus, RefreshCw } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { MatchCard } from '@shared-component/MatchCard'
@@ -16,10 +16,7 @@ import type { Match } from '@app-types/matchTypes'
 import { FullPageLoader } from '@shared-component/FullPageLoader'
 import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilter'
 import { FixturePager, fixtureDateRange } from '@shared-component/FixturePager'
-import { paginate } from '@shared-component/ListPagination'
-
-/** A matchweek is two fixtures, so the pager steps a matchweek at a time. */
-const MATCHES_PER_MATCHWEEK = 2
+import { upcomingMatchweeks } from '@/lib/matchweeks'
 
 // Both pull in react-day-picker + date-fns through DatePicker — load on demand.
 const AddMatchModal = dynamic(
@@ -47,10 +44,16 @@ export function MatchesView() {
     match: Match | null
   }>({ type: null, match: null })
 
-  const { liveMatches, upcomingMatches, recentMatches, allResults, isLoading } = useMatches()
+  const { matches, liveMatches, recentMatches, allResults, isLoading } = useMatches()
 
   const [upcomingPage, setUpcomingPage] = useState(1)
-  const upcoming = paginate(upcomingMatches, upcomingPage, MATCHES_PER_MATCHWEEK)
+  // Numbered off every fixture in the season, so a completed round still counts
+  // towards the caption — see `lib/matchweeks`.
+  const matchweeks = useMemo(() => upcomingMatchweeks(matches), [matches])
+  // Fixtures arriving or being played can shrink the list under a page the user
+  // has already stepped to, so clamp rather than render an empty round.
+  const safePage = Math.min(Math.max(upcomingPage, 1), Math.max(matchweeks.length, 1))
+  const currentWeek = matchweeks[safePage - 1]
 
   const endMatchMutation = useMutation({
     mutationFn: (id: string) => endMatch(id),
@@ -168,18 +171,18 @@ export function MatchesView() {
         <div className="bg-[#c5dce6] rounded-t-lg px-6 py-3">
           <h2 className="font-semibold text-[#0c5273]">Upcoming</h2>
         </div>
-        {upcomingMatches.length > 0 ? (
+        {currentWeek ? (
           <>
             <FixturePager
-              page={upcoming.safePage}
-              pageCount={upcoming.pageCount}
+              page={safePage}
+              pageCount={matchweeks.length}
               onPageChange={setUpcomingPage}
-              label={`Matchweek ${upcoming.safePage}`}
-              subLabel={fixtureDateRange(upcoming.visible)}
+              label={`Matchweek ${currentWeek.number}`}
+              subLabel={fixtureDateRange(currentWeek.matches)}
               className="mt-4"
             />
             <div className="space-y-4 mt-4">
-              {upcoming.visible.map((match) => (
+              {currentWeek.matches.map((match) => (
                 <MatchCard
                   key={match.id}
                   match={match}
