@@ -101,7 +101,10 @@ export function MobileTableView() {
               The page itself scrolls vertically. */}
           <div className="overflow-x-auto">
             <table className={`text-sm ${activeTab === 'full' ? 'min-w-[600px] w-full' : 'w-full'}`}>
-              <thead>
+              {/* Sticks to the top of the scrolling page so the column a number
+                  belongs to stays readable the whole way down. `top-0` lands
+                  just under the app header, which is the scroll area's top. */}
+              <thead className="sticky top-0 z-20">
                 <tr className="bg-[#0e7490] text-white">
                   <th className={`px-3 py-3 text-left text-xs font-semibold bg-[#0e7490] ${headPos}`}>Pos</th>
                   <th className={`px-3 py-3 text-left text-xs font-semibold bg-[#0e7490] ${headTeam}`}>Team</th>

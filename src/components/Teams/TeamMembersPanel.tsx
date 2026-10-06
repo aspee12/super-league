@@ -34,7 +34,12 @@ export function TeamMembersPanel({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-6 mx-6 border-b border-gray-200 mb-6">
+      {/* Sticky so the club you're reading stays named while its squad scrolls.
+          The white has to span the full card width — an inset box would let
+          rows show through at the edges as they pass under — so the padding
+          lives inside and the divider keeps its inset via the inner row. */}
+      <CardHeader className="sticky top-0 z-30 block rounded-t-lg bg-white p-0 pb-6">
+        <div className="mx-6 flex flex-row items-center justify-between py-6 border-b border-gray-200">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
             {team.icon && (team.icon.startsWith("/") || team.icon.startsWith("http")) ? (
@@ -51,21 +56,25 @@ export function TeamMembersPanel({
             Add New Member
           </Button>
         )}
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="rounded-lg overflow-hidden border">
-          <Table>
-            <TableHeader>
+        <div className="rounded-lg overflow-clip border">
+          <Table wrapperClassName="lg:overflow-visible">
+            {/* Pins directly under the sticky club header above, which
+                measures 113px (24 pad + 40 row + 24 pad + 1 divider + 24 pad).
+                Keep the two in step if that block's padding changes. */}
+            <TableHeader className="sticky top-[113px] z-20">
               <TableRow className="bg-[#267c93] hover:bg-[#267c93]">
-                <TableHead className="text-white font-semibold">Name</TableHead>
-                {/* <TableHead className="text-white font-semibold">Appearances</TableHead> */}
-                <TableHead className="text-white font-semibold">Goal</TableHead>
-                <TableHead className="text-white font-semibold">Assist</TableHead>
+                <TableHead className="text-white font-semibold bg-[#267c93]">Name</TableHead>
+                {/* <TableHead className="text-white font-semibold bg-[#267c93]">Appearances</TableHead> */}
+                <TableHead className="text-white font-semibold bg-[#267c93]">Goal</TableHead>
+                <TableHead className="text-white font-semibold bg-[#267c93]">Assist</TableHead>
                 {hasGoalkeeper && (
-                  <TableHead className="text-white font-semibold">CS</TableHead>
+                  <TableHead className="text-white font-semibold bg-[#267c93]">CS</TableHead>
                 )}
                 {hasActions && (
-                  <TableHead className="text-white font-semibold">Actions</TableHead>
+                  <TableHead className="text-white font-semibold bg-[#267c93]">Actions</TableHead>
                 )}
               </TableRow>
             </TableHeader>

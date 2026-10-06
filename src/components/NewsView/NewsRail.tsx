@@ -61,6 +61,14 @@ export function NewsRail({ title, articles, onSeeAll, onEdit, onDelete }: NewsRa
   if (articles.length === 0) return null
 
   const isScrollable = canScrollLeft || canScrollRight
+
+  // Fade the track where it continues. A card sliced off by a hard panel edge
+  // reads as a rendering fault; the same card under a soft edge reads as
+  // "there is more this way". Masking the content rather than overlaying a
+  // gradient keeps it correct whatever the panel sits on.
+  const fadeLeft = canScrollLeft ? 'transparent 0, black 28px' : 'black 0'
+  const fadeRight = canScrollRight ? 'black calc(100% - 28px), transparent 100%' : 'black 100%'
+  const trackMask = `linear-gradient(to right, ${fadeLeft}, ${fadeRight})`
   const arrow =
     'flex h-9 w-9 items-center justify-center rounded-full border border-[#a6dfe6] bg-white text-[#004556] transition-colors hover:bg-[#ecf9ff] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-white'
 
@@ -115,6 +123,7 @@ export function NewsRail({ title, articles, onSeeAll, onEdit, onDelete }: NewsRa
         ref={trackRef}
         className="-mx-4 md:-mx-5 px-4 md:px-5 flex gap-4 overflow-x-auto scroll-smooth
                    snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{ maskImage: trackMask, WebkitMaskImage: trackMask }}
       >
         {articles.map((article) => (
           <div
