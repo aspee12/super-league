@@ -10,6 +10,7 @@ import { TeamLogo } from '@shared-component/TeamLogo'
 import { getPlayers, type PayloadPlayer } from '@/lib/teams-api'
 import { useSeasons } from '@/hooks/useSeasons'
 import type { Match } from '@app-types/matchTypes'
+import { useScrollLock } from '@/hooks/useScrollLock'
 
 export interface MobileUpdateScoreModalProps {
   isOpen: boolean
@@ -72,12 +73,7 @@ export function MobileUpdateScoreModal({
     onError: (err: Error) => toast.error(err.message),
   })
 
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : ''
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [isOpen])
+  useScrollLock(isOpen)
 
   useResetOnOpen(isOpen, () => {
     setFormData({ team: '', player: '', goals: '', assist: '', card: '', isOwnGoal: false })
@@ -177,8 +173,8 @@ export function MobileUpdateScoreModal({
         </div>
 
         {/* Form content */}
-        <form onSubmit={handleSubmit} className="flex-1 flex flex-col p-4">
-          <div className="flex-1 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 p-4">
+          <div className="flex-1 min-h-0 space-y-6 overflow-y-auto">
             {/* Team Select */}
             <div className="relative">
               <select
@@ -322,7 +318,7 @@ export function MobileUpdateScoreModal({
           </div>
 
           {/* Action buttons */}
-          <div className="flex gap-3 pt-6 mt-auto">
+          <div className="flex gap-3 pt-6 shrink-0">
             <button
               type="button"
               onClick={handleClose}

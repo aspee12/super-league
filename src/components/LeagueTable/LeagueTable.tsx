@@ -76,20 +76,21 @@ export default function LeagueTable() {
 
         <div className="overflow-x-auto rounded-lg shadow-lg bg-white">
           <table className="w-full border-collapse">
-            <thead>
+            {/* Sticky so the column headings stay with the rows on a long table. */}
+            <thead className="sticky top-0 z-20">
               <tr className="bg-[#004556] text-white">
-                <th className="px-4 py-3 text-left text-sm font-bold">Pos</th>
-                <th className="px-4 py-3 text-left text-sm font-bold">Club</th>
-                <th className="px-4 py-3 text-center text-sm font-bold">PL</th>
-                <th className="px-4 py-3 text-center text-sm font-bold">W</th>
-                <th className="px-4 py-3 text-center text-sm font-bold">D</th>
-                <th className="px-4 py-3 text-center text-sm font-bold">L</th>
-                <th className="px-4 py-3 text-center text-sm font-bold">GF</th>
-                <th className="px-4 py-3 text-center text-sm font-bold">GA</th>
-                <th className="px-4 py-3 text-center text-sm font-bold">GD</th>
-                <th className="px-4 py-3 text-center text-sm font-bold">PTS</th>
-                <th className="px-4 py-3 text-center text-sm font-bold">FORM</th>
-                <th className="px-4 py-3 text-center text-sm font-bold">NEXT</th>
+                <th className="px-4 py-3 text-left text-sm font-bold bg-[#004556]">Pos</th>
+                <th className="px-4 py-3 text-left text-sm font-bold bg-[#004556]">Club</th>
+                <th className="px-4 py-3 text-center text-sm font-bold bg-[#004556]">PL</th>
+                <th className="px-4 py-3 text-center text-sm font-bold bg-[#004556]">W</th>
+                <th className="px-4 py-3 text-center text-sm font-bold bg-[#004556]">D</th>
+                <th className="px-4 py-3 text-center text-sm font-bold bg-[#004556]">L</th>
+                <th className="px-4 py-3 text-center text-sm font-bold bg-[#004556]">GF</th>
+                <th className="px-4 py-3 text-center text-sm font-bold bg-[#004556]">GA</th>
+                <th className="px-4 py-3 text-center text-sm font-bold bg-[#004556]">GD</th>
+                <th className="px-4 py-3 text-center text-sm font-bold bg-[#004556]">PTS</th>
+                <th className="px-4 py-3 text-center text-sm font-bold bg-[#004556]">FORM</th>
+                <th className="px-4 py-3 text-center text-sm font-bold bg-[#004556]">NEXT</th>
               </tr>
             </thead>
 

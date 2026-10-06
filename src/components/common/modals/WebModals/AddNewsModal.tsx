@@ -17,6 +17,7 @@ import { NEWS_CATEGORIES, NEWS_CATEGORY_CONFIG } from '@constants/news'
 import { NewsImageDropzone } from '@components/NewsView/NewsImageDropzone'
 import { useSeasons } from '@/hooks/useSeasons'
 import type { AddNewsModalProps } from '@app-types/shared-type'
+import { useScrollLock } from '@/hooks/useScrollLock'
 
 type FormValues = {
   title: string
@@ -47,7 +48,7 @@ function todayISO(): string {
 }
 
 const FIELD_CLASS =
-  'w-full h-10 px-3 rounded-[8px] border border-black/38 text-[14px] text-[#201f1e] ' +
+  'w-full h-10 px-3 rounded-[8px] border border-black/38 text-base md:text-[14px] text-[#201f1e] ' +
   'focus:outline-none focus:ring-2 focus:ring-[#267c93]/30'
 
 /**
@@ -111,13 +112,9 @@ function AddNewsModalContent({
   const teamsQuery = useQuery({ queryKey: ['teams', null], queryFn: () => getTeams() })
   const teams = teamsQuery.data ?? []
 
-  // Lock background scroll for as long as the modal is mounted.
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [])
+  // This body is gated behind `props.isOpen` by the wrapper above, so it only
+  // exists while the modal is open.
+  useScrollLock(true)
 
   const finish = (message: string) => {
     queryClient.invalidateQueries({ queryKey: ['news'] })

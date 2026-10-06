@@ -19,10 +19,12 @@ export function AppShell({ children }: { readonly children: ReactNode }) {
     <main className="flex flex-col h-[100dvh]">
       <Header />
       <SideBar />
-      {/* The mobile tab bar is fixed, so the scroll area has to reserve its
-          height plus the home-indicator inset or the last row of content sits
-          underneath it. */}
-      <div className="flex-1 overflow-auto md:ml-44.5 md:mt-[86px] pb-[calc(4.5rem_+_env(safe-area-inset-bottom))] md:pb-0">
+      {/* Both bars are fixed, so the scroll area clears the header with a top
+          margin — not padding, or a sticky `top-0` child would pin behind it —
+          and reserves the tab bar plus home-indicator inset at the bottom. */}
+      <div
+        data-app-scroll
+        className="flex-1 overflow-auto md:ml-44.5 mt-20 md:mt-[86px] pb-[calc(4.5rem_+_env(safe-area-inset-bottom))] md:pb-0">
         {children}
       </div>
     </main>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useDeferredValue, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
@@ -14,7 +14,11 @@ import { useNews, type NewsFilters } from '@/hooks/useNews'
 import { useSeasons } from '@/hooks/useSeasons'
 import { useAuthStore } from '@/store/authStore'
 import { NewsCard } from './NewsCard'
-import { NewsFilterBar } from './NewsFilterBar'
+import { NewsFilterBar, hasActiveFilters } from './NewsFilterBar'
+import { NewsHero } from './NewsHero'
+import { NewsRail } from './NewsRail'
+import { groupIntoRails, pickHero } from './news-layout'
+import type { NewsCategory } from '@/lib/news-api'
 
 /** Cards shown before "View More" — one full row on the widest grid. */
 const PAGE_SIZE = 4
@@ -32,7 +36,11 @@ export default function NewsView() {
   // Archived seasons are read-only — see the note in MatchesView.
   const isSuperAdmin = user?.role === 'super_admin' && isViewingActiveSeason
 
-  const { filteredNews, isLoading } = useNews(filters)
+  // Typing re-filters the whole archive and re-renders every rail; deferring
+  // the search term keeps the input responsive and lets React drop the
+  // intermediate passes.
+  const deferredSearch = useDeferredValue(filters.search)
+  const { filteredNews, isLoading } = useNews({ ...filters, search: deferredSearch })
   // Every club, not just this season's — an article can be about any of them.
   const teamsQuery = useQuery({ queryKey: ['teams', null], queryFn: () => getTeams() })
 
@@ -68,14 +76,23 @@ export default function NewsView() {
     setModalOpen(true)
   }
 
+  /** "See all" on a rail drops into the filtered grid for that category. */
+  const showCategory = (category: NewsCategory) => {
+    handleFiltersChange({ ...filters, category })
+  }
+
   if (isLoading) return <FullPageLoader message="Loading news..." />
+
+  // Browsing shows the newsroom: a lead story then a row per category.
+  // Filtering is a search result, and reads better as a plain grid.
+  const isFiltering = hasActiveFilters(filters)
+  const hero = isFiltering ? undefined : pickHero(filteredNews)
+  const rails = isFiltering ? [] : groupIntoRails(filteredNews, hero?.id)
 
   return (
     <div className="min-h-full flex-1 p-6" style={{ fontFamily: 'Roboto, sans-serif' }}>
-      {/* Single tinted panel holding the whole section, so the white cards
-          read as one group rather than floating on the page background. */}
-      <section className="rounded-2xl border border-[#a6dfe6]/60 bg-[#ecf9ff]/75 p-5 md:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <h1
             className="font-bold text-[24px] text-[#004556]"
             style={{ lineHeight: '32px', letterSpacing: '0.25px' }}
@@ -103,20 +120,18 @@ export default function NewsView() {
 
         <ArchiveSeasonNotice />
 
-        <div className="mb-6">
-          <NewsFilterBar
-            filters={filters}
-            onChange={handleFiltersChange}
-            teams={teamsQuery.data ?? []}
-          />
-        </div>
+        <NewsFilterBar
+          filters={filters}
+          onChange={handleFiltersChange}
+          teams={teamsQuery.data ?? []}
+        />
 
         {filteredNews.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="rounded-2xl border border-[#a6dfe6]/60 bg-[#ecf9ff]/75 py-12 text-center text-gray-500">
             No news articles match these filters
           </div>
-        ) : (
-          <>
+        ) : isFiltering ? (
+          <section className="rounded-2xl border border-[#a6dfe6]/60 bg-[#ecf9ff]/75 p-5 md:p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-7">
               {visibleNews.map((article) => (
                 <NewsCard
@@ -140,9 +155,30 @@ export default function NewsView() {
                 </button>
               </div>
             )}
+          </section>
+        ) : (
+          <>
+            {hero && (
+              <NewsHero
+                article={hero}
+                onEdit={isSuperAdmin ? openEdit : undefined}
+                onDelete={isSuperAdmin ? setPendingDelete : undefined}
+              />
+            )}
+
+            {rails.map((rail) => (
+              <NewsRail
+                key={rail.category}
+                title={rail.label}
+                articles={rail.articles}
+                onSeeAll={() => showCategory(rail.category)}
+                onEdit={isSuperAdmin ? openEdit : undefined}
+                onDelete={isSuperAdmin ? setPendingDelete : undefined}
+              />
+            ))}
           </>
         )}
-      </section>
+      </div>
 
       <AddNewsModal
         isOpen={modalOpen}

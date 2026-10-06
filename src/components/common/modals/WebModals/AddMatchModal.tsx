@@ -18,6 +18,7 @@ import {
 import { getTeams, createMatch, updateMatch } from '@/lib/matches-api'
 import { useSeasons } from '@/hooks/useSeasons'
 import { TeamLogo } from '@shared-component/TeamLogo'
+import { useScrollLock } from '@/hooks/useScrollLock'
 
 type FormValues = MatchProps
 
@@ -115,12 +116,7 @@ export default function AddMatchModal({
     }
   }, [initialData, isOpen, reset])
 
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : ''
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [isOpen])
+  useScrollLock(isOpen)
 
   if (!isOpen) return null
 

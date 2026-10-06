@@ -39,7 +39,7 @@ export function TeamsSidebar({
         )}
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[600px]">
+        <ScrollArea className="max-h-[60vh]">
           <div className="p-4 space-y-2">
             {teams.map((team) => {
               const isSelected = team.id === selectedTeamId
@@ -62,7 +62,7 @@ export function TeamsSidebar({
                   {isSelected && <Check className="h-5 w-5 shrink-0" />}
                   <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
                     {team.icon && (team.icon.startsWith("/") || team.icon.startsWith("http")) ? (
-                      <img src={team.icon} alt={team.name} className="w-full h-full object-cover" />
+                      <img src={team.icon} alt={team.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-lg">{team.icon || team.name.charAt(0)}</span>
                     )}

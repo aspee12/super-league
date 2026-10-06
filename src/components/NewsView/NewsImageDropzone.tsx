@@ -102,7 +102,7 @@ export function NewsImageDropzone({
         />
 
         {/* Controls + size meter */}
-        <div className="flex items-start justify-between w-full">
+        <div className="flex flex-wrap items-center justify-between gap-y-3 w-full">
           <div className="flex gap-3 items-start">
             <button
               type="button"
@@ -122,11 +122,11 @@ export function NewsImageDropzone({
               <X className="h-5 w-5 text-[#267c93]" />
             </button>
           </div>
-          <div className="flex gap-3 items-center">
+          <div className="flex gap-3 items-center min-w-0 flex-1 justify-end">
             <p className="text-[14px] text-[#5f5955] whitespace-nowrap" style={{ lineHeight: '24px' }}>
               {formatBytes(usedBytes)}/ {maxSizeMB}MB
             </p>
-            <div className="h-1 w-[133px] rounded-[2px] overflow-hidden bg-[#e6e3df]">
+            <div className="h-1 w-full max-w-[133px] min-w-[60px] rounded-[2px] overflow-hidden bg-[#e6e3df]">
               <div className="h-full bg-[#267c93] transition-[width]" style={{ width: `${pct}%` }} />
             </div>
           </div>

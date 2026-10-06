@@ -4,7 +4,7 @@ import { useMemo, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getTeams } from '@/lib/matches-api'
 import { getPlayers, type PayloadPlayer } from '@/lib/teams-api'
-import { useSeasons } from './useSeasons'
+import { seasonScopedLoading, useSeasons } from './useSeasons'
 
 /**
  * The clubs and squads of the season currently being viewed.
@@ -15,7 +15,8 @@ import { useSeasons } from './useSeasons'
  * now.
  */
 export function useTeams() {
-  const { viewingSeasonId, isReady } = useSeasons()
+  const seasons = useSeasons()
+  const { viewingSeasonId, isReady } = seasons
 
   const teamsQuery = useQuery({
     queryKey: ['teams', viewingSeasonId ?? null],
@@ -66,7 +67,7 @@ export function useTeams() {
     players,
     getPlayersByTeam,
     getPlayerNamesByTeamName,
-    isLoading: teamsQuery.isLoading || playersQuery.isLoading,
+    isLoading: seasonScopedLoading(seasons, teamsQuery, playersQuery),
     teamsQuery,
     playersQuery,
   }

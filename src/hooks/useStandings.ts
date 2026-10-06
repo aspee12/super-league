@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getMatches, getTeams, type PayloadMatch, type PayloadTeam } from '@/lib/matches-api'
 import { computeMatchStatus } from '@/lib/match-status'
 import { computeStandings, type StandingEntry } from '@/lib/compute-standings'
-import { useSeasons } from './useSeasons'
+import { seasonScopedLoading, useSeasons } from './useSeasons'
 import type { Match, Team } from '@app-types/matchTypes'
 
 function toTeam(val: string | PayloadTeam): Team {
@@ -28,7 +28,8 @@ function toMatch(doc: PayloadMatch): Match {
 }
 
 export function useStandings() {
-  const { viewingSeasonId, isReady } = useSeasons()
+  const seasons = useSeasons()
+  const { viewingSeasonId, isReady } = seasons
 
   const matchesQuery = useQuery({
     queryKey: ['matches', viewingSeasonId ?? null],
@@ -91,6 +92,6 @@ export function useStandings() {
 
   return {
     standings,
-    isLoading: matchesQuery.isLoading || teamsQuery.isLoading,
+    isLoading: seasonScopedLoading(seasons, matchesQuery, teamsQuery),
   }
 }

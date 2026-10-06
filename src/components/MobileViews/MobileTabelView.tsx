@@ -48,25 +48,31 @@ export function MobileTableView() {
     return <FullPageLoader message="Loading standings..." />
   }
 
-  // The `full` tab is the only one wide enough to scroll sideways. There, pin
-  // Pos + Team to the left edge so every row stays identifiable while the stat
-  // columns slide underneath. Sticky cells paint their own background, so each
-  // one repeats the row's stripe colour.
+  // On the `full` tab, pin Pos + Team to the left edge so a row stays
+  // identifiable while the stat columns slide underneath. Sticky cells paint
+  // their own background, so each repeats the row's stripe colour.
   const isFullTab = activeTab === 'full'
-  const stickyPos = isFullTab ? 'sticky left-0 z-20 w-[52px] min-w-[52px]' : ''
-  const stickyTeam = isFullTab
-    ? 'sticky left-[52px] z-20 w-[132px] min-w-[132px] shadow-[4px_0_6px_-4px_rgba(0,0,0,0.3)]'
+  const pinPos = isFullTab ? 'sticky left-0 w-[52px] min-w-[52px]' : ''
+  const pinTeam = isFullTab
+    ? 'sticky left-[52px] w-[132px] min-w-[132px] shadow-[4px_0_6px_-4px_rgba(0,0,0,0.3)]'
     : ''
+  // Without a cap the club name sets the column width, pushing `Next` past the
+  // right edge where `overflow-hidden` silently cut it off.
+  const teamWidth = isFullTab ? '' : 'max-w-[128px]'
+  const headPos = `${pinPos} ${isFullTab ? 'z-30' : ''}`
+  const headTeam = `${pinTeam} ${teamWidth} ${isFullTab ? 'z-30' : ''}`
+  const bodyPos = `${pinPos} ${isFullTab ? 'z-10' : ''}`
+  const bodyTeam = `${pinTeam} ${teamWidth} ${isFullTab ? 'z-10' : ''}`
 
   return (
-    <div className="min-h-full from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4] mt-10">
-      <div className="px-4 -mt-4 mb-3">
+    <div className="min-h-full from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4]">
+      <div className="px-4 pt-4 mb-3">
         <SeasonFilter showReset={false} />
         <div className="mt-3">
           <ArchiveSeasonNotice />
         </div>
       </div>
-      <div className="px-4">
+      <div className="px-4 pb-4">
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           <div className="px-4 py-3 bg-white">
             <h2 className="font-semibold text-gray-800">League Table</h2>
@@ -90,12 +96,18 @@ export function MobileTableView() {
             ))}
           </div>
 
-          <div className={activeTab === 'full' ? 'overflow-x-auto' : 'overflow-hidden'}>
+          {/* `overflow-x-auto`, never `overflow-hidden`: the latter clipped the
+              `Next` column clean off rather than letting the reader reach it.
+              The page itself scrolls vertically. */}
+          <div className="overflow-x-auto">
             <table className={`text-sm ${activeTab === 'full' ? 'min-w-[600px] w-full' : 'w-full'}`}>
-              <thead>
+              {/* Sticks to the top of the scrolling page so the column a number
+                  belongs to stays readable the whole way down. `top-0` lands
+                  just under the app header, which is the scroll area's top. */}
+              <thead className="sticky top-0 z-20">
                 <tr className="bg-[#0e7490] text-white">
-                  <th className={`px-3 py-3 text-left text-xs font-semibold bg-[#0e7490] ${stickyPos}`}>Pos</th>
-                  <th className={`px-3 py-3 text-left text-xs font-semibold bg-[#0e7490] ${stickyTeam}`}>Team</th>
+                  <th className={`px-3 py-3 text-left text-xs font-semibold bg-[#0e7490] ${headPos}`}>Pos</th>
+                  <th className={`px-3 py-3 text-left text-xs font-semibold bg-[#0e7490] ${headTeam}`}>Team</th>
 
                   {activeTab === 'short' && (
                     <>
@@ -135,7 +147,7 @@ export function MobileTableView() {
                     }`}
                   >
                     <td
-                      className={`px-3 py-3 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${stickyPos}`}
+                      className={`px-3 py-3 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${bodyPos}`}
                     >
                       <div className="flex items-center gap-1">
                         <span className="text-xs font-medium w-5">
@@ -145,7 +157,7 @@ export function MobileTableView() {
                       </div>
                     </td>
                     <td
-                      className={`px-3 py-3 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${stickyTeam}`}
+                      className={`px-3 py-3 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${bodyTeam}`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <TeamLogo logo={entry.team.logo} name={entry.team.name} className="w-5 h-5" textClassName="text-base" />

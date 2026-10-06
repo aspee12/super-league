@@ -102,7 +102,7 @@ export function MobileAllResultsView() {
                       {(match.playerStats ?? []).length > 2 && (
                         <button
                           onClick={() => toggleStats(match.id)}
-                          className="text-[#0e7490] mt-1"
+                          className="mt-1 -ml-2 flex h-11 w-11 items-center justify-center text-[#0e7490] active:bg-[#0e7490]/10 rounded-full transition-colors"
                           aria-label={isExpanded ? 'Show less' : 'Show all'}
                         >
                           {isExpanded ? <Minus size={16} /> : <Plus size={16} />}
