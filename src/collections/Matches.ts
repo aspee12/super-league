@@ -112,6 +112,23 @@ export const Matches: CollectionConfig = {
           name: 'assistName',
           type: 'text',
           required: false,
+          admin: {
+            description:
+              'Teammate who set the goal up. Never filled in for an own goal — an own goal carries no assist.',
+          },
+        },
+        {
+          // `team` above is the side the goal is *credited* to, which for an
+          // own goal is not the side the named player appears for. This flag is
+          // what tells every reader to invert that inference.
+          name: 'isOwnGoal',
+          type: 'checkbox',
+          label: 'Own goal',
+          defaultValue: false,
+          admin: {
+            description:
+              'The named player put it into their own net, so they play for the opposing side. The goal counts for the team selected above, is left off the scorer charts, and carries no assist.',
+          },
         },
         {
           name: 'card',

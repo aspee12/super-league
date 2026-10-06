@@ -6,6 +6,7 @@ import { formatTime12h } from '@/lib/format-time'
 import { TeamLogo } from '@shared-component/TeamLogo'
 import { GoalkeeperBadge } from '@shared-component/GoalkeeperBadge'
 import { useGoalkeepers } from '@/hooks/useGoalkeepers'
+import { isOwnGoal } from '@/lib/own-goals'
 
 interface MatchCardProps {
   match: Match
@@ -34,8 +35,12 @@ function StatLine({
 }) {
   const hasGoals = stat.goals > 0
   const hasCard = stat.card === 'yellow' || stat.card === 'red'
+  // Listed under the side the goal was credited to, the way official match
+  // records do it, with the scorer marked so it reads as an own goal.
+  const own = isOwnGoal(stat)
 
-  const assistLine = stat.assistName && (
+  // Never shown for an own goal: it carries no assist.
+  const assistLine = !own && stat.assistName && (
     <div className="flex items-center gap-1 text-gray-400">
       {side === 'right' && assisterIsGk && <GoalkeeperBadge size="sm" />}
       <span>{stat.assistName} (Assist)</span>
@@ -48,7 +53,10 @@ function StatLine({
       <div className="flex flex-col gap-0.5">
         {hasGoals && (
           <div className="flex items-center gap-1">
-            <span>{stat.playerName} {stat.goals}&apos;</span>
+            <span>
+              {stat.playerName}
+              {own && <span className="text-gray-500"> (OG)</span>} {stat.goals}&apos;
+            </span>
             {scorerIsGk && <GoalkeeperBadge size="sm" />}
             {hasCard && <CardIcon card={stat.card} />}
           </div>
@@ -71,7 +79,10 @@ function StatLine({
         <div className="flex items-center justify-end gap-1">
           {hasCard && <CardIcon card={stat.card} />}
           {scorerIsGk && <GoalkeeperBadge size="sm" />}
-          <span>{stat.goals}&apos; {stat.playerName}</span>
+          <span>
+            {stat.goals}&apos;{own && <span className="text-gray-500"> (OG)</span>}{' '}
+            {stat.playerName}
+          </span>
         </div>
       )}
       {!hasGoals && hasCard && (
@@ -136,7 +147,13 @@ export function MatchCard({ match, showActions = false, onEdit, onDelete, varian
                   key={i}
                   stat={stat}
                   side="left"
-                  scorerIsGk={isGoalkeeper(stat.playerName, match.teamA.id)}
+                  // An own goal is listed here because team A was credited with
+                  // it, but the scorer plays for team B — so the keeper badge
+                  // has to be looked up against that squad.
+                  scorerIsGk={isGoalkeeper(
+                    stat.playerName,
+                    isOwnGoal(stat) ? match.teamB.id : match.teamA.id,
+                  )}
                   assisterIsGk={isGoalkeeper(stat.assistName, match.teamA.id)}
                 />
               ))}
@@ -147,7 +164,11 @@ export function MatchCard({ match, showActions = false, onEdit, onDelete, varian
                   key={i}
                   stat={stat}
                   side="right"
-                  scorerIsGk={isGoalkeeper(stat.playerName, match.teamB.id)}
+                  // See the note in the team A column.
+                  scorerIsGk={isGoalkeeper(
+                    stat.playerName,
+                    isOwnGoal(stat) ? match.teamA.id : match.teamB.id,
+                  )}
                   assisterIsGk={isGoalkeeper(stat.assistName, match.teamB.id)}
                 />
               ))}

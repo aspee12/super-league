@@ -45,6 +45,7 @@ import {
   uploadMedia,
 } from "@/lib/teams-api"
 import { updatePlayerNameInMatches } from "@/lib/matches-api"
+import { creditedGoals, isOwnGoal, playerSideOf } from "@/lib/own-goals"
 import type { PayloadTeam } from "@/lib/matches-api"
 import type { PayloadPlayer } from "@/lib/teams-api"
 import type { Match } from "@/types/matchTypes"
@@ -57,22 +58,28 @@ function buildPlayerStatsMap(matches: Match[], goalkeeperNames: Set<string>) {
   for (const match of relevant) {
     if (!match.playerStats) continue
     for (const ps of match.playerStats) {
-      const teamObj = ps.team === "teamA" ? match.teamA : match.teamB
+      // Own goals are credited to the opposition on the scoreboard, so resolve
+      // the player against their real club — see `lib/own-goals`.
+      const own = isOwnGoal(ps)
+      const side = playerSideOf(ps)
+      const teamObj = side === "teamA" ? match.teamA : match.teamB
       const teamName = teamObj.name
 
-      // Credit goals to the scorer
-      if (ps.goals > 0) {
+      // Credit goals to the scorer, never for an own goal.
+      const goals = creditedGoals(ps)
+      if (goals > 0) {
         const key = `${ps.playerName}-${teamName}`
         const existing = map.get(key)
         if (existing) {
-          existing.goals += ps.goals
+          existing.goals += goals
         } else {
-          map.set(key, { goals: ps.goals, assists: 0, cleanSheets: 0 })
+          map.set(key, { goals, assists: 0, cleanSheets: 0 })
         }
       }
 
-      // Credit assists to the actual assister, not the scorer
-      if (ps.assists > 0 && ps.assistName) {
+      // Credit assists to the actual assister, not the scorer. An own goal
+      // carries none.
+      if (!own && ps.assists > 0 && ps.assistName) {
         const assistKey = `${ps.assistName}-${teamName}`
         const existing = map.get(assistKey)
         if (existing) {
