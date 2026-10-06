@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { useMatches } from './useMatches'
 import { useTeams } from './useTeams'
+import { creditedGoals, isOwnGoal, playerSideOf } from '@/lib/own-goals'
 
 export interface AggregatedPlayerStat {
   id: string
@@ -76,14 +77,23 @@ export function useStats() {
       if (!match.playerStats) continue
 
       for (const ps of match.playerStats) {
-        const teamObj = ps.team === 'teamA' ? match.teamA : match.teamB
+        // An own goal is credited to the opposing team on the scoreboard, so
+        // the row's `team` is not the side this player turns out for. Resolve
+        // the person against their real club, or their goals and cards land on
+        // the opposition's sheet.
+        const own = isOwnGoal(ps)
+        const side = playerSideOf(ps)
+        const teamObj = side === 'teamA' ? match.teamA : match.teamB
         const teamName = teamObj.name
         const key = `${ps.playerName}-${teamName}`
+        // Own goals stay off the scoring charts entirely, as Opta, FIFA and
+        // UEFA all treat them. The team still gets the goal via the scoreline.
+        const goals = creditedGoals(ps)
 
         // Credit goals and cards to the scorer
         const existing = playerMap.get(key)
         if (existing) {
-          existing.goals += ps.goals
+          existing.goals += goals
           if (ps.card === 'yellow') existing.yellowCards += 1
           if (ps.card === 'red') existing.redCards += 1
         } else {
@@ -97,7 +107,7 @@ export function useStats() {
               avatar: playerAvatarMap.get(key) || '',
               isGoalkeeper: goalkeeperKeys.has(key),
             },
-            goals: ps.goals,
+            goals,
             assists: 0,
             yellowCards: ps.card === 'yellow' ? 1 : 0,
             redCards: ps.card === 'red' ? 1 : 0,
@@ -105,8 +115,9 @@ export function useStats() {
           })
         }
 
-        // Credit assists to the actual assister, not the scorer
-        if (ps.assists > 0 && ps.assistName) {
+        // Credit assists to the actual assister, not the scorer. Never on an
+        // own goal: there is no recipient, so nobody set it up.
+        if (!own && ps.assists > 0 && ps.assistName) {
           const assistKey = `${ps.assistName}-${teamName}`
           const existingAssister = playerMap.get(assistKey)
           if (existingAssister) {

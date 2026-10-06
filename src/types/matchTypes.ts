@@ -7,11 +7,14 @@ export interface Team {
 export interface PlayerStat {
   id?: string
   playerName: string
+  /** The side the goal is credited to — not necessarily the player's own. */
   team: 'teamA' | 'teamB'
   goals: number
   assists: number
   assistName?: string
   card?: 'none' | 'yellow' | 'red'
+  /** Set when `playerName` put it into their own net; see `lib/own-goals`. */
+  isOwnGoal?: boolean | null
 }
 
 export type MatchStatus = 'live' | 'upcoming' | 'finished'

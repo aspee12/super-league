@@ -216,7 +216,14 @@ export interface Match {
         team: 'teamA' | 'teamB';
         goals: number;
         assists: number;
+        /**
+         * Teammate who set the goal up. Never filled in for an own goal — an own goal carries no assist.
+         */
         assistName?: string | null;
+        /**
+         * The named player put it into their own net, so they play for the opposing side. The goal counts for the team selected above, is left off the scorer charts, and carries no assist.
+         */
+        isOwnGoal?: boolean | null;
         card?: ('none' | 'yellow' | 'red') | null;
         id?: string | null;
       }[]
@@ -477,6 +484,7 @@ export interface MatchesSelect<T extends boolean = true> {
         goals?: T;
         assists?: T;
         assistName?: T;
+        isOwnGoal?: T;
         card?: T;
         id?: T;
       };

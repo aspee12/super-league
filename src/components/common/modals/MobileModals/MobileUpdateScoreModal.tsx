@@ -40,6 +40,7 @@ export function MobileUpdateScoreModal({
     goals: '',
     assist: '',
     card: '' as '' | 'none' | 'yellow' | 'red',
+    isOwnGoal: false,
   })
 
   const mutation = useMutation({
@@ -59,6 +60,7 @@ export function MobileUpdateScoreModal({
           assists: formData.assist ? 1 : 0,
           assistName: formData.assist || undefined,
           card: (formData.card || 'none') as 'none' | 'yellow' | 'red',
+          isOwnGoal: formData.isOwnGoal,
         },
       )
     },
@@ -78,7 +80,7 @@ export function MobileUpdateScoreModal({
   }, [isOpen])
 
   useResetOnOpen(isOpen, () => {
-    setFormData({ team: '', player: '', goals: '', assist: '', card: '' })
+    setFormData({ team: '', player: '', goals: '', assist: '', card: '', isOwnGoal: false })
   })
 
   if (!isOpen || !match) return null
@@ -86,29 +88,32 @@ export function MobileUpdateScoreModal({
   const teamAName = match.teamA.name
   const teamBName = match.teamB.name
 
-  const selectedTeamId =
-    formData.team === 'teamA'
-      ? match.teamA.id
-      : formData.team === 'teamB'
-        ? match.teamB.id
-        : ''
   // Keeps `isGoalkeeper` alongside the name so the dropdown can mark keepers,
   // while the stored value stays the plain name. A native <option> can't hold
   // markup, so mobile suffixes the label instead of rendering a badge.
-  const playersForTeam = selectedTeamId
-    ? allPlayers
-        .filter((p: PayloadPlayer) => {
-          const pTeamId = typeof p.team === 'string' ? p.team : p.team?.id
-          return pTeamId === selectedTeamId
-        })
-        .map((p: PayloadPlayer) => ({ name: p.name, isGoalkeeper: !!p.isGoalkeeper }))
-        .sort((a, b) =>
-          a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true }),
-        )
-    : []
+  const squadOf = (side: '' | 'teamA' | 'teamB') => {
+    if (!side) return []
+    const teamId = side === 'teamA' ? match.teamA.id : match.teamB.id
+    return allPlayers
+      .filter((p: PayloadPlayer) => {
+        const pTeamId = typeof p.team === 'string' ? p.team : p.team?.id
+        return pTeamId === teamId
+      })
+      .map((p: PayloadPlayer) => ({ name: p.name, isGoalkeeper: !!p.isGoalkeeper }))
+      .sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true }),
+      )
+  }
+
+  const otherSide = formData.team === 'teamA' ? 'teamB' : formData.team === 'teamB' ? 'teamA' : ''
+  // On an own goal the scorer comes from the conceding squad — the side the
+  // goal is *not* credited to.
+  const scorerOptions = squadOf(formData.isOwnGoal ? otherSide : formData.team)
+  // An assister is always a teammate of the side credited with the goal.
+  const assistOptions = squadOf(formData.team)
 
   const handleClose = () => {
-    setFormData({ team: '', player: '', goals: '', assist: '', card: '' })
+    setFormData({ team: '', player: '', goals: '', assist: '', card: '', isOwnGoal: false })
     onClose()
   }
 
@@ -125,6 +130,12 @@ export function MobileUpdateScoreModal({
     const hasCard = formData.card === 'yellow' || formData.card === 'red'
     if (!formData.goals && !hasCard) {
       toast.error('Enter goals or select a card.')
+      return
+    }
+    // Without a goal the own-goal flag has nothing to describe, and would only
+    // move a booking onto the wrong team's sheet.
+    if (formData.isOwnGoal && !(parseInt(formData.goals) > 0)) {
+      toast.error('An own goal needs at least one goal.')
       return
     }
     mutation.mutate()
@@ -192,6 +203,33 @@ export function MobileUpdateScoreModal({
               />
             </div>
 
+            {/* Own goal. Flipping this swaps which squad the scorer comes from
+                and rules out an assist, so clear both. */}
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={formData.isOwnGoal}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    isOwnGoal: e.target.checked,
+                    player: '',
+                    assist: '',
+                  })
+                }
+                disabled={!formData.team}
+                className="mt-0.5 h-5 w-5 shrink-0 accent-[#0e7490] disabled:opacity-40"
+              />
+              <span className="text-sm">
+                <span className="font-medium text-gray-800">Own goal</span>
+                <span className="block text-xs text-gray-500">
+                  {formData.team
+                    ? `Counts for ${formData.team === 'teamA' ? teamAName : teamBName}; scorer is picked from ${formData.team === 'teamA' ? teamBName : teamAName}. No assist is recorded.`
+                    : 'Select a team first.'}
+                </span>
+              </span>
+            </label>
+
             {/* Player Select */}
             <div className="relative">
               <select
@@ -205,7 +243,7 @@ export function MobileUpdateScoreModal({
                 <option value="">
                   {formData.team ? 'Select Player' : 'Select team first'}
                 </option>
-                {playersForTeam.map((p) => (
+                {scorerOptions.map((p) => (
                   <option key={p.name} value={p.name}>
                     {p.isGoalkeeper ? `${p.name} (GK)` : p.name}
                   </option>
@@ -231,18 +269,22 @@ export function MobileUpdateScoreModal({
               className={inputClass}
             />
 
-            {/* Assist Select */}
+            {/* Assist — an own goal has no recipient, so nobody set it up. */}
             <div className="relative">
               <select
                 value={formData.assist}
                 onChange={(e) =>
                   setFormData({ ...formData, assist: e.target.value })
                 }
-                disabled={!formData.team}
-                className={selectClass + (formData.team ? '' : ' opacity-50')}
+                disabled={!formData.team || formData.isOwnGoal}
+                className={
+                  selectClass + (formData.team && !formData.isOwnGoal ? '' : ' opacity-50')
+                }
               >
-                <option value="">Assist (optional)</option>
-                {playersForTeam
+                <option value="">
+                  {formData.isOwnGoal ? 'No assist on an own goal' : 'Assist (optional)'}
+                </option>
+                {assistOptions
                   .filter((p) => p.name !== formData.player)
                   .map((p) => (
                     <option key={p.name} value={p.name}>

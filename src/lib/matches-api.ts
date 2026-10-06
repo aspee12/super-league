@@ -15,11 +15,14 @@ export type PayloadTeam = {
 export type PayloadPlayerStat = {
   id?: string
   playerName: string
+  /** The side the goal is credited to — not necessarily the player's own. */
   team: 'teamA' | 'teamB'
   goals: number
   assists: number
   assistName?: string
   card?: 'none' | 'yellow' | 'red'
+  /** Set when `playerName` put it into their own net; see `lib/own-goals`. */
+  isOwnGoal?: boolean | null
 }
 
 export type PayloadSeasonRef = {
@@ -166,10 +169,17 @@ export async function updateScore(
     assists: number
     assistName?: string
     card: 'none' | 'yellow' | 'red'
+    isOwnGoal?: boolean
   },
 ): Promise<PayloadMatch> {
   const existingStats = currentMatch.playerStats ?? []
-  const newStats = [...existingStats, stat]
+  // An own goal never carries an assist — there is no recipient to set up.
+  // Stripped here rather than only in the form so the rule holds for every
+  // caller, including a client that forgets to clear the field.
+  const normalised = stat.isOwnGoal
+    ? { ...stat, assists: 0, assistName: undefined }
+    : stat
+  const newStats = [...existingStats, normalised]
 
   const scoreA =
     stat.team === 'teamA'
