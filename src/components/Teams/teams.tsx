@@ -753,12 +753,14 @@ function MobileTeamsView({
             <ArchiveSeasonNotice />
           </div>
         </div>
-        <div className="flex items-center justify-between mb-4">
+        {/* Pinned, so the title and the add button stay reachable while the
+            club list scrolls — the same band treatment the Stats chips use. */}
+        <div className="sticky top-0 z-30 -mx-4 px-4 h-14 mb-3 flex items-center justify-between bg-white/85 backdrop-blur-sm">
           <h2 className="text-lg font-semibold text-gray-900">Team Management</h2>
           {hasTeamPermission && (
             <Button
               size="icon"
-              className="h-10 w-10 mt-4 rounded-full bg-teal-500 hover:bg-teal-600"
+              className="h-10 w-10 rounded-full bg-teal-500 hover:bg-teal-600"
               onClick={handleAddTeam}
             >
               <Plus className="h-5 w-5 text-white" />
@@ -774,9 +776,15 @@ function MobileTeamsView({
               open={openMenuId === team.id}
               onOpenChange={(open) => setOpenMenuId(open ? team.id : null)}
             >
-              <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+              <Card className="bg-white shadow-sm hover:shadow-md transition-shadow overflow-clip">
                 <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
+                  <div
+                    className={`flex items-center justify-between ${
+                      selectedTeamForMembers?.id === team.id
+                        ? 'sticky top-[56px] z-20 -mx-4 -mt-4 px-4 pt-4 pb-2 bg-white'
+                        : ''
+                    }`}
+                  >
                     <button
                       type="button"
                       className="flex items-center gap-3 flex-1 cursor-pointer text-left"

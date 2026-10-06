@@ -97,7 +97,7 @@ export function StatsView() {
           its chip on a narrow phone. The row scrolls — bleeding to the screen
           edges so a chip never looks clipped by the page gutter — which only
           kicks in below ~360px; on a normal phone all five still fit. */}
-      <div className="-mx-4 px-4 mb-4 lg:hidden overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="sticky top-0 z-30 -mx-4 px-4 pt-1 pb-3 mb-1 lg:hidden overflow-x-auto bg-white/85 backdrop-blur-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="flex gap-2 w-max min-w-full">
           {categories.map((categoryId) => {
             const config = CATEGORY_CONFIG[categoryId];
@@ -160,8 +160,8 @@ export function StatsView() {
         </div>
 
         {/* Stat card: header + list */}
-        <div className="flex-1 min-w-0 bg-white rounded-lg shadow-sm border border-[#e7e6e6] overflow-hidden flex flex-col">
-          <div className="px-4 py-4 md:px-6 md:py-4 border-b border-[#e7e6e6] flex items-center gap-3 shrink-0">
+        <div className="flex-1 min-w-0 bg-white rounded-lg shadow-sm border border-[#e7e6e6] overflow-clip flex flex-col">
+          <div className="sticky top-[62px] z-20 lg:static bg-white px-4 py-4 md:px-6 md:py-4 border-b border-[#e7e6e6] flex items-center gap-3 shrink-0">
             <IconComponent
               size={24}
               className={activeConfig.iconClassName ?? 'text-[#267c93]'}
