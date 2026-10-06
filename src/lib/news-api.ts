@@ -43,9 +43,13 @@ export type CreateNewsBody = {
 export type UpdateNewsBody = Partial<CreateNewsBody>
 
 /** Fetch news articles from Payload, newest first, optionally scoped to a season. */
-export async function getNews(seasonId?: string): Promise<PayloadNews[]> {
+export async function getNews(
+  seasonId?: string,
+  /** Caps the page when the caller only needs the most recent few. */
+  limit = 500,
+): Promise<PayloadNews[]> {
   const params = new URLSearchParams({
-    limit: '500',
+    limit: String(limit),
     depth: '1',
     sort: '-publishedDate',
   })

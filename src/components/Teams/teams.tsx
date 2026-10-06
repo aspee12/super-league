@@ -52,7 +52,7 @@ import type { Match } from "@/types/matchTypes"
 import type { Team, TeamMember } from "./types"
 
 /** Build a map of playerName-teamName -> { goals, assists, cleanSheets } from all matches */
-function buildPlayerStatsMap(matches: Match[], goalkeeperNames: Set<string>) {
+function buildPlayerStatsMap(matches: Match[], goalkeepersByTeamId: Map<string, string[]>) {
   const map = new Map<string, { goals: number; assists: number; cleanSheets: number }>()
   const relevant = matches.filter((m) => m.status === "finished" || m.status === "live")
   for (const match of relevant) {
@@ -91,27 +91,22 @@ function buildPlayerStatsMap(matches: Match[], goalkeeperNames: Set<string>) {
     }
   }
 
-  // Compute clean sheets for goalkeepers from finished matches
+  // Clean sheets, credited only to the keepers of the side that kept it.
+  // Iterating every keeper in the league instead wrote a row for each of them
+  // against the conceding team's name — harmless while no two clubs shared a
+  // keeper's name, and silently wrong the moment they did.
   const finished = matches.filter((m) => m.status === "finished")
+  const creditCleanSheet = (teamId: string, teamName: string) => {
+    for (const gkName of goalkeepersByTeamId.get(teamId) ?? []) {
+      const key = `${gkName}-${teamName}`
+      const existing = map.get(key)
+      if (existing) existing.cleanSheets += 1
+      else map.set(key, { goals: 0, assists: 0, cleanSheets: 1 })
+    }
+  }
   for (const match of finished) {
-    // Team A kept clean sheet if scoreB === 0
-    if (match.scoreB === 0) {
-      for (const gkName of goalkeeperNames) {
-        const key = `${gkName}-${match.teamA.name}`
-        const existing = map.get(key)
-        if (existing) existing.cleanSheets += 1
-        else map.set(key, { goals: 0, assists: 0, cleanSheets: 1 })
-      }
-    }
-    // Team B kept clean sheet if scoreA === 0
-    if (match.scoreA === 0) {
-      for (const gkName of goalkeeperNames) {
-        const key = `${gkName}-${match.teamB.name}`
-        const existing = map.get(key)
-        if (existing) existing.cleanSheets += 1
-        else map.set(key, { goals: 0, assists: 0, cleanSheets: 1 })
-      }
-    }
+    if (match.scoreB === 0) creditCleanSheet(match.teamA.id, match.teamA.name)
+    if (match.scoreA === 0) creditCleanSheet(match.teamB.id, match.teamB.name)
   }
 
   return map
@@ -165,14 +160,24 @@ export default function Teams() {
   // walks every match × every player stat. Unmemoized it re-ran on every
   // keystroke and every dropdown toggle — and again on each 15s live-match
   // poll — which is what made the Teams page feel sluggish.
-  const goalkeeperNames = useMemo(
-    () => new Set(players.filter((p) => p.isGoalkeeper).map((p) => p.name)),
-    [players],
-  )
+  // Keyed by club: a clean sheet belongs to that team's keepers, not to every
+  // keeper in the division.
+  const goalkeepersByTeamId = useMemo(() => {
+    const map = new Map<string, string[]>()
+    for (const p of players) {
+      if (!p.isGoalkeeper) continue
+      const teamId = typeof p.team === "string" ? p.team : p.team?.id
+      if (!teamId) continue
+      const list = map.get(teamId)
+      if (list) list.push(p.name)
+      else map.set(teamId, [p.name])
+    }
+    return map
+  }, [players])
 
   const statsMap = useMemo(
-    () => buildPlayerStatsMap(matches, goalkeeperNames),
-    [matches, goalkeeperNames],
+    () => buildPlayerStatsMap(matches, goalkeepersByTeamId),
+    [matches, goalkeepersByTeamId],
   )
 
   // Group players by team once instead of rescanning the full list per team.
@@ -441,32 +446,42 @@ function DesktopTeamsView({
   }
 
   return (
-    <div className="p-6 min-h-full from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4]">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+    // Title and season filter stay put; the club list and the roster each
+    // scroll in their own column, so picking a different club never means
+    // scrolling back up past the table you were just reading.
+    <div className="flex h-full min-h-0 flex-col p-6 from-[#d5e5ec] via-[#e0f2f1] to-[#c8e6d4]">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 shrink-0">
         <h1 className="text-3xl font-bold text-gray-900">Futsal Club</h1>
         <SeasonFilter showReset={false} />
       </div>
       <ArchiveSeasonNotice />
 
-      <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
-        <TeamsSidebar
-          teams={teams}
-          selectedTeamId={selectedTeamId}
-          onSelectTeam={onSelectTeam}
-          onAddTeam={hasTeamPermission ? handleAddTeam : undefined}
-          onEditTeam={hasTeamPermission ? handleEditTeam : undefined}
-          onDeleteTeam={isSuperAdmin ? handleDeleteTeam : undefined}
-        />
-
-        {selectedTeam && (
-          <TeamMembersPanel
-            team={selectedTeam}
-            onAddMember={hasTeamPermission ? handleAddMember : undefined}
-            onEditMember={hasTeamPermission ? handleEditMember : undefined}
-            onTransferMember={hasTeamPermission ? handleTransferMember : undefined}
-            onDeleteMember={isSuperAdmin ? handleDeleteMember : undefined}
+      {/* Each column owns its own scrollbar. The grid itself must not be the
+          scroller: the roster panel carries no internal scroll, so a single
+          `overflow-hidden` here clipped long squads with no way to reach them. */}
+      <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6 flex-1 min-h-0">
+        <div className="min-h-0 lg:overflow-y-auto">
+          <TeamsSidebar
+            teams={teams}
+            selectedTeamId={selectedTeamId}
+            onSelectTeam={onSelectTeam}
+            onAddTeam={hasTeamPermission ? handleAddTeam : undefined}
+            onEditTeam={hasTeamPermission ? handleEditTeam : undefined}
+            onDeleteTeam={isSuperAdmin ? handleDeleteTeam : undefined}
           />
-        )}
+        </div>
+
+        <div className="min-h-0 lg:overflow-y-auto">
+          {selectedTeam && (
+            <TeamMembersPanel
+              team={selectedTeam}
+              onAddMember={hasTeamPermission ? handleAddMember : undefined}
+              onEditMember={hasTeamPermission ? handleEditMember : undefined}
+              onTransferMember={hasTeamPermission ? handleTransferMember : undefined}
+              onDeleteMember={isSuperAdmin ? handleDeleteMember : undefined}
+            />
+          )}
+        </div>
       </div>
 
       <TeamFormDialog
@@ -769,7 +784,7 @@ function MobileTeamsView({
                     >
                       <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
                         {team.icon && (team.icon.startsWith("/") || team.icon.startsWith("http")) ? (
-                          <img src={team.icon} alt={team.name} className="w-full h-full object-cover" />
+                          <img src={team.icon} alt={team.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-2xl">{team.icon || team.name.charAt(0)}</span>
                         )}
@@ -787,7 +802,7 @@ function MobileTeamsView({
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-8 w-8"
+                            className="h-10 w-10"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <MoreVertical className="h-5 w-5 text-gray-600" />
@@ -797,7 +812,7 @@ function MobileTeamsView({
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-8 w-8 text-gray-600"
+                        className="h-10 w-10 text-gray-600"
                         onClick={(e) => {
                           e.stopPropagation()
                           handleTeamClick(team.id)
@@ -837,7 +852,7 @@ function MobileTeamsView({
                               <div className="flex items-center gap-2 min-w-0 flex-1">
                                 <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium shrink-0 overflow-hidden">
                                   {member.avatar && (member.avatar.startsWith("/") || member.avatar.startsWith("http")) ? (
-                                    <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                                    <img src={member.avatar} alt={member.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                                   ) : (
                                     member.name.split(" ").map((n) => n[0]).join("").toUpperCase()
                                   )}
@@ -860,12 +875,12 @@ function MobileTeamsView({
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1 shrink-0">
+                              <div className="flex items-center gap-2 shrink-0">
                                 {hasTeamPermission && (
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    className="h-7 w-7 text-gray-500 hover:text-gray-700"
+                                    className="h-10 w-10 text-gray-500 hover:text-gray-700"
                                     onClick={(e) => {
                                       e.stopPropagation()
                                       handleEditMember(member)
@@ -878,7 +893,7 @@ function MobileTeamsView({
                                 <Button
                                   size="icon"
                                   variant="ghost"
-                                  className="h-7 w-7 text-red-500 hover:text-red-700"
+                                  className="h-10 w-10 text-red-500 hover:text-red-700"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     handleDeleteMember(member)

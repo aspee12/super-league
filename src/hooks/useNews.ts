@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getNews, getNewsById, type NewsCategory, type PayloadNews } from '@/lib/news-api'
-import { useSeasons } from './useSeasons'
+import { seasonScopedLoading, useSeasons } from './useSeasons'
 
 export type NewsFilters = {
   /** null / undefined means "All". */
@@ -62,8 +62,10 @@ export function useNewsArticle(id: string | undefined) {
   })
 
   const latestQuery = useQuery({
-    queryKey: ['news', 'latest'],
-    queryFn: () => getNews(),
+    // Six so one can be dropped if it is the article being read, still leaving
+    // five. Previously this pulled the whole archive to show five titles.
+    queryKey: ['news', 'latest', 6],
+    queryFn: () => getNews(undefined, 6),
     staleTime: 60_000,
   })
 
@@ -81,7 +83,8 @@ export function useNewsArticle(id: string | undefined) {
 }
 
 export function useNews(filters: NewsFilters = {}) {
-  const { viewingSeasonId, isReady } = useSeasons()
+  const seasons = useSeasons()
+  const { viewingSeasonId, isReady } = seasons
 
   const query = useQuery({
     queryKey: ['news', viewingSeasonId ?? null],
@@ -107,5 +110,13 @@ export function useNews(filters: NewsFilters = {}) {
     [filteredNews],
   )
 
-  return { ...query, news, filteredNews, featuredNews }
+  return {
+    ...query,
+    // See the note in `seasonScopedLoading`: the spread above carries the
+    // disabled query's `isLoading: false`.
+    isLoading: seasonScopedLoading(seasons, query),
+    news,
+    filteredNews,
+    featuredNews,
+  }
 }

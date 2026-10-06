@@ -109,16 +109,11 @@ export default function SideBar() {
               */}
             </div>
         </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 pb-20 md:pb-0">
-          {/* Main content will go here */}
-        </main>
       </div>
 
       {/* Mobile Bottom Navigation */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 bg-[#ecf9ff] border-t border-[#a6dfe6] shadow-[0_-6px_16px_rgba(0,0,0,0.08)] z-1000"
+        className="md:hidden fixed bottom-0 left-0 right-0 bg-[#ecf9ff] border-t border-[#a6dfe6] shadow-[0_-6px_16px_rgba(0,0,0,0.08)] z-30"
         // The home-indicator inset varies by device and is 0 on phones that
         // don't have one — a hardcoded bottom padding is either wasted space
         // or not enough. Let the browser tell us.

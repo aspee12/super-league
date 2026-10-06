@@ -37,7 +37,7 @@ export default function Header() {
         backgroundImage:
           'linear-gradient(176.57deg, rgba(255,255,255,0.5) 25.972%, rgba(236,249,255,0.1) 48.58%, rgba(38,124,147,0.12) 74.614%)',
       }}
-      className="fixed top-0 left-0 right-0 z-40 w-full border-b border-[#e7e6e6] bg-white overflow-hidden md:h-[86px]"
+      className="fixed top-0 left-0 right-0 z-40 w-full border-b border-[#e7e6e6] bg-white overflow-hidden h-20 md:h-[86px]"
     >
       {/* Decorative crest watermark bleeding off the right edge */}
       <Image
@@ -49,7 +49,7 @@ export default function Header() {
         className="pointer-events-none absolute hidden md:block opacity-10 w-[175px] h-[175px] object-cover -right-[30px] top-[56px]"
       />
 
-      <div className="relative flex items-center gap-2 px-3 py-4 md:gap-3 md:px-0 md:h-[86px] md:pl-[42px] md:pr-6 md:py-6">
+      <div className="relative flex h-full items-center gap-2 px-3 py-2 md:gap-3 md:px-0 md:h-[86px] md:pl-[42px] md:pr-6 md:py-6">
         <div className="shrink-0 w-10 h-10 md:w-[52px] md:h-[52px]">
           <Image
             alt="Selise Super League Logo"
@@ -95,7 +95,7 @@ export default function Header() {
             type="button"
             onClick={handleLogout}
             aria-label="Logout"
-            className="shrink-0 flex items-center gap-2 rounded-[80px] border-[1.5px] border-[#00586b] bg-white px-3 py-1.5 sm:px-4 text-[#00586b] transition-colors hover:bg-[#00586b]/5"
+            className="shrink-0 flex items-center gap-2 rounded-[80px] border-[1.5px] border-[#00586b] bg-white px-3 py-2.5 sm:px-4 sm:py-1.5 text-[#00586b] transition-colors hover:bg-[#00586b]/5"
           >
             <LogOut className="w-4 h-4" />
             <span
@@ -108,7 +108,7 @@ export default function Header() {
         ) : (
           <Link
             href="/login"
-            className="shrink-0 flex items-center justify-center gap-2 rounded-[80px] border-[1.5px] border-[#00586b] bg-white px-4 py-1.5 text-[#00586b] transition-colors hover:bg-[#00586b]/5"
+            className="shrink-0 flex items-center justify-center gap-2 rounded-[80px] border-[1.5px] border-[#00586b] bg-white px-4 py-2.5 sm:py-1.5 text-[#00586b] transition-colors hover:bg-[#00586b]/5"
           >
             <span
               className="font-bold text-[14px] leading-6"

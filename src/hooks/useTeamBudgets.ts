@@ -9,7 +9,7 @@ import {
   type BudgetLedgerEntry,
   type TeamBudget,
 } from '@/lib/compute-budgets'
-import { useSeasons } from './useSeasons'
+import { seasonScopedLoading, useSeasons } from './useSeasons'
 import { useStandings } from './useStandings'
 
 function toLedgerEntry(doc: PayloadBudgetEntry): BudgetLedgerEntry {
@@ -86,15 +86,10 @@ export function useTeamBudgets() {
     totals,
     carryForward,
     previousSeason,
-    /**
-     * The season list has to be counted here. Every query below it is gated on
-     * `isReady`, and a disabled React Query reports `isLoading: false` — so
-     * while seasons are still in flight nothing claims to be loading and the
-     * view paints "no budgets" over data that is on its way. If the season
-     * fetch fails this still settles: `seasonsLoading` goes false, the empty
-     * state is then the honest answer rather than a spinner that never ends.
-     */
-    isLoading: seasonsLoading || standingsLoading || entriesQuery.isLoading,
+    // See `seasonScopedLoading` for why the season fetch has to be counted.
+    isLoading:
+      standingsLoading ||
+      seasonScopedLoading({ isLoading: seasonsLoading, isReady }, entriesQuery),
     isError: entriesQuery.isError,
     error: entriesQuery.error as Error | null,
   }

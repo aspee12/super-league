@@ -38,7 +38,7 @@ export function TeamMembersPanel({
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
             {team.icon && (team.icon.startsWith("/") || team.icon.startsWith("http")) ? (
-              <img src={team.icon} alt={team.name} className="w-full h-full object-cover" />
+              <img src={team.icon} alt={team.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
             ) : (
               <span className="text-xl">{team.icon || team.name.charAt(0)}</span>
             )}
@@ -108,7 +108,7 @@ export function TeamMembersPanel({
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8 text-gray-600 hover:text-gray-900"
+                              className="h-10 w-10 text-gray-600 hover:text-gray-900"
                               onClick={() => onEditMember(member.id)}
                             >
                               <SquarePen className="h-4 w-4" />
@@ -118,7 +118,7 @@ export function TeamMembersPanel({
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8 text-blue-600 hover:text-blue-700"
+                              className="h-10 w-10 text-blue-600 hover:text-blue-700"
                               onClick={() => onTransferMember(member.id)}
                             >
                               <ArrowLeftRight className="h-4 w-4" />
@@ -128,7 +128,7 @@ export function TeamMembersPanel({
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8 text-red-500 hover:text-red-700"
+                              className="h-10 w-10 text-red-500 hover:text-red-700"
                               onClick={() => onDeleteMember(member.id)}
                             >
                               <Trash2 className="h-4 w-4" />

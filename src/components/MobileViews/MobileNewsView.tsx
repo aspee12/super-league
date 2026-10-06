@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useDeferredValue, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, SlidersHorizontal } from 'lucide-react'
 import { toast } from 'sonner'
@@ -9,9 +9,12 @@ import { ConfirmModal } from '@shared-component/modals/ConfirmationModal/Confirm
 import { AddNewsModal } from '@shared-component/modals/WebModals/AddNewsModal'
 import { NewsCard } from '@components/NewsView/NewsCard'
 import { NewsFilterBar, hasActiveFilters } from '@components/NewsView/NewsFilterBar'
+import { NewsHero } from '@components/NewsView/NewsHero'
+import { NewsRail } from '@components/NewsView/NewsRail'
+import { groupIntoRails, pickHero } from '@components/NewsView/news-layout'
 import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilter'
 import { getTeams } from '@/lib/matches-api'
-import { deleteNews, type PayloadNews } from '@/lib/news-api'
+import { deleteNews, type NewsCategory, type PayloadNews } from '@/lib/news-api'
 import { useNews, type NewsFilters } from '@/hooks/useNews'
 import { useSeasons } from '@/hooks/useSeasons'
 import { useAuthStore } from '@/store/authStore'
@@ -33,7 +36,11 @@ export default function MobileNewsView() {
   // Archived seasons are read-only — see the note in MatchesView.
   const isSuperAdmin = user?.role === 'super_admin' && isViewingActiveSeason
 
-  const { filteredNews, isLoading } = useNews(filters)
+  // Typing re-filters the whole archive and re-renders every rail; deferring
+  // the search term keeps the input responsive and lets React drop the
+  // intermediate passes.
+  const deferredSearch = useDeferredValue(filters.search)
+  const { filteredNews, isLoading } = useNews({ ...filters, search: deferredSearch })
   // Every club, not just this season's — an article can be about any of them.
   const teamsQuery = useQuery({ queryKey: ['teams', null], queryFn: () => getTeams() })
 
@@ -60,7 +67,24 @@ export default function MobileNewsView() {
     setVisibleCount(PAGE_SIZE)
   }
 
+  const openEdit = (article: PayloadNews) => {
+    setEditing(article)
+    setModalOpen(true)
+  }
+
+  /** "See all" on a rail drops into the filtered list for that category. */
+  const showCategory = (category: NewsCategory) => {
+    handleFiltersChange({ ...filters, category })
+    setFiltersOpen(false)
+  }
+
   if (isLoading) return <FullPageLoader message="Loading news..." />
+
+  // Same split as the desktop view: browse gets the newsroom, filtering gets a
+  // plain list of results.
+  const isFiltering = activeCount
+  const hero = isFiltering ? undefined : pickHero(filteredNews)
+  const rails = isFiltering ? [] : groupIntoRails(filteredNews, hero?.id)
 
   return (
     <div className="min-h-full" style={{ fontFamily: 'Roboto, sans-serif' }}>
@@ -122,21 +146,14 @@ export default function MobileNewsView() {
           <p className="text-center text-gray-500 text-sm py-4">
             No news articles match these filters
           </p>
-        ) : (
+        ) : isFiltering ? (
           <section className="rounded-2xl border border-[#a6dfe6]/60 bg-[#ecf9ff]/75 p-3">
             <div className="flex flex-col gap-6">
               {visibleNews.map((article) => (
                 <NewsCard
                   key={article.id}
                   article={article}
-                  onEdit={
-                    isSuperAdmin
-                      ? (a) => {
-                          setEditing(a)
-                          setModalOpen(true)
-                        }
-                      : undefined
-                  }
+                  onEdit={isSuperAdmin ? openEdit : undefined}
                   onDelete={isSuperAdmin ? setPendingDelete : undefined}
                 />
               ))}
@@ -155,6 +172,27 @@ export default function MobileNewsView() {
               </div>
             )}
           </section>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {hero && (
+              <NewsHero
+                article={hero}
+                onEdit={isSuperAdmin ? openEdit : undefined}
+                onDelete={isSuperAdmin ? setPendingDelete : undefined}
+              />
+            )}
+
+            {rails.map((rail) => (
+              <NewsRail
+                key={rail.category}
+                title={rail.label}
+                articles={rail.articles}
+                onSeeAll={() => showCategory(rail.category)}
+                onEdit={isSuperAdmin ? openEdit : undefined}
+                onDelete={isSuperAdmin ? setPendingDelete : undefined}
+              />
+            ))}
+          </div>
         )}
       </div>
 

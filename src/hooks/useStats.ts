@@ -24,8 +24,8 @@ export interface AggregatedPlayerStat {
 
 
 export function useStats() {
-  const { matches } = useMatches()
-  const { teams, players } = useTeams()
+  const { matches, isLoading: matchesLoading } = useMatches()
+  const { teams, players, isLoading: teamsLoading } = useTeams()
 
   // Build a lookup: playerName+teamName -> player avatar URL
   const playerAvatarMap = useMemo(() => {
@@ -238,6 +238,9 @@ export function useStats() {
 
   return {
     stats,
+    // Both sources are season-gated, so until they settle an empty
+    // leaderboard means "not yet", not "nobody has scored".
+    isLoading: matchesLoading || teamsLoading,
     topScorers,
     topAssists,
     topYellowCards,

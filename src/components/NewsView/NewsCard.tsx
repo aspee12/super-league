@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Pencil, Trash2 } from 'lucide-react'
 import { NEWS_CATEGORY_CONFIG } from '@constants/news'
 import type { PayloadNews } from '@/lib/news-api'
@@ -34,10 +35,14 @@ export function NewsCard({ article, onEdit, onDelete }: NewsCardProps) {
       <div className="relative w-full aspect-[16/9] rounded-[8px] overflow-hidden bg-[#f3f3f5] shrink-0">
         <Link href={href} className="block w-full h-full" aria-label={article.title}>
           {article.image ? (
-            <img
+            <Image
               src={article.image}
               alt={article.title}
-              className="w-full h-full object-cover transition-transform duration-200 hover:scale-[1.03]"
+              fill
+              // Rail/grid cards cap out around 300px wide; `sizes` stops the
+              // optimiser shipping a desktop-width crop to a phone.
+              sizes="(max-width: 640px) 90vw, 300px"
+              className="object-cover transition-transform duration-200 hover:scale-[1.03]"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-[#605e5c] text-sm">

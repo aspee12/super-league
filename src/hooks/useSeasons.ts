@@ -6,6 +6,31 @@ import { getSeasons, type PayloadSeason } from '@/lib/seasons-api'
 import { useSeasonStore } from '@/store/seasonStore'
 
 /**
+ * Loading flag for a view whose queries are gated on `isReady`.
+ *
+ * A disabled React Query reports `isLoading: false`, so while the season list
+ * is still in flight nothing claims to be loading and the view paints its
+ * empty state — "No teams or matches yet." — over data that is on its way.
+ *
+ * Counting the season fetch closes that multi-second window. Checking the
+ * gated queries on `isPending` rather than `isLoading` closes the frame right
+ * after `enabled` flips, where the query has no data yet but has not started
+ * fetching either.
+ *
+ * Settles if the season fetch fails: `seasonsLoading` goes false and
+ * `isReady` stays false, so the empty state becomes the honest answer rather
+ * than a spinner that never ends.
+ */
+export function seasonScopedLoading(
+  seasons: { readonly isLoading: boolean; readonly isReady: boolean },
+  ...gated: ReadonlyArray<{ readonly isPending: boolean }>
+): boolean {
+  if (seasons.isLoading) return true
+  if (!seasons.isReady) return false
+  return gated.some((q) => q.isPending)
+}
+
+/**
  * Season list plus the currently-viewed season.
  *
  * `viewingSeason` falls back to the active season whenever the user hasn't

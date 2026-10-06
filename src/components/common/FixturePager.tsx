@@ -34,7 +34,7 @@ export function FixturePager({
   const showArrows = pageCount > 1
 
   const arrow =
-    'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0e7490] text-white transition-colors hover:bg-[#0c6380] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#0e7490]'
+    'flex h-11 w-11 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-[#0e7490] text-white transition-colors hover:bg-[#0c6380] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#0e7490]'
 
   return (
     <div className={`flex items-center justify-center gap-4 ${className ?? ''}`}>

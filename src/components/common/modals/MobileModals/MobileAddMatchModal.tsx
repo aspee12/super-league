@@ -10,6 +10,7 @@ import { DatePicker } from '@ui/DatePicker'
 import { TimePicker } from '@ui/TimePicker'
 import { getTeams, createMatch, updateMatch } from '@/lib/matches-api'
 import { useSeasons } from '@/hooks/useSeasons'
+import { useScrollLock } from '@/hooks/useScrollLock'
 
 type FormValues = MatchProps
 
@@ -112,12 +113,7 @@ export function MobileAddMatchModal({
     }
   }, [initialData, isOpen, reset])
 
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : ''
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [isOpen])
+  useScrollLock(isOpen)
 
   if (!isOpen) return null
 

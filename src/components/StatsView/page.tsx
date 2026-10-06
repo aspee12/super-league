@@ -6,6 +6,7 @@ import { CATEGORY_CONFIG, StatCategory } from '@constants/stats';
 import { ArchiveSeasonNotice, SeasonFilter } from '@shared-component/SeasonFilter';
 import { ListPagination, paginate } from '@shared-component/ListPagination';
 import { GoalkeeperBadge } from '@shared-component/GoalkeeperBadge';
+import { FullPageLoader } from '@shared-component/FullPageLoader';
 
 /** Leaderboard rows per page. */
 const PAGE_SIZE = 10;
@@ -13,7 +14,7 @@ const PAGE_SIZE = 10;
 export function StatsView() {
   const [activeCategory, setActiveCategory] = useState<StatCategory>('goals');
   const [page, setPage] = useState(1);
-  const { topScorers, topAssists, topYellowCards, topRedCards, topCleanSheets } = useStats();
+  const { topScorers, topAssists, topYellowCards, topRedCards, topCleanSheets, isLoading } = useStats();
   const activeConfig = CATEGORY_CONFIG[activeCategory];
   const IconComponent = activeConfig.icon;
   const categories = Object.keys(CATEGORY_CONFIG) as StatCategory[];
@@ -66,8 +67,19 @@ export function StatsView() {
     setPage(1);
   };
 
+  if (isLoading) return <FullPageLoader message="Loading stats..." />;
+
   return (
-    <div className="flex-1 min-h-0 flex flex-col px-4 py-4 md:px-8 md:py-6 md:block">
+    // `h-full` is what makes the leaderboard scroll inside its card instead of
+    // taking the whole page with it: the card below is already built for it
+    // (fixed header, `flex-1 overflow-auto` list, pinned pagination) but that
+    // chain needs a definite height to resolve against.
+    //
+    // Desktop only. On touch, an inner scroller nested in a scrolling page
+    // chains: the list reaches its end, the page takes over, and the chips and
+    // card header the pinning existed to preserve get dragged off anyway. A
+    // phone is better served by one honest full-page scroll.
+    <div className="flex min-h-0 flex-col px-4 py-4 md:h-full md:px-8 md:py-6">
       <div className="mb-4">
         <h1
           className="hidden md:block font-bold text-[20px] leading-[30px] text-[#201f1e] mb-3"
@@ -85,7 +97,7 @@ export function StatsView() {
           its chip on a narrow phone. The row scrolls — bleeding to the screen
           edges so a chip never looks clipped by the page gutter — which only
           kicks in below ~360px; on a normal phone all five still fit. */}
-      <div className="-mx-4 px-4 mb-4 md:hidden overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="-mx-4 px-4 mb-4 lg:hidden overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="flex gap-2 w-max min-w-full">
           {categories.map((categoryId) => {
             const config = CATEGORY_CONFIG[categoryId];
@@ -108,9 +120,9 @@ export function StatsView() {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 md:gap-6 flex-1 min-h-0">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 flex-1 min-h-0">
         {/* Desktop: Player Statistics sidebar */}
-        <div className="hidden md:block shrink-0">
+        <div className="hidden lg:block shrink-0">
           <div className="bg-white rounded-[8px] p-6 border border-[#e7e6e6]">
             <div className="flex flex-col gap-4 w-[194px]">
               {categories.map((categoryId) => {
@@ -177,7 +189,7 @@ export function StatsView() {
                       </span>
                       <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#e7e6e6] flex items-center justify-center text-xl md:text-2xl shrink-0 overflow-hidden">
                         {stat.player.avatar && (stat.player.avatar.startsWith('/') || stat.player.avatar.startsWith('http')) ? (
-                          <img src={stat.player.avatar} alt={stat.player.name} className="w-full h-full object-cover" />
+                          <img src={stat.player.avatar} alt={stat.player.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-sm font-semibold text-gray-500">
                             {stat.player.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}

@@ -1,6 +1,7 @@
 import { ConfirmModalProps } from '@app-types/shared-type';
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
+import { useScrollLock } from '@/hooks/useScrollLock'
 
 export function ConfirmModal({
   isOpen,
@@ -12,12 +13,7 @@ export function ConfirmModal({
   confirmVariant = 'primary',
 }: ConfirmModalProps) {
   // Prevent background scroll when modal is open
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+  useScrollLock(isOpen)
 
   if (!isOpen) return null;
 

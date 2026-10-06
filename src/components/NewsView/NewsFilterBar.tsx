@@ -24,7 +24,7 @@ export function hasActiveFilters(filters: NewsFilters): boolean {
 
 /** Shared shape for the 40px-high fields in the design. */
 const FIELD_CLASS =
-  'h-10 bg-white border border-[#00586b] rounded-[8px] text-[14px] text-[#3d3935] ' +
+  'h-10 bg-white border border-[#00586b] rounded-[8px] text-base md:text-[14px] text-[#3d3935] ' +
   'focus:outline-none focus:ring-2 focus:ring-[#267c93]/30'
 
 function SelectField({
@@ -71,11 +71,11 @@ export function NewsFilterBar({
 
   return (
     <div
-      className={`flex items-center gap-3 ${compact ? 'flex-wrap' : 'justify-end'}`}
+      className={`flex flex-wrap items-center gap-3 ${compact ? '' : 'justify-end'}`}
       style={{ fontFamily: 'Roboto, sans-serif' }}
     >
       {/* Search */}
-      <div className={`relative ${compact ? 'w-full' : 'w-[220px]'} shrink-0`}>
+      <div className={`relative ${compact ? 'w-full' : 'w-full sm:w-[220px]'} min-w-[150px] flex-1 sm:flex-none`}>
         <Search
           className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#605e5c]"
           aria-hidden

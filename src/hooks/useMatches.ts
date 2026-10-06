@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getMatches, type PayloadMatch, type PayloadTeam } from '@/lib/matches-api'
 import { computeMatchStatus } from '@/lib/match-status'
-import { useSeasons } from './useSeasons'
+import { seasonScopedLoading, useSeasons } from './useSeasons'
 import type { Match, Team } from '@app-types/matchTypes'
 
 function toTeam(val: string | PayloadTeam): Team {
@@ -30,7 +30,8 @@ function toMatch(doc: PayloadMatch): Match {
 }
 
 export function useMatches() {
-  const { viewingSeasonId, isReady } = useSeasons()
+  const seasons = useSeasons()
+  const { viewingSeasonId, isReady } = seasons
 
   const query = useQuery({
     // Season is part of the key so switching seasons refetches rather than
@@ -95,6 +96,9 @@ export function useMatches() {
 
   return {
     ...query,
+    // After the spread: the raw query reports `isLoading: false` while it is
+    // disabled waiting on the season list.
+    isLoading: seasonScopedLoading(seasons, query),
     matches,
     liveMatches,
     upcomingMatches,
